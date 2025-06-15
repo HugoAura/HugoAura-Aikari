@@ -1,0 +1,7 @@
+{
+  "dependencies": [
+    "cxxopts",
+    "spdlog",
+    "nlohmann-json"
+  ]
+}

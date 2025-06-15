@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="源文件\infrastructure">
+      <UniqueIdentifier>{f7b757e5-8f67-4d78-b54e-0120d5bfe632}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\types">
+      <UniqueIdentifier>{224c9c4d-4ca4-41c0-a3ea-4afa01e47e1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\types\infrastructure">
+      <UniqueIdentifier>{2f5a9070-a49e-4039-9640-0d8fc4489b16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\types\global">
+      <UniqueIdentifier>{2b3fc797-8f0c-4f06-a52d-dc043ce3c8f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\infrastructure">
+      <UniqueIdentifier>{23e6d1c8-a7d6-4130-a489-9f7cece755aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\utils">
+      <UniqueIdentifier>{83e37cd5-b075-4ef5-a045-52887b1f29dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\utils">
+      <UniqueIdentifier>{c931e207-123b-4b19-8d76-e7d60a881139}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="entrypoint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="infrastructure\logger.cpp">
+      <Filter>源文件\infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="infrastructure\cliParse.cpp">
+      <Filter>源文件\infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="lifecycle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="infrastructure\fileSystem.cpp">
+      <Filter>源文件\infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\windowsUtils.cpp">
+      <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="infrastructure\registry.cpp">
+      <Filter>源文件\infrastructure</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="includes\Aikari-Launcher-Private\common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\infrastructure\cliParseTypes.h">
+      <Filter>头文件\types\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\global\lifecycleTypes.h">
+      <Filter>头文件\types\global</Filter>
+    </ClInclude>
+    <ClInclude Include="infrastructure\cliParse.h">
+      <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="infrastructure\logger.h">
+      <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="lifecycle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="infrastructure\fileSystem.h">
+      <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\windowsUtils.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="infrastructure\registry.h">
+      <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

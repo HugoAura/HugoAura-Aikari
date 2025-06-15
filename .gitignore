@@ -1,0 +1,91 @@
+# Build Artifacts
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.lib
+*.exp
+*.manifest
+*.tlog
+*.idb
+*.iobj
+*.ipdb
+*.res
+*.suo
+*.sdf
+*.sln.docstates
+*.user
+*.cache
+*.log
+*.tlog
+*.db
+*.db-shm
+*.db-wal
+*.lastbuildstate
+*.bsc
+*.sbr
+*.o
+*.lo
+*.la
+*.al
+*.so
+*.so.*
+
+# Visual Studio
+Debug/
+Release/
+x64/
+Win32/
+ARM/
+ARM64/
+ipch/
+.vs/
+*.VC.db
+*.VC.VC.opendb
+*.aps
+
+# Package Manager Files
+packages/
+out/
+bin/
+obj/
+vcpkg_installed/
+
+# Temp Files
+*.bak
+*.tmp
+*.swp
+*~
+
+# NuGet Pkgs
+*.nupkg
+*.snupkg
+
+# IntelliSense Caches
+*.ncb
+*.suo
+*.sdf
+*.opensdf
+*.ipch
+*.VC.db
+*.VC.VC.opendb
+
+# User Preferences
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# Thirdparty Libs Build Files
+vendor/
+thirdparty/
+external/
+libs/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
