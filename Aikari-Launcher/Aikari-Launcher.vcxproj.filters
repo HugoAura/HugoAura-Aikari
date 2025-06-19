@@ -34,6 +34,12 @@
     <Filter Include="头文件\utils">
       <UniqueIdentifier>{c931e207-123b-4b19-8d76-e7d60a881139}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\components">
+      <UniqueIdentifier>{e41020f9-b69c-402e-b45e-f348b0de14c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\components">
+      <UniqueIdentifier>{ceb2f53d-7ad1-49d9-bb6c-98f134cb43fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entrypoint.cpp">
@@ -56,6 +62,15 @@
     </ClCompile>
     <ClCompile Include="infrastructure\registry.cpp">
       <Filter>源文件\infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="infrastructure\winSvc.cpp">
+      <Filter>源文件\infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\sslUtils.cpp">
+      <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="components\wsServer.cpp">
+      <Filter>源文件\components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -86,5 +101,22 @@
     <ClInclude Include="infrastructure\registry.h">
       <Filter>头文件\infrastructure</Filter>
     </ClInclude>
+    <ClInclude Include="infrastructure\winSvc.h">
+      <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\sslUtils.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="components\wsServer.h">
+      <Filter>头文件\components</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\vcpkg.json">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\vcpkg-configuration.json">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

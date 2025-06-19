@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <cstdint>
 
 #define DEFAULT_LOGGER (spdlog::get("defaultLogger"))
 
@@ -21,4 +21,12 @@ namespace AikariDefaults
 inline const std::string Version = "v0.0.1-early-alpha";
 
 inline const unsigned int VersionCode = 1;
+
+namespace ServiceConfig
+{
+inline const std::wstring ServiceName = L"HugoAuraAikari";
+inline const std::wstring ServiceDisplayName = L"HugoAura Aikari";
+inline const std::wstring ServiceDesc = L"Aikari, privileged access services for HugoAura.";
+inline const std::wstring StartArg = L"--service run-as";
+}  // namespace ServiceConfig
 }  // namespace AikariDefaults

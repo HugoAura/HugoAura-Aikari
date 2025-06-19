@@ -1,7 +1,9 @@
 {
   "dependencies": [
     "cxxopts",
+    "mbedtls",
+    "nlohmann-json",
     "spdlog",
-    "nlohmann-json"
+    "ixwebsocket"
   ]
 }

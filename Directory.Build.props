@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <VcpkgTriplet Condition="'$(VcpkgTriplet)' == ''">$(VcpkgTripletIdentifier)-windows-static</VcpkgTriplet>
+  </PropertyGroup>
+</Project>

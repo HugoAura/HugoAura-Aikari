@@ -1,4 +1,6 @@
 # Build Artifacts
+build/
+install/
 *.obj
 *.exe
 *.pdb
@@ -69,6 +71,9 @@ vcpkg_installed/
 *.ipch
 *.VC.db
 *.VC.VC.opendb
+
+# CMake
+CMakeUserPresets.json
 
 # User Preferences
 *.user

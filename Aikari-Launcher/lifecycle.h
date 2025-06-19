@@ -15,9 +15,11 @@ class AikariStatesManager
         return instance;
     };
 
-    void setState(const AikariTypes::global::lifecycle::GlobalLifecycleStates& newState);
-
-    AikariTypes::global::lifecycle::GlobalLifecycleStates getState();
+    const AikariTypes::global::lifecycle::GlobalLifecycleStates& getState()
+    {
+        std::lock_guard<std::mutex> lock(this->_mutex_lock_);
+        return this->_state_;
+    }
 
     template <typename T>
     void setVal(T AikariTypes::global::lifecycle::GlobalLifecycleStates::* key, const T& value)
