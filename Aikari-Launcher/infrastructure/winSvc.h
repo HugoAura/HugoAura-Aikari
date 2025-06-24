@@ -18,7 +18,10 @@ class WinSvcManager
 
     static bool checkSvcExists(const std::wstring& serviceNameW);
 
-    WinSvcManager() : isServiceExists(checkSvcExists(AikariDefaults::ServiceConfig::ServiceName)) {};
+    WinSvcManager()
+        : isServiceExists(
+              checkSvcExists(AikariDefaults::ServiceConfig::ServiceName)
+          ) {};
 
     bool installService();
 

@@ -16,7 +16,8 @@ namespace AikariFileSystem
 fs::path FileSystemManager::getProgramDataPath()
 {
     PWSTR pathPtr = NULL;
-    HRESULT hResult = SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &pathPtr);
+    HRESULT hResult =
+        SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &pathPtr);
     fs::path finalPath;
 
     if (SUCCEEDED(hResult))
@@ -24,13 +25,18 @@ fs::path FileSystemManager::getProgramDataPath()
         try
         {
             fs::path programDataPath(pathPtr);
-            LOG_DEBUG(std::format("Get ProgramData path success: {}", programDataPath.string()));
+            LOG_DEBUG(std::format(
+                "Get ProgramData path success: {}", programDataPath.string()
+            ));
 
             finalPath = programDataPath;
         }
         catch (const fs::filesystem_error& error)
         {
-            LOG_ERROR("⚠ A filesystem error occurred getting the path of ProgramData dir.");
+            LOG_ERROR(
+                "⚠ A filesystem error occurred getting the path of ProgramData "
+                "dir."
+            );
             LOG_ERROR(error.what());
             LOG_ERROR("Using the default value.");
             finalPath = fs::path("C") / "ProgramData";
@@ -40,7 +46,10 @@ fs::path FileSystemManager::getProgramDataPath()
     }
     else
     {
-        LOG_ERROR("⚠ Unexpected error occurred getting the path of ProgramData dir, trying to use default val.");
+        LOG_ERROR(
+            "⚠ Unexpected error occurred getting the path of ProgramData dir, "
+            "trying to use default val."
+        );
         LOG_ERROR("Error detail: ");
         LOG_ERROR(AikariUtils::WindowsUtils::parseHResult(hResult));
         finalPath = fs::path("C") / "ProgramData";

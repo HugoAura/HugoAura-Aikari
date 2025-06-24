@@ -40,6 +40,15 @@
     <Filter Include="头文件\components">
       <UniqueIdentifier>{ceb2f53d-7ad1-49d9-bb6c-98f134cb43fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\middleware">
+      <UniqueIdentifier>{281b53a6-bb4c-417b-a91f-882dcbf34072}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\middleware">
+      <UniqueIdentifier>{ead26772-419a-4e49-8f24-6f5cbaed41cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\types\middleware">
+      <UniqueIdentifier>{12a038bc-b2a8-4812-bda3-ff5ee12ca3b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entrypoint.cpp">
@@ -70,6 +79,15 @@
       <Filter>源文件\utils</Filter>
     </ClCompile>
     <ClCompile Include="components\wsServer.cpp">
+      <Filter>源文件\components</Filter>
+    </ClCompile>
+    <ClCompile Include="middleware\wsAuthHandler.cpp">
+      <Filter>源文件\middleware</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\cryptoUtils.cpp">
+      <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="components\wsMsgHandler.cpp">
       <Filter>源文件\components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -108,6 +126,18 @@
       <Filter>头文件\utils</Filter>
     </ClInclude>
     <ClInclude Include="components\wsServer.h">
+      <Filter>头文件\components</Filter>
+    </ClInclude>
+    <ClInclude Include="middleware\wsAuthHandler.h">
+      <Filter>头文件\middleware</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\middleware\websocket.h">
+      <Filter>头文件\types\middleware</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\cryptoUtils.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="components\wsMsgHandler.h">
       <Filter>头文件\components</Filter>
     </ClInclude>
   </ItemGroup>

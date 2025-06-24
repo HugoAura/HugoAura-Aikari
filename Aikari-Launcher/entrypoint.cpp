@@ -1,9 +1,13 @@
 ﻿#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
+#include <ixwebsocket/IXNetSystem.h>
 
 #include <chrono>
+#include <csignal>
 #include <cxxopts.hpp>
+#include <future>
 
+#include "components/wsServer.h"
 #include "infrastructure/cliParse.h"
 #include "infrastructure/fileSystem.h"
 #include "infrastructure/logger.h"
@@ -14,42 +18,105 @@
 
 namespace lifecycleTypes = AikariTypes::global::lifecycle;
 
+std::promise<bool> aikariAlivePromise;
+
 static void logVersion()
 {
-    LOG_INFO("Version: " + AikariDefaults::Version + std::format(" ({})", AikariDefaults::VersionCode));
+    LOG_INFO(
+        "Version: " + AikariDefaults::Version +
+        std::format(" ({})", AikariDefaults::VersionCode)
+    );
+}
+
+static void exitSignalHandler(int signum)
+{
+    LOG_INFO(
+        "Received " + std::to_string(signum) + " signal, exiting Aikari..."
+    );
+    aikariAlivePromise.set_value(true);
 }
 
 int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
 {
-    auto curTime =
-        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::future<bool> aikariAliveFuture = aikariAlivePromise.get_future();
+
+    auto curTime = std::chrono::duration_cast<std::chrono::seconds>(
+                       std::chrono::system_clock::now().time_since_epoch()
+    )
+                       .count();
 
     auto& lifecycleStates = AikariLifecycle::AikariStatesManager::getInstance();
     LOG_INFO("Initializing states manager...");
-    lifecycleStates.setVal(&lifecycleTypes::GlobalLifecycleStates::runtimeMode, runtimeMode);
-    lifecycleStates.setVal(&lifecycleTypes::GlobalLifecycleStates::launchTime, curTime);
+    lifecycleStates.setVal(
+        &lifecycleTypes::GlobalLifecycleStates::runtimeMode, runtimeMode
+    );
+    lifecycleStates.setVal(
+        &lifecycleTypes::GlobalLifecycleStates::launchTime, curTime
+    );
 
     LOG_INFO("Initializing file system manager...");
-    auto fileSystemManagerIns = std::make_shared<AikariFileSystem::FileSystemManager>();
+    auto fileSystemManagerIns =
+        std::make_shared<AikariFileSystem::FileSystemManager>();
     fileSystemManagerIns->ensureDirExists();
 
     LOG_INFO("Initializing registry manager...");
-    auto registryManagerIns = std::make_shared<AikariRegistry::RegistryManager>();
+    auto registryManagerIns =
+        std::make_shared<AikariRegistry::RegistryManager>();
     int regKeyValidateResult = registryManagerIns->ensureRegKeyExists();
     if (regKeyValidateResult == -1)
     {
         LOG_CRITICAL("Registry initialization failed, exiting Aikari...");
         return -1;
     }
+    auto curSharedIns =
+        lifecycleStates.getVal(&lifecycleTypes::GlobalLifecycleStates::sharedIns
+        );
+    curSharedIns.registryManagerIns = registryManagerIns;
+    lifecycleStates.setVal(
+        &lifecycleTypes::GlobalLifecycleStates::sharedIns, curSharedIns
+    );
 
     LOG_INFO("Initializing TLS certificates...");
-    std::filesystem::path certDir = fileSystemManagerIns->aikariConfigDir / "certs";
+    std::filesystem::path certDir =
+        fileSystemManagerIns->aikariConfigDir / "certs";
     bool wsCertInitResult = AikariUtils::sslUtils::initWsCert(certDir);
     if (!wsCertInitResult)
     {
-        LOG_CRITICAL("Failed to initialize WebSocket TLS cert, exiting Aikari...");
+        LOG_CRITICAL(
+            "Failed to initialize WebSocket TLS cert, exiting Aikari..."
+        );
         return -1;
     }
+
+    LOG_INFO("Initializing Windows socket environment...");
+    ix::initNetSystem();
+    LOG_INFO("Starting Aikari WebSocket server...");
+    int wsDefaultPort = 22077;  // To Be Changed
+    auto wsServerManagerIns = std::make_shared<
+        AikariLauncherComponents::AikariWebSocketServer::MainWSServer>(
+        "127.0.0.1", wsDefaultPort, certDir / "wss.crt", certDir / "wss.key"
+    );
+    curSharedIns.wsServerMgrIns = wsServerManagerIns;
+    lifecycleStates.setVal(
+        &lifecycleTypes::GlobalLifecycleStates::sharedIns, curSharedIns
+    );
+    bool wsLaunchResult = wsServerManagerIns->tryLaunchWssServer();
+    if (!wsLaunchResult)
+    {
+        LOG_CRITICAL("Failed to launch Aikari ws server, exiting Aikari...");
+        return -1;
+    }
+
+    // --- To Be Done --- //
+
+    LOG_INFO("Aikari is loaded, waiting for further operations...");
+    aikariAliveFuture.get();  // Run forever - until sig recv
+
+    LOG_INFO("Stopping ws server...");
+    wsServerManagerIns->stopWssServer();
+    ix::uninitNetSystem();
+
+    LOG_INFO("👋 Clean up completed, goodbye.");
 }
 
 int main(int argc, const char* argv[])
@@ -61,7 +128,11 @@ int main(int argc, const char* argv[])
     LOG_INFO("❇️ Welcome to HugoAura-Aikari");
     LOG_INFO("Launching as CLI mode");
     logVersion();
-    LOG_INFO(std::format("Argv: [isDebug={}, serviceCtrl={}]", parseRet.isDebug, parseRet.serviceCtrl));
+    LOG_INFO(std::format(
+        "Argv: [isDebug={}, serviceCtrl={}]",
+        parseRet.isDebug,
+        parseRet.serviceCtrl
+    ));
 
     switch (parseRet.isDebug)
     {
@@ -73,9 +144,9 @@ int main(int argc, const char* argv[])
             break;
     }
 
-    lifecycleTypes::APPLICATION_RUNTIME_MODES curRuntimeMode = parseRet.isDebug
-                                                                   ? lifecycleTypes::APPLICATION_RUNTIME_MODES::DEBUG
-                                                                   : lifecycleTypes::APPLICATION_RUNTIME_MODES::NORMAL;
+    lifecycleTypes::APPLICATION_RUNTIME_MODES curRuntimeMode =
+        parseRet.isDebug ? lifecycleTypes::APPLICATION_RUNTIME_MODES::DEBUG
+                         : lifecycleTypes::APPLICATION_RUNTIME_MODES::NORMAL;
 
     if (parseRet.serviceCtrl == "install")
     {
@@ -101,6 +172,8 @@ int main(int argc, const char* argv[])
         bool uninstResult = winSvcMgrIns->uninstallService();
         return uninstResult ? 0 : -1;
     }
+
+    signal(SIGINT, exitSignalHandler);
 
     return launchAikari(curRuntimeMode);
 }

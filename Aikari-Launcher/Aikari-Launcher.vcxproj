@@ -241,6 +241,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="components\wsMsgHandler.cpp" />
     <ClCompile Include="components\wsServer.cpp" />
     <ClCompile Include="entrypoint.cpp" />
     <ClCompile Include="infrastructure\cliParse.cpp" />
@@ -249,20 +250,26 @@
     <ClCompile Include="infrastructure\registry.cpp" />
     <ClCompile Include="infrastructure\winSvc.cpp" />
     <ClCompile Include="lifecycle.cpp" />
+    <ClCompile Include="middleware\wsAuthHandler.cpp" />
+    <ClCompile Include="utils\cryptoUtils.cpp" />
     <ClCompile Include="utils\sslUtils.cpp" />
     <ClCompile Include="utils\windowsUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="components\wsMsgHandler.h" />
     <ClInclude Include="components\wsServer.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\common.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\global\lifecycleTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\infrastructure\cliParseTypes.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\middleware\websocket.h" />
     <ClInclude Include="infrastructure\cliParse.h" />
     <ClInclude Include="infrastructure\fileSystem.h" />
     <ClInclude Include="infrastructure\logger.h" />
     <ClInclude Include="infrastructure\registry.h" />
     <ClInclude Include="infrastructure\winSvc.h" />
     <ClInclude Include="lifecycle.h" />
+    <ClInclude Include="middleware\wsAuthHandler.h" />
+    <ClInclude Include="utils\cryptoUtils.h" />
     <ClInclude Include="utils\sslUtils.h" />
     <ClInclude Include="utils\windowsUtils.h" />
   </ItemGroup>

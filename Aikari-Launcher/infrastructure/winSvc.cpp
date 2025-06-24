@@ -15,7 +15,8 @@ bool WinSvcManager::checkSvcExists(const std::wstring& serviceNameW)
         return false;
     }
 
-    SC_HANDLE hSvcIns = OpenServiceW(hSCMgr, serviceNameW.c_str(), SERVICE_QUERY_STATUS);
+    SC_HANDLE hSvcIns =
+        OpenServiceW(hSCMgr, serviceNameW.c_str(), SERVICE_QUERY_STATUS);
 
     bool isExists = false;
 
@@ -29,7 +30,9 @@ bool WinSvcManager::checkSvcExists(const std::wstring& serviceNameW)
         DWORD lastErr = GetLastError();
         if (lastErr != ERROR_SERVICE_DOES_NOT_EXIST)
         {
-            LOG_WARN("Failed to query service status, considering as not exists.");
+            LOG_WARN(
+                "Failed to query service status, considering as not exists."
+            );
         }
         isExists = false;
     }
@@ -45,7 +48,10 @@ bool WinSvcManager::installService()
 
     if (getPathResult == 0)
     {
-        LOG_ERROR("Failed to get Aikari executable path. Canceling service installation.");
+        LOG_ERROR(
+            "Failed to get Aikari executable path. Canceling service "
+            "installation."
+        );
         return false;
     }
 
@@ -55,7 +61,10 @@ bool WinSvcManager::installService()
     fullLaunchParam += L" ";
     fullLaunchParam += svcConfig::StartArg;
 
-    LOG_DEBUG("Service launchParam to be installed: " + AikariUtils::WindowsUtils::WstringToString(fullLaunchParam));
+    LOG_DEBUG(
+        "Service launchParam to be installed: " +
+        AikariUtils::WindowsUtils::WstringToString(fullLaunchParam)
+    );
 
     SC_HANDLE hSCMgr = OpenSCManagerW(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
     if (!hSCMgr)
@@ -66,9 +75,21 @@ bool WinSvcManager::installService()
 
     const TCHAR* svcDeps = TEXT("Tcpip\0RpcSs\0EventLog\0Dnscache\0");
 
-    SC_HANDLE hSvcIns = CreateServiceW(hSCMgr, svcConfig::ServiceName.c_str(), svcConfig::ServiceDisplayName.c_str(),
-                                       SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START,
-                                       SERVICE_ERROR_NORMAL, fullLaunchParam.c_str(), NULL, NULL, svcDeps, NULL, NULL);
+    SC_HANDLE hSvcIns = CreateServiceW(
+        hSCMgr,
+        svcConfig::ServiceName.c_str(),
+        svcConfig::ServiceDisplayName.c_str(),
+        SERVICE_ALL_ACCESS,
+        SERVICE_WIN32_OWN_PROCESS,
+        SERVICE_AUTO_START,
+        SERVICE_ERROR_NORMAL,
+        fullLaunchParam.c_str(),
+        NULL,
+        NULL,
+        svcDeps,
+        NULL,
+        NULL
+    );
 
     bool isSuccess = false;
     if (hSvcIns)
@@ -85,7 +106,9 @@ bool WinSvcManager::installService()
     else
     {
         auto error = GetLastError();
-        std::string resolvedErrMsg(AikariUtils::WindowsUtils::parseDWORDResult(error));
+        std::string resolvedErrMsg(
+            AikariUtils::WindowsUtils::parseDWORDResult(error)
+        );
         LOG_ERROR("Failed to register Aikari Svc, error: " + resolvedErrMsg);
     }
 
@@ -103,7 +126,9 @@ bool WinSvcManager::uninstallService()
         return false;
     }
 
-    SC_HANDLE hSvcIns = OpenServiceW(hSCMgr, svcConfig::ServiceName.c_str(), SERVICE_ALL_ACCESS);
+    SC_HANDLE hSvcIns = OpenServiceW(
+        hSCMgr, svcConfig::ServiceName.c_str(), SERVICE_ALL_ACCESS
+    );
     if (!hSvcIns)
     {
         auto error = GetLastError();
@@ -113,8 +138,12 @@ bool WinSvcManager::uninstallService()
         }
         else
         {
-            std::string parsedErr(AikariUtils::WindowsUtils::parseDWORDResult(error));
-            LOG_ERROR("Failed to open Aikari Svc instance, error: " + parsedErr);
+            std::string parsedErr(
+                AikariUtils::WindowsUtils::parseDWORDResult(error)
+            );
+            LOG_ERROR(
+                "Failed to open Aikari Svc instance, error: " + parsedErr
+            );
         }
         CloseServiceHandle(hSCMgr);
         return false;
@@ -123,20 +152,32 @@ bool WinSvcManager::uninstallService()
     SERVICE_STATUS_PROCESS svcStatusProcess;
     DWORD bytesNeeded = 0;
 
-    if (QueryServiceStatusEx(hSvcIns, SC_STATUS_PROCESS_INFO, (LPBYTE)&svcStatusProcess, sizeof(svcStatusProcess),
-                             &bytesNeeded))
+    if (QueryServiceStatusEx(
+            hSvcIns,
+            SC_STATUS_PROCESS_INFO,
+            (LPBYTE)&svcStatusProcess,
+            sizeof(svcStatusProcess),
+            &bytesNeeded
+        ))
     {
         if (svcStatusProcess.dwCurrentState != SERVICE_STOPPED &&
             svcStatusProcess.dwCurrentState != SERVICE_STOP_PENDING)
         {
             LOG_INFO("Aikari Svc is running, stopping it...");
-            if (ControlService(hSvcIns, SERVICE_CONTROL_STOP, (LPSERVICE_STATUS)&svcStatusProcess))
+            if (ControlService(
+                    hSvcIns,
+                    SERVICE_CONTROL_STOP,
+                    (LPSERVICE_STATUS)&svcStatusProcess
+                ))
             {
                 LOG_INFO("Aikari Svc stopped");
             }
             else
             {
-                LOG_ERROR("Unexpected error occurred while stopping svc, proceed to force delete.");
+                LOG_ERROR(
+                    "Unexpected error occurred while stopping svc, proceed to "
+                    "force delete."
+                );
             }
         }
     }
@@ -151,7 +192,8 @@ bool WinSvcManager::uninstallService()
     else
     {
         auto error = GetLastError();
-        std::string parsedErr(AikariUtils::WindowsUtils::parseDWORDResult(error));
+        std::string parsedErr(AikariUtils::WindowsUtils::parseDWORDResult(error)
+        );
         LOG_ERROR("An error occurred uninstalling svc, error: " + parsedErr);
     }
 

@@ -7,14 +7,20 @@ namespace AikariCliUtils
 {
 cxxopts::Options constructCliOptions()
 {
-    cxxopts::Options cliOptions{"Aikari", "Privileged access services for HugoAura"};
-    cliOptions.add_options()("d,debug", "Enable debug logging", cxxopts::value<bool>())(
-        "s,service", "Windows SCM control options", cxxopts::value<std::string>());
+    cxxopts::Options cliOptions{ "Aikari",
+                                 "Privileged access services for HugoAura" };
+    cliOptions
+        .add_options()("d,debug", "Enable debug logging", cxxopts::value<bool>())(
+            "s,service",
+            "Windows SCM control options",
+            cxxopts::value<std::string>()
+        );
     return cliOptions;
 }
 
-AikariTypes::infrastructure::cliParse::CliOptionsRet parseCliOptions(cxxopts::Options& cliOptions, const int& argc,
-                                                                     const char* argv[])
+AikariTypes::infrastructure::cliParse::CliOptionsRet parseCliOptions(
+    cxxopts::Options& cliOptions, const int& argc, const char* argv[]
+)
 {
     auto parseResult = cliOptions.parse(argc, argv);
     AikariTypes::infrastructure::cliParse::CliOptionsRet retVal;

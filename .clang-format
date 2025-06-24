@@ -3,8 +3,19 @@ BasedOnStyle: Google
 IndentWidth: 4
 UseTab: Never
 
-BreakBeforeBraces: Allman
-
 PointerAlignment: Left
 
-ColumnLimit: 120
+ColumnLimit: 80
+
+BinPackArguments: false
+BinPackParameters: false
+Cpp11BracedListStyle: false
+
+BreakBeforeBraces: Allman
+AlignAfterOpenBracket: BlockIndent
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseExpressionOnASingleLine: false
+AllowShortLoopsOnASingleLine: false

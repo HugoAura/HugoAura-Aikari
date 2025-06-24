@@ -24,6 +24,27 @@ std::string WstringToString(const std::wstring& wstr)
     return strTo;
 }
 
+std::wstring StringToWstring(const std::string& str)
+{
+    if (str.empty())
+    {
+        return std::wstring();
+    }
+    int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), NULL, 0);
+    if (sizeNeeded == 0)
+    {
+        return L"MultiByteToWideChar failed to calculate size";
+    }
+    std::wstring wstrTo(sizeNeeded, 0);
+    int result = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), &wstrTo[0], sizeNeeded);
+
+    if (result == 0)
+    {
+        return L"MultiByteToWideChar failed to convert string";
+    }
+    return wstrTo;
+}
+
 std::string parseHResult(HRESULT hResult)
 {
     LPSTR msgBuffer = NULL;

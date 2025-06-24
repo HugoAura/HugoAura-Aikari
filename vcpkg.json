@@ -1,9 +1,11 @@
 {
   "dependencies": [
+    "ada-url",
     "cxxopts",
+    "ixwebsocket",
     "mbedtls",
     "nlohmann-json",
     "spdlog",
-    "ixwebsocket"
+    "libsodium"
   ]
 }

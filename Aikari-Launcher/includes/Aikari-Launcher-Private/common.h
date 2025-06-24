@@ -3,9 +3,10 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/spdlog.h>
 
-#include <iostream>
-#include <string>
 #include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
 
 #define DEFAULT_LOGGER (spdlog::get("defaultLogger"))
 
@@ -26,7 +27,8 @@ namespace ServiceConfig
 {
 inline const std::wstring ServiceName = L"HugoAuraAikari";
 inline const std::wstring ServiceDisplayName = L"HugoAura Aikari";
-inline const std::wstring ServiceDesc = L"Aikari, privileged access services for HugoAura.";
+inline const std::wstring ServiceDesc =
+    L"Aikari, privileged access services for HugoAura.";
 inline const std::wstring StartArg = L"--service run-as";
 }  // namespace ServiceConfig
 }  // namespace AikariDefaults
