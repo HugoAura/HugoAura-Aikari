@@ -252,13 +252,13 @@ int genEC256TlsCert(std::filesystem::path &baseDir, std::string &certHost)
     return 0;
 }
 
-bool initWsCert(std::filesystem::path &baseDir)
+bool initWsCert(std::filesystem::path &baseDir, bool force)
 {
     std::filesystem::path crtPath = baseDir / "wss.crt";
     std::filesystem::path keyPath = baseDir / "wss.key";
 
     bool isExists = checkCertExists(crtPath, keyPath);
-    if (isExists)
+    if (isExists && !force)
     {
         LOG_INFO("WebSocket TLS cert already exists, skipping regeneration...");
         return true;

@@ -1,0 +1,7 @@
+﻿{
+  "wsPreferPort": 22077,
+  "tls": {
+    "regenWsCertNextLaunch": false
+  },
+  "module": "launcher"
+}

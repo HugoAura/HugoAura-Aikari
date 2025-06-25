@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -138,7 +138,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -157,7 +157,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -174,7 +174,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -193,7 +193,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -210,7 +210,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -229,7 +229,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -241,6 +241,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="components\config.cpp" />
     <ClCompile Include="components\wsMsgHandler.cpp" />
     <ClCompile Include="components\wsServer.cpp" />
     <ClCompile Include="entrypoint.cpp" />
@@ -251,17 +252,23 @@
     <ClCompile Include="infrastructure\winSvc.cpp" />
     <ClCompile Include="lifecycle.cpp" />
     <ClCompile Include="middleware\wsAuthHandler.cpp" />
+    <ClCompile Include="public\virtual\IConfigManager.cpp" />
     <ClCompile Include="utils\cryptoUtils.cpp" />
     <ClCompile Include="utils\sslUtils.cpp" />
     <ClCompile Include="utils\windowsUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="components\config.h" />
     <ClInclude Include="components\wsMsgHandler.h" />
     <ClInclude Include="components\wsServer.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\common.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\config\configType.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\global\lifecycleTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\infrastructure\cliParseTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\middleware\websocket.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Public\version.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigManager.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigPayload.h" />
     <ClInclude Include="infrastructure\cliParse.h" />
     <ClInclude Include="infrastructure\fileSystem.h" />
     <ClInclude Include="infrastructure\logger.h" />
@@ -269,6 +276,7 @@
     <ClInclude Include="infrastructure\winSvc.h" />
     <ClInclude Include="lifecycle.h" />
     <ClInclude Include="middleware\wsAuthHandler.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="utils\cryptoUtils.h" />
     <ClInclude Include="utils\sslUtils.h" />
     <ClInclude Include="utils\windowsUtils.h" />
@@ -276,6 +284,10 @@
   <ItemGroup>
     <None Include="..\vcpkg-configuration.json" />
     <None Include="..\vcpkg.json" />
+    <None Include="resources\default.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Aikari-Launcher.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

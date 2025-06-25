@@ -15,6 +15,11 @@ namespace AikariLauncherComponents::AikariWebSocketServer
 class MainWSServer;
 }
 
+namespace AikariLauncherComponents::AikariConfig
+{
+class LauncherConfigManager;
+}
+
 namespace AikariTypes::global::lifecycle
 {
 enum class APPLICATION_RUNTIME_MODES
@@ -30,6 +35,9 @@ struct SharedInstances
     std::shared_ptr<
         AikariLauncherComponents::AikariWebSocketServer::MainWSServer>
         wsServerMgrIns;
+    std::shared_ptr<
+        AikariLauncherComponents::AikariConfig::LauncherConfigManager>
+        configManagerIns;
 };
 
 struct GlobalLifecycleStates

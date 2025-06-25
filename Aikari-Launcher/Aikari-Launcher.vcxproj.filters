@@ -49,6 +49,21 @@
     <Filter Include="头文件\types\middleware">
       <UniqueIdentifier>{12a038bc-b2a8-4812-bda3-ff5ee12ca3b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\types\config">
+      <UniqueIdentifier>{b900e87f-f9c0-4f17-b95f-e7175172513b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\public">
+      <UniqueIdentifier>{475e0ac1-ddd7-4239-bc95-e84ed4a54f8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\public">
+      <UniqueIdentifier>{e4a94d7b-d8b5-45fe-83aa-56bb376becd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\public\virtual">
+      <UniqueIdentifier>{b1583626-0bcb-4e09-8002-87845d9bbb98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\public\virtual">
+      <UniqueIdentifier>{6dbfbd2e-e181-4de7-abec-3c92b694eed9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entrypoint.cpp">
@@ -89,6 +104,12 @@
     </ClCompile>
     <ClCompile Include="components\wsMsgHandler.cpp">
       <Filter>源文件\components</Filter>
+    </ClCompile>
+    <ClCompile Include="components\config.cpp">
+      <Filter>源文件\components</Filter>
+    </ClCompile>
+    <ClCompile Include="public\virtual\IConfigManager.cpp">
+      <Filter>源文件\public\virtual</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,6 +161,24 @@
     <ClInclude Include="components\wsMsgHandler.h">
       <Filter>头文件\components</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="components\config.h">
+      <Filter>头文件\components</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\config\configType.h">
+      <Filter>头文件\types\config</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigManager.h">
+      <Filter>头文件\public\virtual</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigPayload.h">
+      <Filter>头文件\public\virtual</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\version.h">
+      <Filter>头文件\public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\vcpkg.json">
@@ -148,5 +187,11 @@
     <None Include="..\vcpkg-configuration.json">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="resources\default.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Aikari-Launcher.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

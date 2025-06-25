@@ -1,5 +1,6 @@
 ﻿#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
+#include <Aikari-Launcher-Public/version.h>
 #include <ixwebsocket/IXNetSystem.h>
 
 #include <chrono>
@@ -7,6 +8,7 @@
 #include <cxxopts.hpp>
 #include <future>
 
+#include "components/config.h"
 #include "components/wsServer.h"
 #include "infrastructure/cliParse.h"
 #include "infrastructure/fileSystem.h"
@@ -14,6 +16,7 @@
 #include "infrastructure/registry.h"
 #include "infrastructure/winSvc.h"
 #include "lifecycle.h"
+#include "resource.h"
 #include "utils/sslUtils.h"
 
 namespace lifecycleTypes = AikariTypes::global::lifecycle;
@@ -23,8 +26,8 @@ std::promise<bool> aikariAlivePromise;
 static void logVersion()
 {
     LOG_INFO(
-        "Version: " + AikariDefaults::Version +
-        std::format(" ({})", AikariDefaults::VersionCode)
+        "Version: " + AikariLauncherPublic::version::Version +
+        std::format(" ({})", AikariLauncherPublic::version::VersionCode)
     );
 }
 
@@ -76,10 +79,30 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         &lifecycleTypes::GlobalLifecycleStates::sharedIns, curSharedIns
     );
 
+    LOG_INFO("Initializing config manager...");
+    auto configManagerIns = std::make_shared<
+        AikariLauncherComponents::AikariConfig::LauncherConfigManager>(
+        "launcher",
+        fileSystemManagerIns->aikariConfigDir / "config.json",
+        IDR_AIKARI_DEFAULT_JSON
+    );
+    bool initConfigResult = configManagerIns->initConfig();
+    if (!initConfigResult)
+    {
+        LOG_CRITICAL("Config initialization failed, exiting Aikari...");
+        return -1;
+    }
+    curSharedIns.configManagerIns = configManagerIns;
+    lifecycleStates.setVal(
+        &lifecycleTypes::GlobalLifecycleStates::sharedIns, curSharedIns
+    );
+
     LOG_INFO("Initializing TLS certificates...");
     std::filesystem::path certDir =
         fileSystemManagerIns->aikariConfigDir / "certs";
-    bool wsCertInitResult = AikariUtils::sslUtils::initWsCert(certDir);
+    bool wsCertInitResult = AikariUtils::sslUtils::initWsCert(
+        certDir, configManagerIns->config->tls.regenWsCertNextLaunch
+    );
     if (!wsCertInitResult)
     {
         LOG_CRITICAL(
@@ -91,7 +114,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     LOG_INFO("Initializing Windows socket environment...");
     ix::initNetSystem();
     LOG_INFO("Starting Aikari WebSocket server...");
-    int wsDefaultPort = 22077;  // To Be Changed
+    int wsDefaultPort = configManagerIns->config->wsPreferPort;
     auto wsServerManagerIns = std::make_shared<
         AikariLauncherComponents::AikariWebSocketServer::MainWSServer>(
         "127.0.0.1", wsDefaultPort, certDir / "wss.crt", certDir / "wss.key"
