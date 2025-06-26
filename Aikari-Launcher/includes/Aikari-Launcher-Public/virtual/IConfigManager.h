@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <filesystem>
+#include <mutex>
 #include <nlohmann/json.hpp>
 #include <string>
 
@@ -21,10 +22,15 @@ class IConfigManager
     std::filesystem::path configPath;
     int defaultConfigResId;
     std::string module;
+    std::mutex configEditLock;
+    std::mutex configWriteLock;
 
     virtual void loadConfig(nlohmann::json& configData) = 0;
+    virtual void loadConfigImpl(nlohmann::json& configData) = 0;
     virtual nlohmann::json getStringifyConfig() = 0;
-    virtual bool writeConfig(nlohmann::json stringifyConfig);
+    virtual nlohmann::json getStringifyConfigImpl() = 0;
+    virtual bool writeConfigRaw(nlohmann::json stringifyConfig);
+    virtual bool writeConfig() = 0;
     virtual LoadDefaultConfigRet loadDefaultConfig();
     virtual bool initConfig();
     virtual ~IConfigManager() = default;
@@ -60,6 +66,11 @@ class IConfigManagerBase : public IConfigManager
     nlohmann::json getStringifyConfig() override final
     {
         return downcast()->getStringifyConfigImpl();
+    };
+
+    bool writeConfig() override
+    {
+        return this->writeConfigRaw(this->getStringifyConfig());
     };
 
    protected:

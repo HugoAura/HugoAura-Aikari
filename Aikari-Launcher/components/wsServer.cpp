@@ -1,7 +1,9 @@
 ﻿#include "wsServer.h"
 
+#include <Aikari-Launcher-Private/types/components/wsTypes.h>
 #include <ixwebsocket/IXSocketTLSOptions.h>
 
+#include <Aikari-Launcher-Public/infrastructure/MessageQueue.hpp>
 #include <chrono>
 #include <nlohmann/json.hpp>
 #include <random>
@@ -11,14 +13,28 @@
 #include "../middleware/wsAuthHandler.h"
 #include "../utils/cryptoUtils.h"
 #include "../utils/windowsUtils.h"
+#include "wsMsgHandler.h"
 
 namespace winUtils = AikariUtils::WindowsUtils;
+namespace messageQueue = AikariLauncherPublic::infrastructure::MessageQueue;
+
+typedef messageQueue::SinglePointMessageQueue<
+    AikariTypes::components::websocket::ClientWSTask>
+    InputMsgQueue;
+
+typedef messageQueue::SinglePointMessageQueue<
+    AikariTypes::components::websocket::ServerWSTaskRet>
+    RetMsgQueue;
 
 namespace AikariLauncherComponents::AikariWebSocketServer
 {
 // ↓ public
 int MainWSServer::launchWssServer()
 {
+    LOG_INFO("Creating ws message queue...");
+    this->inputMsgQueue = std::make_shared<InputMsgQueue>();
+    this->retMsgQueue = std::make_shared<RetMsgQueue>();
+
     this->wsStates->wsSrvIns =
         std::make_shared<ix::WebSocketServer>(this->wsPort, this->wsBindAddr);
     LOG_INFO("Created WebSocket server instance.");
@@ -46,9 +62,12 @@ int MainWSServer::launchWssServer()
                 return;
 
             webSocketIns->setOnMessageCallback(
-                [this, connectionState, webSocketWeak](
-                    const ix::WebSocketMessagePtr& msg
-                ) { this->handleOnMsg(webSocketWeak, connectionState, msg); }
+                [this,
+                 connectionState,
+                 webSocketWeak](const ix::WebSocketMessagePtr& msg)
+                {
+                    this->handleOnMsg(webSocketWeak, connectionState, msg);
+                }
             );
         }
     );
@@ -69,6 +88,11 @@ int MainWSServer::launchWssServer()
         this->wsPort
     ));
     this->writeRegInfo();
+    LOG_INFO("Launching WebSocket message workers...");
+    this->inputMsgWorkerThread =
+        std::make_shared<std::jthread>(&MainWSServer::inputMsgWorker, this);
+    this->retMsgWorkerThread =
+        std::make_shared<std::jthread>(&MainWSServer::retMsgWorker, this);
     return 0;
 }
 
@@ -107,7 +131,115 @@ void MainWSServer::waitWssServer()
 // ↓ public
 void MainWSServer::stopWssServer()
 {
+    this->inputMsgQueue->push({ .clientId = "-1" });
+    this->retMsgQueue->push({ .clientId = "-1" });
+    this->inputMsgWorkerThread->join();
+    this->retMsgWorkerThread->join();
+    for (auto& perThread : this->msgProcThreads)
+    {
+        if (perThread->joinable())
+        {
+            perThread->join();
+        }
+    }
     this->wsStates->wsSrvIns->stop();
+}
+
+// ↓ private
+void MainWSServer::retMsgWorker()
+{
+    LOG_DEBUG("WebSocket reply worker thread started.");
+    try
+    {
+        while (true)
+        {
+            auto ret = this->retMsgQueue->pop();
+            if (ret.clientId == "-1")
+            {
+                break;
+            }
+#ifdef _DEBUG
+            LOG_DEBUG("retMsgWorker: Sending data: " + ret.result.data.dump());
+#endif
+            nlohmann::json repJson;
+            repJson = { { "success", ret.result.success },
+                        { "eventId", ret.result.eventId },
+                        { "code", ret.result.code },
+                        { "data", ret.result.data } };
+            if (ret.isBroadcast)
+            {
+                auto itr = this->wsStates->clients.begin();
+                while (itr != this->wsStates->clients.end())
+                {
+                    if (auto perClientLocked = itr->second.lock())
+                    {
+                        perClientLocked->send(repJson.dump());
+                        itr++;
+                    }
+                    else
+                    {
+                        itr = this->wsStates->clients.erase(itr);
+                    }
+                }
+            }
+            else
+            {
+                auto client = this->wsStates->clients.find(ret.clientId);
+                if (client == this->wsStates->clients.end())
+                {
+                    LOG_WARN(std::format(
+                        "Cannot reply to client {}: Client disconnected",
+                        ret.clientId
+                    ));
+                    return;
+                }
+                auto clientLocked = client->second.lock();
+                if (clientLocked != NULL)
+                {
+                    clientLocked->send(repJson.dump());
+                }
+                else
+                {
+                    this->wsStates->clients.erase(client);
+                }
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LOG_CRITICAL(std::format(
+            "Critical error occurred in retMsgWorker thread: {}", e.what()
+        ));
+    }
+}
+
+// ↓ private
+void MainWSServer::inputMsgWorker()
+{
+    LOG_DEBUG("WebSocket input message worker thread started.");
+    try
+    {
+        while (true)
+        {
+            auto task = this->inputMsgQueue->pop();
+            if (task.clientId == "-1")
+            {
+                break;
+            }
+            auto perThread = std::make_shared<std::jthread>(
+                AikariLauncherComponents::AikariWebSocketHandler::handleTask,
+                task,
+                this->retMsgQueue
+            );
+            this->msgProcThreads.emplace_back(perThread);
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LOG_CRITICAL(std::format(
+            "Critical error occurred in inputMsgWorker thread: {}", e.what()
+        ));
+    }
 }
 
 // ↓ private
@@ -119,6 +251,8 @@ void MainWSServer::handleOnMsg(
 {
     if (msg->type == ix::WebSocketMessageType::Open)
     {
+        const std::string& clientId = connectionState->getId();
+
         auto webSocketIns = webSocketWeak.lock();
 
         auto authStatus =
@@ -129,7 +263,7 @@ void MainWSServer::handleOnMsg(
         if (authStatus !=
             AikariTypes::middleware::websocket::WEBSOCKET_AUTH_STATUS::PASSED)
         {
-            const nlohmann::json deniedRep = {
+            static const nlohmann::json deniedRep = {
                 { "code", -1 },
                 { "type", "basic.auth.reportAuthStatus" },
                 { "success", false },
@@ -139,7 +273,7 @@ void MainWSServer::handleOnMsg(
             LOG_WARN(std::format(
                 "Client {} failed to complete authentication, closing "
                 "connection...",
-                connectionState->getId()
+                clientId
             ));
             webSocketIns->close();
             return;
@@ -147,22 +281,21 @@ void MainWSServer::handleOnMsg(
 
         LOG_INFO(std::format(
             "New client {} connected from {}:{}, welcome.",
-            connectionState->getId(),
+            clientId,
             connectionState->getRemoteIp(),
             connectionState->getRemotePort()
         ));
 
         {
             std::lock_guard<std::mutex> lock(this->wsStates->clientLsMutex);
-            this->wsStates->clients.emplace_back(webSocketWeak);
+            this->wsStates->clients[clientId] = webSocketWeak;
         }
     }
     else if (msg->type == ix::WebSocketMessageType::Close)
     {
-        LOG_INFO(std::format(
-            "Client {} disconnected, bye.", connectionState->getId()
-        ));
-        // No need for clean up, powered by weak_ptr
+        const std::string& clientId = connectionState->getId();
+        LOG_INFO(std::format("Client {} disconnected, bye.", clientId));
+        this->wsStates->clients.erase(clientId);
     }
     else if (msg->type == ix::WebSocketMessageType::Error)
     {
@@ -180,6 +313,42 @@ void MainWSServer::handleOnMsg(
             msg->str
         ));
 #endif
+
+        const std::string& clientId = connectionState->getId();
+        nlohmann::json clientMsgJson;
+        AikariTypes::components::websocket::ClientWSMsg clientMsg;
+        try
+        {
+            clientMsgJson = nlohmann::json::parse(msg->str);
+            clientMsg.module = clientMsgJson.at("module");
+            clientMsg.method = clientMsgJson.at("method");
+            clientMsg.eventId = clientMsgJson.at("eventId");
+            clientMsg.data = clientMsgJson.at("data");
+        }
+        catch (const nlohmann::json::exception& e)
+        {
+            LOG_ERROR(std::format(
+                "Client {} sent invalid data, error: {}", clientId, e.what()
+            ));
+
+            auto webSocketIns = webSocketWeak.lock();
+            if (webSocketIns)
+            {
+                static const nlohmann::json invalidDataJson = {
+                    { "code", -1 },
+                    { "success", false },
+                    { "eventId", "UNKNOWN" },
+                    { "data", { { "message", "Invalid json format" } } }
+                };
+                webSocketIns->send(invalidDataJson.dump());
+            }
+            return;
+        }
+
+        AikariTypes::components::websocket::ClientWSTask taskIns;
+        taskIns.content = clientMsg;
+        taskIns.clientId = clientId;
+        this->inputMsgQueue->push(taskIns);
     }
 };
 

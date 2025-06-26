@@ -2,8 +2,10 @@
 #pragma comment(lib, "crypt32")
 
 #include <Aikari-Launcher-Private/common.h>
+#include <Aikari-Launcher-Private/types/components/wsTypes.h>
 #include <ixwebsocket/IXWebSocketServer.h>
 
+#include <Aikari-Launcher-Public/infrastructure/MessageQueue.hpp>
 #include <filesystem>
 
 namespace AikariLauncherComponents::AikariWebSocketServer
@@ -13,7 +15,7 @@ struct WebSocketStates
 {
     std::shared_ptr<ix::WebSocketServer> wsSrvIns;
     std::mutex clientLsMutex;
-    std::vector<std::weak_ptr<ix::WebSocket>> clients;
+    std::unordered_map<std::string, std::weak_ptr<ix::WebSocket>> clients;
 };
 
 class MainWSServer
@@ -44,9 +46,24 @@ class MainWSServer
    private:
     std::filesystem::path wssCertPath;
     std::filesystem::path wssKeyPath;
-    int8_t maxStartupRetries = 5;  // 节 约 内 存 (雾
+    int8_t maxStartupRetries = 5;
     std::shared_ptr<WebSocketStates> wsStates;
+    std::vector<std::shared_ptr<std::jthread>> msgProcThreads;
+    std::shared_ptr<
+        AikariLauncherPublic::infrastructure::MessageQueue::
+            SinglePointMessageQueue<
+                AikariTypes::components::websocket::ServerWSTaskRet>>
+        retMsgQueue;
+    std::shared_ptr<AikariLauncherPublic::infrastructure::MessageQueue::
+                        SinglePointMessageQueue<
+                            AikariTypes::components::websocket::ClientWSTask>>
+        inputMsgQueue;
 
+    std::shared_ptr<std::jthread> retMsgWorkerThread;
+    std::shared_ptr<std::jthread> inputMsgWorkerThread;
+
+    void retMsgWorker();
+    void inputMsgWorker();
     void handleOnMsg(
         std::weak_ptr<ix::WebSocket> webSocketWeak,
         std::shared_ptr<ix::ConnectionState> connectionState,

@@ -64,6 +64,12 @@
     <Filter Include="源文件\public\virtual">
       <UniqueIdentifier>{6dbfbd2e-e181-4de7-abec-3c92b694eed9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\public\infrastructure">
+      <UniqueIdentifier>{096ddfd9-2401-4ebe-a716-0a06ed548ab6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\types\components">
+      <UniqueIdentifier>{2e51e14a-5661-42bd-bd7d-e937afab2872}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entrypoint.cpp">
@@ -110,6 +116,9 @@
     </ClCompile>
     <ClCompile Include="public\virtual\IConfigManager.cpp">
       <Filter>源文件\public\virtual</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\lifecycleUtils.cpp">
+      <Filter>源文件\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +187,15 @@
     </ClInclude>
     <ClInclude Include="includes\Aikari-Launcher-Public\version.h">
       <Filter>头文件\public</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\lifecycleUtils.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\infrastructure\MessageQueue.hpp">
+      <Filter>头文件\public\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\components\wsTypes.h">
+      <Filter>头文件\types\components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

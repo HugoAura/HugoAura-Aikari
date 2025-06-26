@@ -23,7 +23,7 @@ class LauncherConfigManager
     )
         : IConfigManagerBase(module, configPath, defaultConfigResId) {};
 
-    void loadConfigImpl(nlohmann::json& configData);
-    nlohmann::json getStringifyConfigImpl();
+    void loadConfigImpl(nlohmann::json& configData) override;
+    nlohmann::json getStringifyConfigImpl() override;
 };
 }  // namespace AikariLauncherComponents::AikariConfig

@@ -1,4 +1,5 @@
-﻿#include <Aikari-Launcher-Private/common.h>
+﻿#include <string>
+#include <memory>
 #include <Aikari-Launcher-Public/virtual/IConfigManager.h>
 #include <windows.h>
 

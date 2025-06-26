@@ -12,6 +12,9 @@
 #include <chrono>
 #include <fstream>
 
+#include "../components/config.h"
+#include "lifecycleUtils.h"
+
 namespace AikariUtils::sslUtils
 {
 bool checkCertExists(
@@ -278,6 +281,17 @@ bool initWsCert(std::filesystem::path &baseDir, bool force)
         LOG_WARN("Failed to generate WebSocket TLS cert.");
     }
 
-    return result == 0 ? true : false;
+    if (force)
+    {
+        AikariLifecycle::Utils::Config::editConfig(
+            [](auto &config)
+            {
+                config->tls.regenWsCertNextLaunch = false;
+            },
+            true
+        );
+
+        return result == 0 ? true : false;
+    }
 }
 }  // namespace AikariUtils::sslUtils

@@ -111,26 +111,41 @@
     <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
+    <VcpkgTriplet>arm64-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>
+    </VcpkgHostTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
+    <VcpkgHostTriplet>
+    </VcpkgHostTriplet>
+    <VcpkgTriplet>x86-windows</VcpkgTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
+    <VcpkgTriplet>x86-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>
+    </VcpkgHostTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
+    <VcpkgHostTriplet>
+    </VcpkgHostTriplet>
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
+    <VcpkgHostTriplet>
+    </VcpkgHostTriplet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -254,6 +269,7 @@
     <ClCompile Include="middleware\wsAuthHandler.cpp" />
     <ClCompile Include="public\virtual\IConfigManager.cpp" />
     <ClCompile Include="utils\cryptoUtils.cpp" />
+    <ClCompile Include="utils\lifecycleUtils.cpp" />
     <ClCompile Include="utils\sslUtils.cpp" />
     <ClCompile Include="utils\windowsUtils.cpp" />
   </ItemGroup>
@@ -262,10 +278,12 @@
     <ClInclude Include="components\wsMsgHandler.h" />
     <ClInclude Include="components\wsServer.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\common.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\components\wsTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\config\configType.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\global\lifecycleTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\infrastructure\cliParseTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\middleware\websocket.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Public\infrastructure\MessageQueue.hpp" />
     <ClInclude Include="includes\Aikari-Launcher-Public\version.h" />
     <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigManager.h" />
     <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigPayload.h" />
@@ -278,6 +296,7 @@
     <ClInclude Include="middleware\wsAuthHandler.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="utils\cryptoUtils.h" />
+    <ClInclude Include="utils\lifecycleUtils.h" />
     <ClInclude Include="utils\sslUtils.h" />
     <ClInclude Include="utils\windowsUtils.h" />
   </ItemGroup>

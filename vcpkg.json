@@ -1,11 +1,14 @@
 {
   "dependencies": [
     "ada-url",
+    "boost-asio",
     "cxxopts",
     "ixwebsocket",
+    "libsodium",
     "mbedtls",
     "nlohmann-json",
+    "openssl",
     "spdlog",
-    "libsodium"
+    "mqtt-cpp"
   ]
 }
