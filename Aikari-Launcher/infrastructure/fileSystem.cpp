@@ -1,10 +1,11 @@
-﻿#include "fileSystem.h"
+﻿#include "pch.h"
+
+#include "fileSystem.h"
 
 #include <Aikari-Launcher-Private/common.h>
 #include <ShlObj.h>
-#include <windows.h>
-
 #include <filesystem>
+#include <windows.h>
 
 #include "../utils/windowsUtils.h"
 

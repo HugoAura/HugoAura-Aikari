@@ -1,12 +1,12 @@
 ﻿#pragma once
 
-#include <Aikari-Launcher-Public/virtual/IConfigPayload.h>
+#include <Aikari-Shared/virtual/IConfigPayload.h>
 
 #include <string>
 
 namespace AikariTypes::config
 {
-struct AikariConfig : public AikariLauncherPublic::virtualIns::IConfigPayload
+struct AikariConfig : public AikariShared::virtualIns::IConfigPayload
 {
     int wsPreferPort;
     struct TLSConfig

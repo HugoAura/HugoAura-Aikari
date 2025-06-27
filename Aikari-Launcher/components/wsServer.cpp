@@ -1,10 +1,11 @@
-﻿#include "wsServer.h"
+﻿#include "pch.h"
+
+#include "wsServer.h"
 
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
-#include <ixwebsocket/IXSocketTLSOptions.h>
-
-#include <Aikari-Launcher-Public/infrastructure/MessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/MessageQueue.hpp>
 #include <chrono>
+#include <ixwebsocket/IXSocketTLSOptions.h>
 #include <nlohmann/json.hpp>
 #include <random>
 
@@ -16,7 +17,7 @@
 #include "wsMsgHandler.h"
 
 namespace winUtils = AikariUtils::WindowsUtils;
-namespace messageQueue = AikariLauncherPublic::infrastructure::MessageQueue;
+namespace messageQueue = AikariShared::infrastructure::MessageQueue;
 
 typedef messageQueue::SinglePointMessageQueue<
     AikariTypes::components::websocket::ClientWSTask>

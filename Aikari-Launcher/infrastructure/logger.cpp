@@ -1,26 +1,45 @@
-﻿#include <Aikari-Launcher-Private/common.h>
+﻿#include "pch.h"
+
+#include <Aikari-Launcher-Private/common.h>
 #include <windows.h>
 
 class AikariCustomFormatter : public spdlog::formatter
 {
    public:
-    AikariCustomFormatter() : sharedHead{"\033[0;36m<Aikari>\033[0m [%Y-%m-%d %H:%M:%S]"}, sharedEnd{"@ \033[0;33m/%s:%#/\033[0m %v"}
+    AikariCustomFormatter()
+        : sharedHead{ "\033[0;36m<Aikari>\033[0m [%Y-%m-%d %H:%M:%S]" },
+          sharedEnd{ "@ \033[0;33m/%s:%#/\033[0m %v" }
     {
         const std::string traceMiddle = "\033[0;30m\033[42m|TRACE|\033[0m";
         const std::string debugMiddle = "\033[0;30m\033[47m|DEBUG|\033[0m";
         const std::string infoMiddle = "\033[0;37m\033[46m|INFO|\033[0m";
         const std::string warningMiddle = "\033[0;30m\033[43m|WARN|\033[0m";
         const std::string errorMiddle = "\033[0;37m\033[41m|ERROR|\033[0m";
-        const std::string criticalMiddle = "\033[0;37m\033[45m|CRITICAL|\033[0m";
-        this->traceFormatter = std::make_unique<spdlog::pattern_formatter>(this->constructPattern(traceMiddle));
-        this->debugFormatter = std::make_unique<spdlog::pattern_formatter>(this->constructPattern(debugMiddle));
-        this->infoFormatter = std::make_unique<spdlog::pattern_formatter>(this->constructPattern(infoMiddle));
-        this->warningFormatter = std::make_unique<spdlog::pattern_formatter>(this->constructPattern(warningMiddle));
-        this->errorFormatter = std::make_unique<spdlog::pattern_formatter>(this->constructPattern(errorMiddle));
-        this->criticalFormatter = std::make_unique<spdlog::pattern_formatter>(this->constructPattern(criticalMiddle));
+        const std::string criticalMiddle =
+            "\033[0;37m\033[45m|CRITICAL|\033[0m";
+        this->traceFormatter = std::make_unique<spdlog::pattern_formatter>(
+            this->constructPattern(traceMiddle)
+        );
+        this->debugFormatter = std::make_unique<spdlog::pattern_formatter>(
+            this->constructPattern(debugMiddle)
+        );
+        this->infoFormatter = std::make_unique<spdlog::pattern_formatter>(
+            this->constructPattern(infoMiddle)
+        );
+        this->warningFormatter = std::make_unique<spdlog::pattern_formatter>(
+            this->constructPattern(warningMiddle)
+        );
+        this->errorFormatter = std::make_unique<spdlog::pattern_formatter>(
+            this->constructPattern(errorMiddle)
+        );
+        this->criticalFormatter = std::make_unique<spdlog::pattern_formatter>(
+            this->constructPattern(criticalMiddle)
+        );
     };
 
-    void format(const spdlog::details::log_msg& msg, spdlog::memory_buf_t& destination) override
+    void format(
+        const spdlog::details::log_msg& msg, spdlog::memory_buf_t& destination
+    ) override
     {
         switch (msg.level)
         {
@@ -47,7 +66,10 @@ class AikariCustomFormatter : public spdlog::formatter
         }
     }
 
-    std::unique_ptr<spdlog::formatter> clone() const override { return std::make_unique<AikariCustomFormatter>(); }
+    std::unique_ptr<spdlog::formatter> clone() const override
+    {
+        return std::make_unique<AikariCustomFormatter>();
+    }
 
    private:
     const std::string sharedHead;
@@ -61,7 +83,9 @@ class AikariCustomFormatter : public spdlog::formatter
 
     std::string constructPattern(const std::string& middle)
     {
-        return std::format("{} {} {}", this->sharedHead, middle, this->sharedEnd);
+        return std::format(
+            "{} {} {}", this->sharedHead, middle, this->sharedEnd
+        );
     }
 };
 
@@ -69,15 +93,19 @@ namespace AikariLoggerSystem
 {
 int initLogger()
 {
-    SetConsoleOutputCP(CP_UTF8);  // Support emoji output 🥰, refer to:
-                                  // https://stackoverflow.com/questions/71342226/c-not-printing-emojis-as-expected
+    SetConsoleOutputCP(CP_UTF8
+    );  // Support emoji output 🥰, refer to:
+        // https://stackoverflow.com/questions/71342226/c-not-printing-emojis-as-expected
 
-    auto consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+    auto consoleSink =
+        std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
     consoleSink->set_level(spdlog::level::trace);
     consoleSink->set_formatter(std::make_unique<AikariCustomFormatter>());
 
-    std::vector loggerSinks{consoleSink};
-    auto defaultLogger = std::make_shared<spdlog::logger>("defaultLogger", loggerSinks.begin(), loggerSinks.end());
+    std::vector loggerSinks{ consoleSink };
+    auto defaultLogger = std::make_shared<spdlog::logger>(
+        "defaultLogger", loggerSinks.begin(), loggerSinks.end()
+    );
     defaultLogger->set_level(spdlog::level::trace);
     spdlog::register_logger(defaultLogger);
 

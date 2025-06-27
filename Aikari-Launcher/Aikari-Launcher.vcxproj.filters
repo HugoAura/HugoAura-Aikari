@@ -58,15 +58,6 @@
     <Filter Include="头文件\public">
       <UniqueIdentifier>{e4a94d7b-d8b5-45fe-83aa-56bb376becd9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\public\virtual">
-      <UniqueIdentifier>{b1583626-0bcb-4e09-8002-87845d9bbb98}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\public\virtual">
-      <UniqueIdentifier>{6dbfbd2e-e181-4de7-abec-3c92b694eed9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\public\infrastructure">
-      <UniqueIdentifier>{096ddfd9-2401-4ebe-a716-0a06ed548ab6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\types\components">
       <UniqueIdentifier>{2e51e14a-5661-42bd-bd7d-e937afab2872}</UniqueIdentifier>
     </Filter>
@@ -114,11 +105,11 @@
     <ClCompile Include="components\config.cpp">
       <Filter>源文件\components</Filter>
     </ClCompile>
-    <ClCompile Include="public\virtual\IConfigManager.cpp">
-      <Filter>源文件\public\virtual</Filter>
-    </ClCompile>
     <ClCompile Include="utils\lifecycleUtils.cpp">
       <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -179,33 +170,27 @@
     <ClInclude Include="includes\Aikari-Launcher-Private\types\config\configType.h">
       <Filter>头文件\types\config</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigManager.h">
-      <Filter>头文件\public\virtual</Filter>
-    </ClInclude>
-    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigPayload.h">
-      <Filter>头文件\public\virtual</Filter>
-    </ClInclude>
     <ClInclude Include="includes\Aikari-Launcher-Public\version.h">
       <Filter>头文件\public</Filter>
     </ClInclude>
     <ClInclude Include="utils\lifecycleUtils.h">
       <Filter>头文件\utils</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-Launcher-Public\infrastructure\MessageQueue.hpp">
-      <Filter>头文件\public\infrastructure</Filter>
-    </ClInclude>
     <ClInclude Include="includes\Aikari-Launcher-Private\types\components\wsTypes.h">
       <Filter>头文件\types\components</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\vcpkg.json">
-      <Filter>资源文件</Filter>
-    </None>
-    <None Include="..\vcpkg-configuration.json">
-      <Filter>资源文件</Filter>
-    </None>
     <None Include="resources\default.json" />
+    <None Include="vcpkg.json">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="vcpkg-configuration.json">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Aikari-Launcher.rc">

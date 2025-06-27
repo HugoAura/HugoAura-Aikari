@@ -1,4 +1,6 @@
-﻿#include "registry.h"
+﻿#include "pch.h"
+
+#include "registry.h"
 
 #include "../utils/windowsUtils.h"
 

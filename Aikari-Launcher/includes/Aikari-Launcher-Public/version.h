@@ -6,4 +6,4 @@ namespace AikariLauncherPublic::version
 {
 inline const std::string Version = "v0.0.1-early-alpha";
 inline const unsigned int VersionCode = 1;
-};  // namespace AikariLauncherPublic::version
+};  // namespace AikariShared::version

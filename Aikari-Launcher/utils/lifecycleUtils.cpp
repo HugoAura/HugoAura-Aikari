@@ -1,4 +1,6 @@
-﻿#include "lifecycleUtils.h"
+﻿#include "pch.h"
+
+#include "lifecycleUtils.h"
 
 #include "../components/config.h"
 

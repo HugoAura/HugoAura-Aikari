@@ -1,11 +1,11 @@
-﻿#include <string>
-#include <memory>
-#include <Aikari-Launcher-Public/virtual/IConfigManager.h>
+﻿#include "pch.h"
+
+#include <Aikari-Shared/infrastructure/logger.h>
+#include <Aikari-Shared/virtual/IConfigManager.h>
+#include <fstream>
 #include <windows.h>
 
-#include <fstream>
-
-namespace AikariLauncherPublic::virtualIns
+namespace AikariShared::virtualIns
 {
 // --- Begin implementations of IConfigManager --- //
 
@@ -181,4 +181,4 @@ bool IConfigManager::initConfig()
     }
 };
 // --- End implementations of IConfigManager --- //
-};  // namespace AikariLauncherPublic::virtualIns
+};  // namespace AikariShared::virtualIns

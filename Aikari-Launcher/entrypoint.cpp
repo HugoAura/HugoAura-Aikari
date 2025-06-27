@@ -1,12 +1,13 @@
-﻿#include <Aikari-Launcher-Private/common.h>
+﻿#include "pch.h"
+
+#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 #include <Aikari-Launcher-Public/version.h>
-#include <ixwebsocket/IXNetSystem.h>
-
 #include <chrono>
 #include <csignal>
 #include <cxxopts.hpp>
 #include <future>
+#include <ixwebsocket/IXNetSystem.h>
 
 #include "components/config.h"
 #include "components/wsServer.h"
@@ -26,7 +27,7 @@ std::promise<bool> aikariAlivePromise;
 static void logVersion()
 {
     LOG_INFO(
-        "Version: " + AikariLauncherPublic::version::Version +
+        "⚛️ Version: " + AikariLauncherPublic::version::Version +
         std::format(" ({})", AikariLauncherPublic::version::VersionCode)
     );
 }

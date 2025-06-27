@@ -3,10 +3,13 @@
 
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
-#include <ixwebsocket/IXWebSocketServer.h>
-
-#include <Aikari-Launcher-Public/infrastructure/MessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/MessageQueue.hpp>
 #include <filesystem>
+#include <ixwebsocket/IXWebSocketServer.h>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
 
 namespace AikariLauncherComponents::AikariWebSocketServer
 {
@@ -50,11 +53,11 @@ class MainWSServer
     std::shared_ptr<WebSocketStates> wsStates;
     std::vector<std::shared_ptr<std::jthread>> msgProcThreads;
     std::shared_ptr<
-        AikariLauncherPublic::infrastructure::MessageQueue::
+        AikariShared::infrastructure::MessageQueue::
             SinglePointMessageQueue<
                 AikariTypes::components::websocket::ServerWSTaskRet>>
         retMsgQueue;
-    std::shared_ptr<AikariLauncherPublic::infrastructure::MessageQueue::
+    std::shared_ptr<AikariShared::infrastructure::MessageQueue::
                         SinglePointMessageQueue<
                             AikariTypes::components::websocket::ClientWSTask>>
         inputMsgQueue;

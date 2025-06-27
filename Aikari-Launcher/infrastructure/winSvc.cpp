@@ -1,4 +1,6 @@
-﻿#include "winSvc.h"
+﻿#include "pch.h"
+
+#include "winSvc.h"
 
 #include "../utils/windowsUtils.h"
 

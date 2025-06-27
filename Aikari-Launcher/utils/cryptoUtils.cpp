@@ -1,4 +1,6 @@
-﻿#include "cryptoUtils.h"
+﻿#include "pch.h"
+
+#include "cryptoUtils.h"
 
 #include <iomanip>
 #include <random>

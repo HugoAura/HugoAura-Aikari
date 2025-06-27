@@ -2,6 +2,7 @@
 
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/middleware/websocket.h>
+#include <string>
 
 namespace AikariLauncherMiddlewares::WebSocket
 {

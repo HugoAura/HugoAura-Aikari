@@ -1,5 +1,9 @@
-﻿#include "sslUtils.h"
+﻿#include "pch.h"
 
+#include "sslUtils.h"
+
+#include <chrono>
+#include <fstream>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/ecdh.h>
 #include <mbedtls/entropy.h>
@@ -8,9 +12,6 @@
 #include <mbedtls/pem.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/x509_crt.h>
-
-#include <chrono>
-#include <fstream>
 
 #include "../components/config.h"
 #include "lifecycleUtils.h"

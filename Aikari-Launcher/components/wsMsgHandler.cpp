@@ -1,10 +1,12 @@
-﻿#include "wsMsgHandler.h"
+﻿#include "pch.h"
 
-#include <Aikari-Launcher-Public/infrastructure/MessageQueue.hpp>
+#include "wsMsgHandler.h"
+
+#include <Aikari-Shared/infrastructure/MessageQueue.hpp>
 #include <nlohmann/json.hpp>
 
 namespace wsTypes = AikariTypes::components::websocket;
-namespace messageQueue = AikariLauncherPublic::infrastructure::MessageQueue;
+namespace messageQueue = AikariShared::infrastructure::MessageQueue;
 
 namespace AikariLauncherComponents::AikariWebSocketHandler
 {

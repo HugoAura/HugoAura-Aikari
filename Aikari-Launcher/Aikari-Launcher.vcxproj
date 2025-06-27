@@ -101,14 +101,14 @@
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(ProjectDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgHostTriplet>arm64-windows</VcpkgHostTriplet>
     <VcpkgTriplet>arm64-windows</VcpkgTriplet>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(ProjectDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
     <VcpkgTriplet>arm64-windows</VcpkgTriplet>
@@ -116,7 +116,7 @@
     </VcpkgHostTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(ProjectDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
     <VcpkgHostTriplet>
@@ -124,7 +124,7 @@
     <VcpkgTriplet>x86-windows</VcpkgTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(ProjectDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
     <VcpkgTriplet>x86-windows</VcpkgTriplet>
@@ -132,7 +132,7 @@
     </VcpkgHostTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(ProjectDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
     <VcpkgHostTriplet>
@@ -140,7 +140,7 @@
     <VcpkgTriplet>x64-windows</VcpkgTriplet>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <VcpkgInstalledDir>$(SolutionDir)\vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(ProjectDir)\vcpkg_installed</VcpkgInstalledDir>
     <VcpkgAdditionalInstallOptions>
     </VcpkgAdditionalInstallOptions>
     <VcpkgTriplet>x64-windows</VcpkgTriplet>
@@ -154,9 +154,11 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -173,9 +175,11 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -190,9 +194,11 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -209,9 +215,11 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -226,9 +234,11 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -245,9 +255,11 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(SolutionDir)\Extern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -267,7 +279,7 @@
     <ClCompile Include="infrastructure\winSvc.cpp" />
     <ClCompile Include="lifecycle.cpp" />
     <ClCompile Include="middleware\wsAuthHandler.cpp" />
-    <ClCompile Include="public\virtual\IConfigManager.cpp" />
+    <ClCompile Include="pch.cpp" />
     <ClCompile Include="utils\cryptoUtils.cpp" />
     <ClCompile Include="utils\lifecycleUtils.cpp" />
     <ClCompile Include="utils\sslUtils.cpp" />
@@ -283,10 +295,7 @@
     <ClInclude Include="includes\Aikari-Launcher-Private\types\global\lifecycleTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\infrastructure\cliParseTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\middleware\websocket.h" />
-    <ClInclude Include="includes\Aikari-Launcher-Public\infrastructure\MessageQueue.hpp" />
     <ClInclude Include="includes\Aikari-Launcher-Public\version.h" />
-    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigManager.h" />
-    <ClInclude Include="includes\Aikari-Launcher-Public\virtual\IConfigPayload.h" />
     <ClInclude Include="infrastructure\cliParse.h" />
     <ClInclude Include="infrastructure\fileSystem.h" />
     <ClInclude Include="infrastructure\logger.h" />
@@ -294,6 +303,7 @@
     <ClInclude Include="infrastructure\winSvc.h" />
     <ClInclude Include="lifecycle.h" />
     <ClInclude Include="middleware\wsAuthHandler.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="utils\cryptoUtils.h" />
     <ClInclude Include="utils\lifecycleUtils.h" />
@@ -301,12 +311,17 @@
     <ClInclude Include="utils\windowsUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\vcpkg-configuration.json" />
-    <None Include="..\vcpkg.json" />
     <None Include="resources\default.json" />
+    <None Include="vcpkg-configuration.json" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Aikari-Launcher.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aikari-Shared\Aikari-Shared.vcxproj">
+      <Project>{22b854bb-c1de-4b97-bcc3-d4c27c0bfef4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

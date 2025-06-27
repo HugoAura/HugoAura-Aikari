@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <string>
 #include <Aikari-Launcher-Private/common.h>
 
 namespace AikariTypes::infrastructure::cliParse

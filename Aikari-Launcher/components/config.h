@@ -1,17 +1,18 @@
 ﻿#pragma once
 
+#include <string>
+#include <filesystem>
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/config/configType.h>
-#include <Aikari-Launcher-Public/virtual/IConfigManager.h>
-#include <Aikari-Launcher-Public/virtual/IConfigPayload.h>
-
+#include <Aikari-Shared/virtual/IConfigManager.h>
+#include <Aikari-Shared/virtual/IConfigPayload.h>
 #include <nlohmann/json.hpp>
 
 namespace AikariLauncherComponents::AikariConfig
 {
 
 class LauncherConfigManager
-    : public AikariLauncherPublic::virtualIns::IConfigManagerBase<
+    : public AikariShared::virtualIns::IConfigManagerBase<
           LauncherConfigManager,
           AikariTypes::config::AikariConfig>
 {

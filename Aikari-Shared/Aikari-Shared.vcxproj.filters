@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\virtual">
+      <UniqueIdentifier>{0015b6dd-689f-42bc-89dd-5d5de5345bd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\virtual">
+      <UniqueIdentifier>{a9582965-0e9c-4601-9a4c-500781e0b150}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\infrastructure">
+      <UniqueIdentifier>{194bdb4e-5e7f-4ac8-8412-f92e86996a58}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -20,6 +29,18 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\virtual\IConfigManager.h">
+      <Filter>头文件\virtual</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\logger.h">
+      <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\virtual\IConfigPayload.h">
+      <Filter>头文件\virtual</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\MessageQueue.hpp">
+      <Filter>头文件\infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -29,5 +50,16 @@
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="virtual\IConfigManager.cpp">
+      <Filter>源文件\virtual</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vcpkg.json">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="vcpkg-configuration.json">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

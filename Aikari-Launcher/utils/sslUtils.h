@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include <Aikari-Launcher-Private/common.h>
-
 #include <filesystem>
+#include <string>
 
 namespace AikariUtils::sslUtils
 {

@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace AikariLauncherPublic::virtualIns
+namespace AikariShared::virtualIns
 {
 struct IConfigPayload
 {
@@ -10,4 +10,4 @@ struct IConfigPayload
 
     virtual ~IConfigPayload() = default;
 };
-}  // namespace AikariLauncherPublic::virtualIns
+}  // namespace AikariShared::virtualIns
