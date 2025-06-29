@@ -3,7 +3,7 @@
 #include <Aikari-PLS/Aikari-PLS-Exports.h>
 #include <Aikari-PLS/types/entrypoint.h>
 #include <Aikari-PLS/types/infrastructure/messageQueue.h>
-#include <Aikari-Shared/infrastructure/MessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/infrastructure/logger.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 

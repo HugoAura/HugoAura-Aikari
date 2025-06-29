@@ -3,7 +3,8 @@
 #include "wsServer.h"
 
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
-#include <Aikari-Shared/infrastructure/MessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/PoolQueue.hpp>
+#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/utils/string.h>
 #include <chrono>
 #include <ixwebsocket/IXSocketTLSOptions.h>
@@ -19,12 +20,12 @@
 namespace winStringUtils = AikariShared::utils::string;
 namespace messageQueue = AikariShared::infrastructure::MessageQueue;
 
-typedef messageQueue::SinglePointMessageQueue<
-    AikariTypes::components::websocket::ClientWSTask>
+namespace wsTypes = AikariTypes::components::websocket;
+
+typedef messageQueue::SinglePointMessageQueue<wsTypes::ClientWSTask>
     InputMsgQueue;
 
-typedef messageQueue::SinglePointMessageQueue<
-    AikariTypes::components::websocket::ServerWSTaskRet>
+typedef messageQueue::SinglePointMessageQueue<wsTypes::ServerWSTaskRet>
     RetMsgQueue;
 
 namespace AikariLauncherComponents::AikariWebSocketServer
@@ -94,6 +95,19 @@ int MainWSServer::launchWssServer()
         std::make_shared<std::jthread>(&MainWSServer::inputMsgWorker, this);
     this->retMsgWorkerThread =
         std::make_shared<std::jthread>(&MainWSServer::retMsgWorker, this);
+
+    this->threadPool =
+        std::make_shared<AikariShared::infrastructure::MessageQueue::PoolQueue<
+            wsTypes::ClientWSTask>>(
+            this->threadCount,
+            [this](wsTypes::ClientWSTask task)
+            {
+                AikariLauncherComponents::AikariWebSocketHandler::handleTask(
+                    task, this->retMsgQueue
+                );
+            }
+        );
+
     return 0;
 }
 
@@ -136,13 +150,7 @@ void MainWSServer::stopWssServer()
     this->retMsgQueue->push({ .clientId = "-1" });
     this->inputMsgWorkerThread->join();
     this->retMsgWorkerThread->join();
-    for (auto& perThread : this->msgProcThreads)
-    {
-        if (perThread->joinable())
-        {
-            perThread->join();
-        }
-    }
+    this->threadPool->~PoolQueue();
     this->wsStates->wsSrvIns->stop();
 }
 
@@ -236,12 +244,7 @@ void MainWSServer::inputMsgWorker()
             {
                 break;
             }
-            auto perThread = std::make_shared<std::jthread>(
-                AikariLauncherComponents::AikariWebSocketHandler::handleTask,
-                task,
-                this->retMsgQueue
-            );
-            this->msgProcThreads.emplace_back(perThread);
+            this->threadPool->pushTask(task);
         }
     }
     catch (const std::exception& e)

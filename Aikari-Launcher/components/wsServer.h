@@ -3,7 +3,7 @@
 
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
-#include <Aikari-Shared/infrastructure/MessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <filesystem>
 #include <ixwebsocket/IXWebSocketServer.h>
 #include <memory>
@@ -11,9 +11,14 @@
 #include <string>
 #include <unordered_map>
 
+namespace AikariShared::infrastructure::MessageQueue
+{
+template <typename T>
+class PoolQueue;
+}
+
 namespace AikariLauncherComponents::AikariWebSocketServer
 {
-
 struct WebSocketStates
 {
     std::shared_ptr<ix::WebSocketServer> wsSrvIns;
@@ -52,7 +57,6 @@ class MainWSServer
     std::filesystem::path wssKeyPath;
     int8_t maxStartupRetries = 5;
     std::shared_ptr<WebSocketStates> wsStates;
-    std::vector<std::shared_ptr<std::jthread>> msgProcThreads;
     std::shared_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariTypes::components::websocket::ServerWSTaskRet>>
@@ -64,6 +68,12 @@ class MainWSServer
 
     std::shared_ptr<std::jthread> retMsgWorkerThread;
     std::shared_ptr<std::jthread> inputMsgWorkerThread;
+
+    std::shared_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+        AikariTypes::components::websocket::ClientWSTask>>
+        threadPool;
+
+    int threadCount = 16;
 
     void retMsgWorker();
     void inputMsgWorker();

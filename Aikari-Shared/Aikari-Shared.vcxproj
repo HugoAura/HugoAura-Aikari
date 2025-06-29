@@ -288,7 +288,8 @@
     <ClInclude Include="includes\Aikari-Shared\base\SingleIns.hpp" />
     <ClInclude Include="includes\Aikari-Shared\infrastructure\logger.h" />
     <ClInclude Include="includes\Aikari-Shared\infrastructure\loggerMacro.h" />
-    <ClInclude Include="includes\Aikari-Shared\infrastructure\MessageQueue.hpp" />
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\PoolQueue.hpp" />
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\SinglePointMessageQueue.hpp" />
     <ClInclude Include="includes\Aikari-Shared\utils\registry.h" />
     <ClInclude Include="includes\Aikari-Shared\utils\string.h" />
     <ClInclude Include="includes\Aikari-Shared\virtual\IConfigManager.h" />

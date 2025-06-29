@@ -57,7 +57,7 @@
     <ClInclude Include="includes\Aikari-Shared\virtual\IConfigPayload.h">
       <Filter>头文件\virtual</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-Shared\infrastructure\MessageQueue.hpp">
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\SinglePointMessageQueue.hpp">
       <Filter>头文件\infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="includes\Aikari-Shared\utils\registry.h">
@@ -74,6 +74,9 @@
     </ClInclude>
     <ClInclude Include="..\Aikari-PLS\includes\Aikari-PLS-Private\types\lifecycleTypes.h">
       <Filter>头文件\types</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\PoolQueue.hpp">
+      <Filter>头文件\infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

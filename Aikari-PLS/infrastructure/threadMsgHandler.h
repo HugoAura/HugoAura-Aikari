@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Aikari-PLS/types/infrastructure/messageQueue.h>
-#include <Aikari-Shared/infrastructure/MessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <memory>
 #include <string>
 
