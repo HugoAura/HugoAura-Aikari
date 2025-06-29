@@ -2,7 +2,7 @@
 
 #include "registry.h"
 
-#include "../utils/windowsUtils.h"
+#include <Aikari-Shared/utils/string.h>
 
 namespace AikariRegistry
 {
@@ -34,8 +34,9 @@ int RegistryManager::ensureRegKeyExists() const
     }
     else
     {
-        std::string parsedErr(AikariUtils::WindowsUtils::parseDWORDResult(result
-        ));
+        std::string parsedErr(
+            AikariShared::utils::string::parseDWORDResult(result)
+        );
         LOG_CRITICAL(
             "Unexpected error occurred creating aikari root regKey: " +
             parsedErr
@@ -151,7 +152,7 @@ bool RegistryManager::checkResult(LONG errorCode, const std::string& action)
         LOG_ERROR(std::format(
             "An error occurred while {}, error code: {}",
             action,
-            AikariUtils::WindowsUtils::parseDWORDResult(errorCode)
+            AikariShared::utils::string::parseDWORDResult(errorCode)
         ));
         return false;
     }

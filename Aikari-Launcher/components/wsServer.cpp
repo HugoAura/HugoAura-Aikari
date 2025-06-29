@@ -13,10 +13,10 @@
 #include "../lifecycle.h"
 #include "../middleware/wsAuthHandler.h"
 #include "../utils/cryptoUtils.h"
-#include "../utils/windowsUtils.h"
+#include <Aikari-Shared/utils/string.h>
 #include "wsMsgHandler.h"
 
-namespace winUtils = AikariUtils::WindowsUtils;
+namespace winStringUtils = AikariShared::utils::string;
 namespace messageQueue = AikariShared::infrastructure::MessageQueue;
 
 typedef messageQueue::SinglePointMessageQueue<
@@ -373,9 +373,9 @@ bool MainWSServer::writeRegInfo()
     std::wstring targetKey = registryManagerPtr->aikariRootKey + L"\\RPC";
     std::vector<std::wstring> entries = { L"wsHost", L"wsPort", L"authToken" };
     std::vector<std::wstring> contents = {
-        winUtils::StringToWstring(this->wsBindAddr),
+        winStringUtils::StringToWstring(this->wsBindAddr),
         std::to_wstring(this->wsPort),
-        winUtils::StringToWstring(this->authToken)
+        winStringUtils::StringToWstring(this->authToken)
     };
 
     int writeKeyResult =

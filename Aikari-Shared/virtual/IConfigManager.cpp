@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include <Aikari-Shared/infrastructure/logger.h>
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/virtual/IConfigManager.h>
 #include <fstream>
 #include <windows.h>

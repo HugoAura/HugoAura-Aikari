@@ -3,11 +3,10 @@
 #include "fileSystem.h"
 
 #include <Aikari-Launcher-Private/common.h>
+#include <Aikari-Shared/utils/string.h>
 #include <ShlObj.h>
 #include <filesystem>
 #include <windows.h>
-
-#include "../utils/windowsUtils.h"
 
 namespace fs = std::filesystem;
 
@@ -52,7 +51,7 @@ fs::path FileSystemManager::getProgramDataPath()
             "trying to use default val."
         );
         LOG_ERROR("Error detail: ");
-        LOG_ERROR(AikariUtils::WindowsUtils::parseHResult(hResult));
+        LOG_ERROR(AikariShared::utils::string::parseHResult(hResult));
         finalPath = fs::path("C") / "ProgramData";
     }
 

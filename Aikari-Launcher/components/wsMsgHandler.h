@@ -15,7 +15,6 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
 {
 AikariTypes::components::websocket::MODULES getMsgModule(std::string moduleStr);
 
-// idk why clang-format prefers to put these things in 1 line
 void handleTask(
     AikariTypes::components::websocket::ClientWSTask task,
     std::shared_ptr<

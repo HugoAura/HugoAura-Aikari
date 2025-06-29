@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <Aikari-Shared/infrastructure/logger.h>
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 
 namespace AikariDefaults
 {

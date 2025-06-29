@@ -32,6 +32,8 @@
     <ProjectGuid>{e9dfbd8e-297f-4045-99fa-ec96cd5c3cb2}</ProjectGuid>
     <RootNamespace>AikariLauncher</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <CustomPreprocessorDefinitions>
+    </CustomPreprocessorDefinitions>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -97,6 +99,24 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <TargetName>Aikari-Launcher</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <TargetName>Aikari-Launcher</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>Aikari-Launcher</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>Aikari-Launcher</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>Aikari-Launcher</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>Aikari-Launcher</TargetName>
+  </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
@@ -151,10 +171,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -165,6 +185,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);$(CoreLibraryDependencies);Bcrypt.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>$(PostBuildCommand)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -172,10 +195,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -186,15 +209,18 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);$(CoreLibraryDependencies);Bcrypt.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>$(PostBuildCommand)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -205,6 +231,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);$(CoreLibraryDependencies);Bcrypt.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>$(PostBuildCommand)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -212,10 +241,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -226,15 +255,18 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);$(CoreLibraryDependencies);Bcrypt.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>$(PostBuildCommand)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -245,6 +277,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);$(CoreLibraryDependencies);Bcrypt.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>$(PostBuildCommand)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
@@ -252,10 +287,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -266,6 +301,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);$(CoreLibraryDependencies);Bcrypt.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>$(PostBuildCommand)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="components\config.cpp" />
@@ -274,7 +312,6 @@
     <ClCompile Include="entrypoint.cpp" />
     <ClCompile Include="infrastructure\cliParse.cpp" />
     <ClCompile Include="infrastructure\fileSystem.cpp" />
-    <ClCompile Include="infrastructure\logger.cpp" />
     <ClCompile Include="infrastructure\registry.cpp" />
     <ClCompile Include="infrastructure\winSvc.cpp" />
     <ClCompile Include="lifecycle.cpp" />
@@ -283,7 +320,6 @@
     <ClCompile Include="utils\cryptoUtils.cpp" />
     <ClCompile Include="utils\lifecycleUtils.cpp" />
     <ClCompile Include="utils\sslUtils.cpp" />
-    <ClCompile Include="utils\windowsUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="components\config.h" />
@@ -298,7 +334,6 @@
     <ClInclude Include="includes\Aikari-Launcher-Public\version.h" />
     <ClInclude Include="infrastructure\cliParse.h" />
     <ClInclude Include="infrastructure\fileSystem.h" />
-    <ClInclude Include="infrastructure\logger.h" />
     <ClInclude Include="infrastructure\registry.h" />
     <ClInclude Include="infrastructure\winSvc.h" />
     <ClInclude Include="lifecycle.h" />
@@ -308,7 +343,6 @@
     <ClInclude Include="utils\cryptoUtils.h" />
     <ClInclude Include="utils\lifecycleUtils.h" />
     <ClInclude Include="utils\sslUtils.h" />
-    <ClInclude Include="utils\windowsUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\default.json" />
@@ -319,6 +353,9 @@
     <ResourceCompile Include="Aikari-Launcher.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Aikari-PLS\Aikari-PLS.vcxproj">
+      <Project>{d14765b2-0c29-4df6-a614-8dbb961a5759}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Aikari-Shared\Aikari-Shared.vcxproj">
       <Project>{22b854bb-c1de-4b97-bcc3-d4c27c0bfef4}</Project>
     </ProjectReference>

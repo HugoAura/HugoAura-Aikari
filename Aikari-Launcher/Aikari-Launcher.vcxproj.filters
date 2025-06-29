@@ -66,9 +66,6 @@
     <ClCompile Include="entrypoint.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="infrastructure\logger.cpp">
-      <Filter>源文件\infrastructure</Filter>
-    </ClCompile>
     <ClCompile Include="infrastructure\cliParse.cpp">
       <Filter>源文件\infrastructure</Filter>
     </ClCompile>
@@ -77,9 +74,6 @@
     </ClCompile>
     <ClCompile Include="infrastructure\fileSystem.cpp">
       <Filter>源文件\infrastructure</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\windowsUtils.cpp">
-      <Filter>源文件\utils</Filter>
     </ClCompile>
     <ClCompile Include="infrastructure\registry.cpp">
       <Filter>源文件\infrastructure</Filter>
@@ -125,17 +119,11 @@
     <ClInclude Include="infrastructure\cliParse.h">
       <Filter>头文件\infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="infrastructure\logger.h">
-      <Filter>头文件\infrastructure</Filter>
-    </ClInclude>
     <ClInclude Include="lifecycle.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="infrastructure\fileSystem.h">
       <Filter>头文件\infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\windowsUtils.h">
-      <Filter>头文件\utils</Filter>
     </ClInclude>
     <ClInclude Include="infrastructure\registry.h">
       <Filter>头文件\infrastructure</Filter>

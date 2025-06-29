@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <windows.h>
-
+#include <Aikari-PLS/types/infrastructure/messageQueue.h>
 #include <atomic>
 #include <memory>
+#include <windows.h>
 
 namespace AikariRegistry
 {
@@ -18,6 +18,12 @@ class MainWSServer;
 namespace AikariLauncherComponents::AikariConfig
 {
 class LauncherConfigManager;
+}
+
+namespace AikariShared::infrastructure::MessageQueue
+{
+template <typename T>
+class SinglePointMessageQueue;
 }
 
 namespace AikariTypes::global::lifecycle
@@ -40,6 +46,19 @@ struct SharedInstances
         configManagerIns;
 };
 
+struct SharedMessageQueues
+{
+    std::shared_ptr<
+        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariPLS::Types::infrastructure::InputMessageStruct>>
+        plsInputQueue;
+
+    std::shared_ptr<
+        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariPLS::Types::infrastructure::RetMessageStruct>>
+        plsRetQueue;
+};
+
 struct GlobalLifecycleStates
 {
     APPLICATION_RUNTIME_MODES runtimeMode;
@@ -48,6 +67,7 @@ struct GlobalLifecycleStates
     SERVICE_STATUS_HANDLE svcStatusHandle;
     std::atomic<bool> svcIsRunning;
     SharedInstances sharedIns;
+    SharedMessageQueues sharedMsgQueue;
 
     static GlobalLifecycleStates createDefault()
     {

@@ -22,6 +22,15 @@
     <Filter Include="头文件\infrastructure">
       <UniqueIdentifier>{194bdb4e-5e7f-4ac8-8412-f92e86996a58}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\utils">
+      <UniqueIdentifier>{0defa556-a519-4e01-9cba-98a427eb5a07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\utils">
+      <UniqueIdentifier>{c5cef6d0-37f2-4216-82b5-881a657fe040}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\infrastructure">
+      <UniqueIdentifier>{134687fe-41c1-4b87-b9b2-e49ca814f11d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -33,13 +42,22 @@
     <ClInclude Include="includes\Aikari-Shared\virtual\IConfigManager.h">
       <Filter>头文件\virtual</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-Shared\infrastructure\logger.h">
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\loggerMacro.h">
       <Filter>头文件\infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="includes\Aikari-Shared\virtual\IConfigPayload.h">
       <Filter>头文件\virtual</Filter>
     </ClInclude>
     <ClInclude Include="includes\Aikari-Shared\infrastructure\MessageQueue.hpp">
+      <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\utils\registry.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\utils\string.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\logger.h">
       <Filter>头文件\infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,6 +70,15 @@
     </ClCompile>
     <ClCompile Include="virtual\IConfigManager.cpp">
       <Filter>源文件\virtual</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\string.cpp">
+      <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\registry.cpp">
+      <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="infrastructure\logger.cpp">
+      <Filter>源文件\infrastructure</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

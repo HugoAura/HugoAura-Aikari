@@ -1,10 +1,8 @@
 {
   "dependencies": [
     "ada-url",
-    "boost-asio",
     "nlohmann-json",
-    "openssl",
-    "spdlog",
-    "mqtt-cpp"
+    "mbedtls",
+    "spdlog"
   ]
 }

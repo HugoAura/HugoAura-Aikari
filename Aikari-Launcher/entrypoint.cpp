@@ -3,6 +3,9 @@
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 #include <Aikari-Launcher-Public/version.h>
+#include <Aikari-PLS/Aikari-PLS-Exports.h>
+#include <Aikari-PLS/types/entrypoint.h>
+#include <Aikari-Shared/infrastructure/logger.h>
 #include <chrono>
 #include <csignal>
 #include <cxxopts.hpp>
@@ -13,7 +16,6 @@
 #include "components/wsServer.h"
 #include "infrastructure/cliParse.h"
 #include "infrastructure/fileSystem.h"
-#include "infrastructure/logger.h"
 #include "infrastructure/registry.h"
 #include "infrastructure/winSvc.h"
 #include "lifecycle.h"
@@ -131,6 +133,35 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         return -1;
     }
 
+    auto curSharedMsgQueues = lifecycleStates.getVal(
+        &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue
+    );
+
+    auto plsInputMsgQueue = std::make_shared<
+        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariPLS::Types::infrastructure::InputMessageStruct>>();
+
+    curSharedMsgQueues.plsInputQueue = plsInputMsgQueue;
+
+    AikariPLS::Types::entrypoint::EntrypointRet plsLaunchResult =
+        AikariPLS::Exports::main(
+            fileSystemManagerIns->aikariRootDir,
+            certDir,
+            plsInputMsgQueue
+        );
+
+    if (plsLaunchResult.success && plsLaunchResult.retMessageQueue.has_value())
+    {
+        curSharedMsgQueues.plsRetQueue =
+            plsLaunchResult.retMessageQueue.value();
+        LOG_DEBUG("PLS retMessageQueue set up");
+    }
+
+    lifecycleStates.setVal(
+        &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue,
+        curSharedMsgQueues
+    );
+
     // --- To Be Done --- //
 
     LOG_INFO("Aikari is loaded, waiting for further operations...");
@@ -145,7 +176,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
 
 int main(int argc, const char* argv[])
 {
-    AikariLoggerSystem::initLogger();
+    AikariShared::LoggerSystem::initLogger("Main", 30, 47);
     auto cliOptions = AikariCliUtils::constructCliOptions();
     auto parseRet = AikariCliUtils::parseCliOptions(cliOptions, argc, argv);
 
