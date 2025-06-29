@@ -79,9 +79,9 @@ bool IConfigManager::writeConfigRaw(nlohmann::json stringifyConfig)
     bool isConfigDirExists = std::filesystem::exists(configDirPath);
     if (!isConfigDirExists)
     {
-        LOG_INFO(std::format(
+        LOG_INFO(
             "Config dir {} not exists, creating...", configDirPath.string()
-        ));
+        );
         std::filesystem::create_directories(configDirPath);
     }
 
@@ -119,11 +119,11 @@ bool IConfigManager::initConfig()
     LoadDefaultConfigRet defaultConfigRet = this->loadDefaultConfig();
     if (!defaultConfigRet.success)
     {
-        LOG_ERROR(std::format(
+        LOG_ERROR(
             "Failed to load default config for module {}: {}",
             this->module,
             defaultConfigRet.errorDetail.value_or("Unknown Error")
-        ));
+        );
         return false;
     }
 
@@ -158,8 +158,7 @@ bool IConfigManager::initConfig()
             this->loadConfig(userConfigJson);
             configFileStream.close();
         }
-        LOG_INFO(std::format("Loaded user config for module {}.", this->module)
-        );
+        LOG_INFO("Loaded user config for module {}.", this->module);
         return true;
     }
     else
@@ -168,15 +167,13 @@ bool IConfigManager::initConfig()
         bool writeResult = this->writeConfigRaw(defaultConfigJson);
         if (!writeResult)
         {
-            LOG_ERROR(std::format(
+            LOG_ERROR(
                 "Failed to initialize default config for module {}.",
                 this->module
-            ));
+            );
             return false;
         }
-        LOG_INFO(
-            std::format("Loaded default config for module {}.", this->module)
-        );
+        LOG_INFO("Loaded default config for module {}.", this->module);
         return true;
     }
 };

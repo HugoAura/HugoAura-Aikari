@@ -8,24 +8,33 @@ namespace AikariPLS::Types::infrastructure
 enum class MESSAGE_TYPES
 {
     CONTROL_MESSAGE,
-    WS_MESSAGE
+    WS_MESSAGE,
+    DESTROY_MESSAGE
+};
+
+struct WebSocketInfo
+{
+    std::optional<bool> isBroadcast;
+    std::string clientId;
 };
 
 struct InputMessageStruct
 {
     std::string method;
     nlohmann::json data;
-    std::string eventId;
     MESSAGE_TYPES type;
     std::string fromModule;
+    std::optional<std::string> eventId;
+    std::optional<WebSocketInfo> wsInfo;
 };
 
 struct RetMessageStruct
 {
     bool success;
     int code;
-    std::string eventId;
     MESSAGE_TYPES type;
     nlohmann::json data;
+    std::optional<std::string> eventId;
+    std::optional<WebSocketInfo> wsInfo;
 };
 }  // namespace AikariPLS::Types::infrastructure

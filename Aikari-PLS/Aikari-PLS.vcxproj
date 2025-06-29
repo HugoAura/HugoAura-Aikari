@@ -273,14 +273,15 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="includes\Aikari-PLS\Aikari-PLS-Exports.h" />
     <ClInclude Include="includes\Aikari-PLS\types\entrypoint.h" />
-    <ClInclude Include="infrastructure\queueMsgHandler.h" />
-    <ClInclude Include="messageQueue.h" />
+    <ClInclude Include="includes\Aikari-PLS\types\infrastructure\messageQueue.h" />
+    <ClInclude Include="infrastructure\threadMsgHandler.h" />
+    <ClInclude Include="lifecycle.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="entrypoint.cpp" />
-    <ClCompile Include="infrastructure\queueMsgHandler.cpp" />
+    <ClCompile Include="infrastructure\threadMsgHandler.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

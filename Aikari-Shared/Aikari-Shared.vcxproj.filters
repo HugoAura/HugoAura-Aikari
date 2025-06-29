@@ -31,6 +31,15 @@
     <Filter Include="源文件\infrastructure">
       <UniqueIdentifier>{134687fe-41c1-4b87-b9b2-e49ca814f11d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\base">
+      <UniqueIdentifier>{1d5fe306-05ae-4170-87e5-0bfa5c2925b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\base">
+      <UniqueIdentifier>{17a9cd86-2827-4e19-9bd6-8a320f85a50e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\types">
+      <UniqueIdentifier>{a938bdc5-2984-4354-bebc-2c7db1ae5a58}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -59,6 +68,12 @@
     </ClInclude>
     <ClInclude Include="includes\Aikari-Shared\infrastructure\logger.h">
       <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\base\SingleIns.hpp">
+      <Filter>头文件\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Aikari-PLS\includes\Aikari-PLS-Private\types\lifecycleTypes.h">
+      <Filter>头文件\types</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -25,9 +25,9 @@ fs::path FileSystemManager::getProgramDataPath()
         try
         {
             fs::path programDataPath(pathPtr);
-            LOG_DEBUG(std::format(
+            LOG_DEBUG(
                 "Get ProgramData path success: {}", programDataPath.string()
-            ));
+            );
 
             finalPath = programDataPath;
         }

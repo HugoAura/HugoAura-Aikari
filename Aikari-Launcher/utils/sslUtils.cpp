@@ -245,9 +245,9 @@ int genEC256TlsCert(std::filesystem::path &baseDir, std::string &certHost)
     }
     catch (const std::exception &err)
     {
-        LOG_ERROR(std::format(
+        LOG_ERROR(
             "Unexpected error during cert generation, error: {}", err.what()
-        ));
+        );
         cleanUp();
         return -1;
     }

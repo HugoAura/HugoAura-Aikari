@@ -23,9 +23,7 @@ wsTypes::WEBSOCKET_AUTH_STATUS handleClientAuth(
         return wsTypes::WEBSOCKET_AUTH_STATUS::DENIED;
     }
 
-    LOG_DEBUG(std::format(
-        "Client connecting with path: {}", parsedURI->get_pathname()
-    ));
+    LOG_DEBUG("Client connecting with path: {}", parsedURI->get_pathname());
 
     auto param = parsedURI->get_search();
     if (param.empty())

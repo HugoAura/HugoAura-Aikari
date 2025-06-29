@@ -45,6 +45,7 @@ class MainWSServer
     bool tryLaunchWssServer();
     void waitWssServer();
     void stopWssServer();
+    void pushRetQueue(AikariTypes::components::websocket::ServerWSTaskRet& ret);
 
    private:
     std::filesystem::path wssCertPath;
@@ -53,13 +54,12 @@ class MainWSServer
     std::shared_ptr<WebSocketStates> wsStates;
     std::vector<std::shared_ptr<std::jthread>> msgProcThreads;
     std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::
-            SinglePointMessageQueue<
-                AikariTypes::components::websocket::ServerWSTaskRet>>
+        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariTypes::components::websocket::ServerWSTaskRet>>
         retMsgQueue;
-    std::shared_ptr<AikariShared::infrastructure::MessageQueue::
-                        SinglePointMessageQueue<
-                            AikariTypes::components::websocket::ClientWSTask>>
+    std::shared_ptr<
+        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariTypes::components::websocket::ClientWSTask>>
         inputMsgQueue;
 
     std::shared_ptr<std::jthread> retMsgWorkerThread;

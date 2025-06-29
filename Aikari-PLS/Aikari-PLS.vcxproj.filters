@@ -42,16 +42,19 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="messageQueue.h">
-      <Filter>头文件\types\infrastructure</Filter>
-    </ClInclude>
     <ClInclude Include="includes\Aikari-PLS\types\entrypoint.h">
       <Filter>头文件\types</Filter>
     </ClInclude>
-    <ClInclude Include="infrastructure\queueMsgHandler.h">
+    <ClInclude Include="includes\Aikari-PLS\Aikari-PLS-Exports.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-PLS\types\infrastructure\messageQueue.h">
+      <Filter>头文件\types\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="infrastructure\threadMsgHandler.h">
       <Filter>头文件\infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-PLS\Aikari-PLS-Exports.h">
+    <ClInclude Include="lifecycle.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,7 +68,7 @@
     <ClCompile Include="entrypoint.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="infrastructure\queueMsgHandler.cpp">
+    <ClCompile Include="infrastructure\threadMsgHandler.cpp">
       <Filter>源文件\infrastructure</Filter>
     </ClCompile>
   </ItemGroup>

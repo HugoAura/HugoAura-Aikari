@@ -2,8 +2,11 @@
 
 #include "wsMsgHandler.h"
 
+#include <Aikari-PLS/types/infrastructure/messageQueue.h>
 #include <Aikari-Shared/infrastructure/MessageQueue.hpp>
 #include <nlohmann/json.hpp>
+
+#include "lifecycle.h"
 
 namespace wsTypes = AikariTypes::components::websocket;
 namespace messageQueue = AikariShared::infrastructure::MessageQueue;
@@ -54,8 +57,52 @@ void handleTask(
         case wsTypes::MODULES::LAUNCHER:
         {
             // TO DO: Handle msg for launcher
-            break;
         }
+        break;
+        case wsTypes::MODULES::PLS:
+        {
+            auto& lifecycleStates =
+                AikariLifecycle::AikariStatesManager::getInstance();
+            auto sharedMsgQueues =
+                lifecycleStates.getVal(&AikariTypes::global::lifecycle::
+                                           GlobalLifecycleStates::sharedMsgQueue
+                );
+            if (!sharedMsgQueues.plsInputQueue)
+            {
+                LOG_ERROR("PLSInputQueue not found, is PLS correctly loaded?");
+                wsTypes::ServerWSRep repContent{
+                    .code = -1,
+                    .eventId = task.content.eventId,
+                    .success = false,
+                    .data = { { "message", "PLS module load failed" },
+                              { "diagnoseId", "E_SUBMD_PLS_QUEUE_ENOENT" } },
+                };
+                wsTypes::ServerWSTaskRet taskRet{
+                    .result = repContent,
+                    .clientId = task.clientId,
+                    .isBroadcast = false,
+                };
+                retMsgQueue->push(std::move(taskRet));
+                return;
+            }
+
+            AikariPLS::Types::infrastructure::WebSocketInfo curMsgWsInfo{
+                .clientId = task.clientId
+            };
+
+            AikariPLS::Types::infrastructure::InputMessageStruct plsInputMsg{
+                .method = task.content.method,
+                .data = task.content.data,
+                .type =
+                    AikariPLS::Types::infrastructure::MESSAGE_TYPES::WS_MESSAGE,
+                .fromModule = "launcher",
+                .eventId = task.content.eventId,
+                .wsInfo = curMsgWsInfo
+            };
+
+            sharedMsgQueues.plsInputQueue->push(std::move(plsInputMsg));
+        }
+        break;
         case wsTypes::MODULES::UNKNOWN:
         {
             wsTypes::ServerWSTaskRet retVal;
@@ -65,8 +112,8 @@ void handleTask(
             retVal.clientId = task.clientId;
             retVal.result = repContent;
             retMsgQueue->push(std::move(retVal));
-            break;
         }
+        break;
     }
 }
 }  // namespace AikariLauncherComponents::AikariWebSocketHandler

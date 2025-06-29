@@ -35,6 +35,16 @@ enum class APPLICATION_RUNTIME_MODES
     SERVICE,
 };
 
+struct GlobalSharedThreadsRegistry
+{
+    std::shared_ptr<std::jthread> plsIncomingMsgQueueHandlerThread;
+
+    static GlobalSharedThreadsRegistry createDefault()
+    {
+        return {};
+    }
+};
+
 struct SharedInstances
 {
     std::shared_ptr<AikariRegistry::RegistryManager> registryManagerIns;

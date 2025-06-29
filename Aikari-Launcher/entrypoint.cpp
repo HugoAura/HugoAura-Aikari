@@ -13,6 +13,7 @@
 #include <ixwebsocket/IXNetSystem.h>
 
 #include "components/config.h"
+#include "components/threadMsgHandlers.h"
 #include "components/wsServer.h"
 #include "infrastructure/cliParse.h"
 #include "infrastructure/fileSystem.h"
@@ -145,9 +146,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
 
     AikariPLS::Types::entrypoint::EntrypointRet plsLaunchResult =
         AikariPLS::Exports::main(
-            fileSystemManagerIns->aikariRootDir,
-            certDir,
-            plsInputMsgQueue
+            fileSystemManagerIns->aikariRootDir, certDir, plsInputMsgQueue
         );
 
     if (plsLaunchResult.success && plsLaunchResult.retMessageQueue.has_value())
@@ -155,6 +154,19 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         curSharedMsgQueues.plsRetQueue =
             plsLaunchResult.retMessageQueue.value();
         LOG_DEBUG("PLS retMessageQueue set up");
+
+        auto plsQueueHandler = std::make_shared<std::jthread>(
+            AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers::
+                plsIncomingMsgHandler,
+            curSharedMsgQueues.plsRetQueue
+        );
+
+        auto& threadsMgr = AikariLifecycle::AikariSharedThreads::getInstance();
+        threadsMgr.setVal(
+            &lifecycleTypes::GlobalSharedThreadsRegistry::
+                plsIncomingMsgQueueHandlerThread,
+            plsQueueHandler
+        );
     }
 
     lifecycleStates.setVal(
@@ -171,6 +183,25 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     wsServerManagerIns->stopWssServer();
     ix::uninitNetSystem();
 
+    LOG_INFO("Cleaning up sub modules...");
+    if (plsLaunchResult.success)
+    {
+        AikariPLS::Exports::onExit();
+
+        auto& threadsMgr = AikariLifecycle::AikariSharedThreads::getInstance();
+        if (auto plsQueueHandler =
+                threadsMgr.getVal(&lifecycleTypes::GlobalSharedThreadsRegistry::
+                                      plsIncomingMsgQueueHandlerThread))
+        {
+            if (plsQueueHandler->joinable())
+            {
+                plsQueueHandler->join();
+            }
+        }
+
+        LOG_INFO("Clean up for module PLS finished.");
+    }
+
     LOG_INFO("👋 Clean up completed, goodbye.");
 }
 
@@ -183,11 +214,11 @@ int main(int argc, const char* argv[])
     LOG_INFO("❇️ Welcome to HugoAura-Aikari");
     LOG_INFO("Launching as CLI mode");
     logVersion();
-    LOG_INFO(std::format(
+    LOG_INFO(
         "Argv: [isDebug={}, serviceCtrl={}]",
         parseRet.isDebug,
         parseRet.serviceCtrl
-    ));
+    );
 
     switch (parseRet.isDebug)
     {

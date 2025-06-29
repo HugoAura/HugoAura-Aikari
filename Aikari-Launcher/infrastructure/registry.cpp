@@ -149,16 +149,16 @@ bool RegistryManager::checkResult(LONG errorCode, const std::string& action)
 {
     if (errorCode != ERROR_SUCCESS)
     {
-        LOG_ERROR(std::format(
+        LOG_ERROR(
             "An error occurred while {}, error code: {}",
             action,
             AikariShared::utils::string::parseDWORDResult(errorCode)
-        ));
+        );
         return false;
     }
     else
     {
-        LOG_TRACE(std::format("Action: {} | Result: Success", action));
+        LOG_TRACE("Action: {} | Result: Success", action);
         return true;
     }
 };

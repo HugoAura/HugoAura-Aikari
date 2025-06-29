@@ -105,6 +105,9 @@
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="components\threadMsgHandlers.cpp">
+      <Filter>源文件\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes\Aikari-Launcher-Private\common.h">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="components\threadMsgHandlers.h">
+      <Filter>头文件\components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

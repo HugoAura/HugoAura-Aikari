@@ -4,6 +4,7 @@
 
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
 #include <Aikari-Shared/infrastructure/MessageQueue.hpp>
+#include <Aikari-Shared/utils/string.h>
 #include <chrono>
 #include <ixwebsocket/IXSocketTLSOptions.h>
 #include <nlohmann/json.hpp>
@@ -13,7 +14,6 @@
 #include "../lifecycle.h"
 #include "../middleware/wsAuthHandler.h"
 #include "../utils/cryptoUtils.h"
-#include <Aikari-Shared/utils/string.h>
 #include "wsMsgHandler.h"
 
 namespace winStringUtils = AikariShared::utils::string;
@@ -83,11 +83,11 @@ int MainWSServer::launchWssServer()
 
     this->wsStates->wsSrvIns->start();
     LOG_INFO("Aikari WebSocket server started!");
-    LOG_INFO(std::format(
+    LOG_INFO(
         "WebSocket server listening on wss://{}:{}",
         this->wsBindAddr,
         this->wsPort
-    ));
+    );
     this->writeRegInfo();
     LOG_INFO("Launching WebSocket message workers...");
     this->inputMsgWorkerThread =
@@ -102,11 +102,11 @@ bool MainWSServer::tryLaunchWssServer()
 {
     for (int8_t i = 0; i < this->maxStartupRetries; ++i)
     {
-        LOG_INFO(std::format(
+        LOG_INFO(
             "Trying to start Aikari WebSocket server ({} / {})",
             i + 1,
             this->maxStartupRetries
-        ));
+        );
         int res = this->launchWssServer();
         if (res == 0)
         {
@@ -144,6 +144,15 @@ void MainWSServer::stopWssServer()
         }
     }
     this->wsStates->wsSrvIns->stop();
+}
+
+// ↓ public
+void MainWSServer::pushRetQueue(
+    AikariTypes::components::websocket::ServerWSTaskRet& ret
+)
+{
+    this->retMsgQueue->push(std::move(ret));
+    return;
 }
 
 // ↓ private
@@ -188,10 +197,10 @@ void MainWSServer::retMsgWorker()
                 auto client = this->wsStates->clients.find(ret.clientId);
                 if (client == this->wsStates->clients.end())
                 {
-                    LOG_WARN(std::format(
+                    LOG_WARN(
                         "Cannot reply to client {}: Client disconnected",
                         ret.clientId
-                    ));
+                    );
                     return;
                 }
                 auto clientLocked = client->second.lock();
@@ -208,9 +217,9 @@ void MainWSServer::retMsgWorker()
     }
     catch (const std::exception& e)
     {
-        LOG_CRITICAL(std::format(
+        LOG_CRITICAL(
             "Critical error occurred in retMsgWorker thread: {}", e.what()
-        ));
+        );
     }
 }
 
@@ -237,9 +246,9 @@ void MainWSServer::inputMsgWorker()
     }
     catch (const std::exception& e)
     {
-        LOG_CRITICAL(std::format(
+        LOG_CRITICAL(
             "Critical error occurred in inputMsgWorker thread: {}", e.what()
-        ));
+        );
     }
 }
 
@@ -271,21 +280,21 @@ void MainWSServer::handleOnMsg(
                 { "data", { { "authStatus", "denied" } } }
             };
             webSocketIns->send(deniedRep.dump());
-            LOG_WARN(std::format(
+            LOG_WARN(
                 "Client {} failed to complete authentication, closing "
                 "connection...",
                 clientId
-            ));
+            );
             webSocketIns->close();
             return;
         }
 
-        LOG_INFO(std::format(
+        LOG_INFO(
             "New client {} connected from {}:{}, welcome.",
             clientId,
             connectionState->getRemoteIp(),
             connectionState->getRemotePort()
-        ));
+        );
 
         {
             std::lock_guard<std::mutex> lock(this->wsStates->clientLsMutex);
@@ -295,24 +304,24 @@ void MainWSServer::handleOnMsg(
     else if (msg->type == ix::WebSocketMessageType::Close)
     {
         const std::string& clientId = connectionState->getId();
-        LOG_INFO(std::format("Client {} disconnected, bye.", clientId));
+        LOG_INFO("Client {} disconnected, bye.", clientId);
         this->wsStates->clients.erase(clientId);
     }
     else if (msg->type == ix::WebSocketMessageType::Error)
     {
-        LOG_WARN(std::format(
+        LOG_WARN(
             "Unexpected error occurred between server and client {}",
             connectionState->getId()
-        ));
+        );
     }
     else if (msg->type == ix::WebSocketMessageType::Message)
     {
 #ifdef _DEBUG
-        LOG_TRACE(std::format(
+        LOG_TRACE(
             "⏬ New WebSocket message from client {} received:\r\n{}",
             connectionState->getId(),
             msg->str
-        ));
+        );
 #endif
 
         const std::string& clientId = connectionState->getId();
@@ -328,9 +337,9 @@ void MainWSServer::handleOnMsg(
         }
         catch (const nlohmann::json::exception& e)
         {
-            LOG_ERROR(std::format(
+            LOG_ERROR(
                 "Client {} sent invalid data, error: {}", clientId, e.what()
-            ));
+            );
 
             auto webSocketIns = webSocketWeak.lock();
             if (webSocketIns)
@@ -349,7 +358,7 @@ void MainWSServer::handleOnMsg(
         AikariTypes::components::websocket::ClientWSTask taskIns;
         taskIns.content = clientMsg;
         taskIns.clientId = clientId;
-        this->inputMsgQueue->push(taskIns);
+        this->inputMsgQueue->push(std::move(taskIns));
     }
 };
 

@@ -307,6 +307,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="components\config.cpp" />
+    <ClCompile Include="components\threadMsgHandlers.cpp" />
     <ClCompile Include="components\wsMsgHandler.cpp" />
     <ClCompile Include="components\wsServer.cpp" />
     <ClCompile Include="entrypoint.cpp" />
@@ -323,6 +324,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="components\config.h" />
+    <ClInclude Include="components\threadMsgHandlers.h" />
     <ClInclude Include="components\wsMsgHandler.h" />
     <ClInclude Include="components\wsServer.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\common.h" />

@@ -17,4 +17,6 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
             AikariPLS::Types::infrastructure::InputMessageStruct>>
         inputMessageQueue
 );
-}
+
+extern AIKARIPLS_API void onExit();
+}  // namespace AikariPLS::Exports
