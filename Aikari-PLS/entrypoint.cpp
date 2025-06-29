@@ -26,7 +26,9 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
     auto& sharedInsManager =
         AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
 
-    AikariShared::LoggerSystem::initLogger("PLS", 37, 45);
+    AikariShared::LoggerSystem::initLogger(
+        "PLS", 37, 45
+    );  // 37 = White text; 45 = Purple background
     LOG_INFO("[MODULE_INIT] Aikari Submodule PLS is launching...");
     auto retMessageQueue = std::make_shared<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<

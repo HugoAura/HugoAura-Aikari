@@ -3,6 +3,7 @@
 #include "wsServer.h"
 
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
+#include <Aikari-Launcher-Private/types/constants/webSocket.h>
 #include <Aikari-Shared/infrastructure/PoolQueue.hpp>
 #include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/utils/string.h>
@@ -146,8 +147,14 @@ void MainWSServer::waitWssServer()
 // ↓ public
 void MainWSServer::stopWssServer()
 {
-    this->inputMsgQueue->push({ .clientId = "-1" });
-    this->retMsgQueue->push({ .clientId = "-1" });
+    this->inputMsgQueue->push(
+        { .clientId =
+              AikariTypes::constants::webSocket::WS_WORKER_ACTION_CODES::EXIT }
+    );
+    this->retMsgQueue->push(
+        { .clientId =
+              AikariTypes::constants::webSocket::WS_WORKER_ACTION_CODES::EXIT }
+    );
     this->inputMsgWorkerThread->join();
     this->retMsgWorkerThread->join();
     this->threadPool->~PoolQueue();
@@ -172,7 +179,8 @@ void MainWSServer::retMsgWorker()
         while (true)
         {
             auto ret = this->retMsgQueue->pop();
-            if (ret.clientId == "-1")
+            if (ret.clientId ==
+                AikariTypes::constants::webSocket::WS_WORKER_ACTION_CODES::EXIT)
             {
                 break;
             }
@@ -196,6 +204,9 @@ void MainWSServer::retMsgWorker()
                     }
                     else
                     {
+                        std::lock_guard<std::mutex> lock(
+                            this->wsStates->clientLsMutex
+                        );
                         itr = this->wsStates->clients.erase(itr);
                     }
                 }
@@ -240,7 +251,8 @@ void MainWSServer::inputMsgWorker()
         while (true)
         {
             auto task = this->inputMsgQueue->pop();
-            if (task.clientId == "-1")
+            if (task.clientId ==
+                AikariTypes::constants::webSocket::WS_WORKER_ACTION_CODES::EXIT)
             {
                 break;
             }

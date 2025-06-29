@@ -207,7 +207,9 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
 
 int main(int argc, const char* argv[])
 {
-    AikariShared::LoggerSystem::initLogger("Main", 30, 47);
+    AikariShared::LoggerSystem::initLogger(
+        "Main", 30, 47
+    );  // 30 = Black text; 47 = White background
     auto cliOptions = AikariCliUtils::constructCliOptions();
     auto parseRet = AikariCliUtils::parseCliOptions(cliOptions, argc, argv);
 

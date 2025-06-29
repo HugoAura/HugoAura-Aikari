@@ -61,6 +61,9 @@
     <Filter Include="头文件\types\components">
       <UniqueIdentifier>{2e51e14a-5661-42bd-bd7d-e937afab2872}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\types\constants">
+      <UniqueIdentifier>{949d1459-6469-41d7-9111-30035f7dcf9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entrypoint.cpp">
@@ -175,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="components\threadMsgHandlers.h">
       <Filter>头文件\components</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Private\types\constants\webSocket.h">
+      <Filter>头文件\types\constants</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
