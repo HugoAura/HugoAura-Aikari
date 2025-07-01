@@ -35,15 +35,15 @@ struct ClientWSTask
 struct ServerWSRep
 {
     int code;
-    std::string eventId;
-    bool success;
+    std::optional<std::string> eventId;
+    std::optional<bool> success;
     nlohmann::json data;
 };
 
 struct ServerWSTaskRet
 {
     ServerWSRep result;
-    std::string clientId;
+    std::optional<std::string> clientId;
     bool isBroadcast = false;
 };
 };  // namespace AikariTypes::components::websocket

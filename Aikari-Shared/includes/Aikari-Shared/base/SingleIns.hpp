@@ -34,6 +34,27 @@ class AikariStatesManagerTemplate
         return this->_state_.*key;
     }
 
+    template <typename T>
+    void setPtr(T StoreType::* key, T&& value)
+    {
+        std::lock_guard<std::mutex> lock(this->_mutex_lock_);
+        this->_state_.*key = std::forward<T>(value);
+    }
+
+    template <typename T>
+    typename T::element_type* getPtr(T StoreType::* key)
+    {
+        std::lock_guard<std::mutex> lock(this->_mutex_lock_);
+        return (this->_state_.*key).get();
+    }
+
+    template <typename T>
+    void resetPtr(T StoreType::* key)
+    {
+        std::lock_guard<std::mutex> lock(this->_mutex_lock_);
+        (this->_state_.*key).reset();
+    }
+
    private:
     AikariStatesManagerTemplate() : _state_{ StoreType::createDefault() } {};
     ~AikariStatesManagerTemplate() = default;

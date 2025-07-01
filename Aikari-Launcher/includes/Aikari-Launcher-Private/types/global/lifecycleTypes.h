@@ -5,20 +5,29 @@
 #include <memory>
 #include <windows.h>
 
+namespace cppcoro
+{
+class static_thread_pool;
+class io_service;
+}  // namespace cppcoro
+
 namespace AikariRegistry
 {
 class RegistryManager;
 }
 
-namespace AikariLauncherComponents::AikariWebSocketServer
+namespace AikariLauncherComponents
+{
+namespace AikariWebSocketServer
 {
 class MainWSServer;
-}
+};
 
-namespace AikariLauncherComponents::AikariConfig
+namespace AikariConfig
 {
 class LauncherConfigManager;
-}
+};
+}  // namespace AikariLauncherComponents
 
 namespace AikariShared::infrastructure::MessageQueue
 {
@@ -47,13 +56,22 @@ struct GlobalSharedThreadsRegistry
 
 struct SharedInstances
 {
-    std::shared_ptr<AikariRegistry::RegistryManager> registryManagerIns;
-    std::shared_ptr<
+    std::unique_ptr<AikariRegistry::RegistryManager> registryManagerIns;
+    std::unique_ptr<
         AikariLauncherComponents::AikariWebSocketServer::MainWSServer>
         wsServerMgrIns;
-    std::shared_ptr<
+    std::unique_ptr<
         AikariLauncherComponents::AikariConfig::LauncherConfigManager>
         configManagerIns;
+
+    SharedInstances();
+
+    static SharedInstances createDefault();
+
+    ~SharedInstances();
+
+    SharedInstances(SharedInstances&&) noexcept;
+    SharedInstances& operator=(SharedInstances&&) noexcept;
 };
 
 struct SharedMessageQueues
@@ -76,7 +94,6 @@ struct GlobalLifecycleStates
     SERVICE_STATUS svcStatus;
     SERVICE_STATUS_HANDLE svcStatusHandle;
     std::atomic<bool> svcIsRunning;
-    SharedInstances sharedIns;
     SharedMessageQueues sharedMsgQueue;
 
     static GlobalLifecycleStates createDefault()

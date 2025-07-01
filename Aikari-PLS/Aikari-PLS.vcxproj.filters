@@ -25,15 +25,18 @@
     <Filter Include="头文件\infrastructure">
       <UniqueIdentifier>{faf961da-3193-43a8-b187-b91af1682ba6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\utils">
+      <UniqueIdentifier>{f5283abf-401d-4e84-9c91-73cc1aa59cfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\utils">
+      <UniqueIdentifier>{b37daf39-63bf-4c5a-9972-17ad4c624783}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\types\constants">
+      <UniqueIdentifier>{907473c2-8565-47c9-bbe7-b0d865452c34}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
-    <None Include="vcpkg.json">
-      <Filter>资源文件</Filter>
-    </None>
-    <None Include="vcpkg-configuration.json">
-      <Filter>资源文件</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -57,6 +60,21 @@
     <ClInclude Include="lifecycle.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="utils\windowsApi.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="init.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-PLS-Private\types\lifecycleTypes.h">
+      <Filter>头文件\types</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-PLS\types\constants\msgQueue.h">
+      <Filter>头文件\types\constants</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-PLS\types\constants\init.h">
+      <Filter>头文件\types\constants</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -70,6 +88,15 @@
     </ClCompile>
     <ClCompile Include="infrastructure\threadMsgHandler.cpp">
       <Filter>源文件\infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\windowsApi.cpp">
+      <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="init.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lifecycle.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

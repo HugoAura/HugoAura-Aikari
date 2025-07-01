@@ -11,27 +11,21 @@ class PLSThreadMsgQueueHandler
 {
    public:
     PLSThreadMsgQueueHandler(
-        std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariPLS::Types::infrastructure::InputMessageStruct>> srcQueue,
-        std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariPLS::Types::infrastructure::RetMessageStruct>> destQueue
+        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariPLS::Types::infrastructure::InputMessageStruct>* srcQueue,
+        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariPLS::Types::infrastructure::RetMessageStruct>* destQueue
     );
 
     void manualDestroy();
 
    private:
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::InputMessageStruct>>
-        srcQueue;
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::RetMessageStruct>>
-        destQueue;
+    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariPLS::Types::infrastructure::InputMessageStruct>* srcQueue;
+    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariPLS::Types::infrastructure::RetMessageStruct>* destQueue;
 
-    std::shared_ptr<std::jthread> inputMsgWorkerThread;
+    std::unique_ptr<std::jthread> inputMsgWorkerThread;
 
     void inputMsgWorker();
 };

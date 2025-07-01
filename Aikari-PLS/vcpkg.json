@@ -1,8 +1,0 @@
-{
-  "dependencies": [
-    "ada-url",
-    "nlohmann-json",
-    "mbedtls",
-    "spdlog"
-  ]
-}

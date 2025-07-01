@@ -7,6 +7,8 @@
 #include <Aikari-PLS/types/entrypoint.h>
 #include <Aikari-Shared/infrastructure/logger.h>
 #include <chrono>
+#include <cppcoro/io_service.hpp>
+#include <cppcoro/static_thread_pool.hpp>
 #include <csignal>
 #include <cxxopts.hpp>
 #include <future>
@@ -61,51 +63,61 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         &lifecycleTypes::GlobalLifecycleStates::launchTime, curTime
     );
 
+    auto& sharedInstances =
+        AikariLifecycle::AikariSharedInstances::getInstance();
+
     LOG_INFO("Initializing file system manager...");
     auto fileSystemManagerIns =
-        std::make_shared<AikariFileSystem::FileSystemManager>();
+        std::make_unique<AikariFileSystem::FileSystemManager>();
     fileSystemManagerIns->ensureDirExists();
 
     LOG_INFO("Initializing registry manager...");
-    auto registryManagerIns =
-        std::make_shared<AikariRegistry::RegistryManager>();
-    int regKeyValidateResult = registryManagerIns->ensureRegKeyExists();
+    {
+        auto registryManagerIns =
+            std::make_unique<AikariRegistry::RegistryManager>();
+        sharedInstances.setPtr(
+            &lifecycleTypes::SharedInstances::registryManagerIns,
+            std::move(registryManagerIns)
+        );
+    }
+    auto* registryManagerPtr = sharedInstances.getPtr(
+        &lifecycleTypes::SharedInstances::registryManagerIns
+    );
+    int regKeyValidateResult = registryManagerPtr->ensureRegKeyExists();
     if (regKeyValidateResult == -1)
     {
         LOG_CRITICAL("Registry initialization failed, exiting Aikari...");
         return -1;
     }
-    auto curSharedIns =
-        lifecycleStates.getVal(&lifecycleTypes::GlobalLifecycleStates::sharedIns
-        );
-    curSharedIns.registryManagerIns = registryManagerIns;
-    lifecycleStates.setVal(
-        &lifecycleTypes::GlobalLifecycleStates::sharedIns, curSharedIns
-    );
 
     LOG_INFO("Initializing config manager...");
-    auto configManagerIns = std::make_shared<
-        AikariLauncherComponents::AikariConfig::LauncherConfigManager>(
-        "launcher",
-        fileSystemManagerIns->aikariConfigDir / "config.json",
-        IDR_AIKARI_DEFAULT_JSON
+    {
+        auto configManagerIns = std::make_unique<
+            AikariLauncherComponents::AikariConfig::LauncherConfigManager>(
+            "launcher",
+            fileSystemManagerIns->aikariConfigDir / "config.json",
+            IDR_AIKARI_DEFAULT_JSON
+        );
+        sharedInstances.setPtr(
+            &lifecycleTypes::SharedInstances::configManagerIns,
+            std::move(configManagerIns)
+        );
+    }
+    auto* configManagerPtr = sharedInstances.getPtr(
+        &lifecycleTypes::SharedInstances::configManagerIns
     );
-    bool initConfigResult = configManagerIns->initConfig();
+    bool initConfigResult = configManagerPtr->initConfig();
     if (!initConfigResult)
     {
         LOG_CRITICAL("Config initialization failed, exiting Aikari...");
         return -1;
     }
-    curSharedIns.configManagerIns = configManagerIns;
-    lifecycleStates.setVal(
-        &lifecycleTypes::GlobalLifecycleStates::sharedIns, curSharedIns
-    );
 
     LOG_INFO("Initializing TLS certificates...");
     std::filesystem::path certDir =
         fileSystemManagerIns->aikariConfigDir / "certs";
     bool wsCertInitResult = AikariUtils::sslUtils::initWsCert(
-        certDir, configManagerIns->config->tls.regenWsCertNextLaunch
+        certDir, configManagerPtr->config->tls.regenWsCertNextLaunch
     );
     if (!wsCertInitResult)
     {
@@ -118,16 +130,21 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     LOG_INFO("Initializing Windows socket environment...");
     ix::initNetSystem();
     LOG_INFO("Starting Aikari WebSocket server...");
-    int wsDefaultPort = configManagerIns->config->wsPreferPort;
-    auto wsServerManagerIns = std::make_shared<
-        AikariLauncherComponents::AikariWebSocketServer::MainWSServer>(
-        "127.0.0.1", wsDefaultPort, certDir / "wss.crt", certDir / "wss.key"
-    );
-    curSharedIns.wsServerMgrIns = wsServerManagerIns;
-    lifecycleStates.setVal(
-        &lifecycleTypes::GlobalLifecycleStates::sharedIns, curSharedIns
-    );
-    bool wsLaunchResult = wsServerManagerIns->tryLaunchWssServer();
+    int wsDefaultPort = configManagerPtr->config->wsPreferPort;
+    {
+        auto wsServerManagerIns = std::make_unique<
+            AikariLauncherComponents::AikariWebSocketServer::MainWSServer>(
+            "127.0.0.1", wsDefaultPort, certDir / "wss.crt", certDir / "wss.key"
+        );
+        sharedInstances.setPtr(
+            &lifecycleTypes::SharedInstances::wsServerMgrIns,
+            std::move(wsServerManagerIns)
+        );
+    }
+    auto* wsServerMgrPtr =
+        sharedInstances.getPtr(&lifecycleTypes::SharedInstances::wsServerMgrIns
+        );
+    bool wsLaunchResult = wsServerMgrPtr->tryLaunchWssServer();
     if (!wsLaunchResult)
     {
         LOG_CRITICAL("Failed to launch Aikari ws server, exiting Aikari...");
@@ -158,7 +175,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         auto plsQueueHandler = std::make_shared<std::jthread>(
             AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers::
                 plsIncomingMsgHandler,
-            curSharedMsgQueues.plsRetQueue
+            curSharedMsgQueues.plsRetQueue.get()
         );
 
         auto& threadsMgr = AikariLifecycle::AikariSharedThreads::getInstance();
@@ -180,7 +197,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     aikariAliveFuture.get();  // Run forever - until sig recv
 
     LOG_INFO("Stopping ws server...");
-    wsServerManagerIns->stopWssServer();
+    wsServerMgrPtr->stopWssServer();
     ix::uninitNetSystem();
 
     LOG_INFO("Cleaning up sub modules...");
@@ -202,7 +219,16 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         LOG_INFO("Clean up for module PLS finished.");
     }
 
+    LOG_INFO("Unloading shared instances...");
+    sharedInstances.resetPtr(&lifecycleTypes::SharedInstances::configManagerIns
+    );
+    sharedInstances.resetPtr(
+        &lifecycleTypes::SharedInstances::registryManagerIns
+    );
+    sharedInstances.resetPtr(&lifecycleTypes::SharedInstances::wsServerMgrIns);
+
     LOG_INFO("👋 Clean up completed, goodbye.");
+    return 0;
 }
 
 int main(int argc, const char* argv[])

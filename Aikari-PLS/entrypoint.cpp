@@ -8,6 +8,7 @@
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 
 #include "infrastructure/threadMsgHandler.h"
+#include "init.h"
 #include "lifecycle.h"
 
 namespace LifecycleTypes = AikariPLS::Types::lifecycle;
@@ -25,6 +26,8 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
 {
     auto& sharedInsManager =
         AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
+    auto& sharedQueuesManager =
+        AikariPLS::Lifecycle::PLSSharedQueuesManager::getInstance();
 
     AikariShared::LoggerSystem::initLogger(
         "PLS", 37, 45
@@ -34,18 +37,32 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariPLS::Types::infrastructure::RetMessageStruct>>();
 
-    auto threadMsgHandlerIns = std::make_shared<
-        AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>(
-        inputMessageQueue, retMessageQueue
+    sharedQueuesManager.setVal(
+        &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::inputMsgQueue,
+        inputMessageQueue
     );
 
-    sharedInsManager.setVal(
-        &LifecycleTypes::PLSSharedIns::threadMsgQueueHandler,
-        threadMsgHandlerIns
-    );
+    sharedQueuesManager.setVal(
+        &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::retMsgQueue,
+        retMessageQueue
+    );  // not using setPtr for shared_ptr
+
+    {
+        auto threadMsgHandlerIns = std::make_unique<
+            AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>(
+            inputMessageQueue.get(), retMessageQueue.get()
+        );
+
+        sharedInsManager.setPtr(
+            &LifecycleTypes::PLSSharedIns::threadMsgQueueHandler,
+            std::move(threadMsgHandlerIns)
+        );
+    }
+
+    bool plsInitResult = AikariPLS::Init::runPlsInit();
 
     AikariPLS::Types::entrypoint::EntrypointRet launchResult = {
-        .success = true, .retMessageQueue = retMessageQueue
+        .success = plsInitResult, .retMessageQueue = std::move(retMessageQueue)
     };
 
     return launchResult;
@@ -59,7 +76,7 @@ extern AIKARIPLS_API void onExit()
         AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
 
     auto threadMsgHandlerIns =
-        sharedInsMgr.getVal(&LifecycleTypes::PLSSharedIns::threadMsgQueueHandler
+        sharedInsMgr.getPtr(&LifecycleTypes::PLSSharedIns::threadMsgQueueHandler
         );
     threadMsgHandlerIns->manualDestroy();
 

@@ -2,10 +2,7 @@
 
 #include "wsServer.h"
 
-#include <Aikari-Launcher-Private/types/components/wsTypes.h>
 #include <Aikari-Launcher-Private/types/constants/webSocket.h>
-#include <Aikari-Shared/infrastructure/PoolQueue.hpp>
-#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/utils/string.h>
 #include <chrono>
 #include <ixwebsocket/IXSocketTLSOptions.h>
@@ -31,15 +28,23 @@ typedef messageQueue::SinglePointMessageQueue<wsTypes::ServerWSTaskRet>
 
 namespace AikariLauncherComponents::AikariWebSocketServer
 {
+MainWSServer::~MainWSServer()
+{
+    if (!this->isStopped)
+    {
+        this->stopWssServer();
+    }
+};
+
 // ↓ public
 int MainWSServer::launchWssServer()
 {
     LOG_INFO("Creating ws message queue...");
-    this->inputMsgQueue = std::make_shared<InputMsgQueue>();
-    this->retMsgQueue = std::make_shared<RetMsgQueue>();
+    this->inputMsgQueue = std::make_unique<InputMsgQueue>();
+    this->retMsgQueue = std::make_unique<RetMsgQueue>();
 
     this->wsStates->wsSrvIns =
-        std::make_shared<ix::WebSocketServer>(this->wsPort, this->wsBindAddr);
+        std::make_unique<ix::WebSocketServer>(this->wsPort, this->wsBindAddr);
     LOG_INFO("Created WebSocket server instance.");
 
     ix::SocketTLSOptions tlsOptions;
@@ -69,9 +74,13 @@ int MainWSServer::launchWssServer()
                  connectionState,
                  webSocketWeak](const ix::WebSocketMessagePtr& msg)
                 {
-                    this->handleOnMsg(webSocketWeak, connectionState, msg);
+                    this->handleOnMsg(
+                        webSocketWeak, connectionState.get(), msg
+                    );
                 }
             );
+
+            webSocketIns.reset();
         }
     );
 
@@ -93,18 +102,18 @@ int MainWSServer::launchWssServer()
     this->writeRegInfo();
     LOG_INFO("Launching WebSocket message workers...");
     this->inputMsgWorkerThread =
-        std::make_shared<std::jthread>(&MainWSServer::inputMsgWorker, this);
+        std::make_unique<std::jthread>(&MainWSServer::inputMsgWorker, this);
     this->retMsgWorkerThread =
-        std::make_shared<std::jthread>(&MainWSServer::retMsgWorker, this);
+        std::make_unique<std::jthread>(&MainWSServer::retMsgWorker, this);
 
     this->threadPool =
-        std::make_shared<AikariShared::infrastructure::MessageQueue::PoolQueue<
+        std::make_unique<AikariShared::infrastructure::MessageQueue::PoolQueue<
             wsTypes::ClientWSTask>>(
             this->threadCount,
             [this](wsTypes::ClientWSTask task)
             {
                 AikariLauncherComponents::AikariWebSocketHandler::handleTask(
-                    task, this->retMsgQueue
+                    task, this->retMsgQueue.get()
                 );
             }
         );
@@ -147,6 +156,7 @@ void MainWSServer::waitWssServer()
 // ↓ public
 void MainWSServer::stopWssServer()
 {
+    this->isStopped = true;
     this->inputMsgQueue->push(
         { .clientId =
               AikariTypes::constants::webSocket::WS_WORKER_ACTION_CODES::EXIT }
@@ -179,19 +189,30 @@ void MainWSServer::retMsgWorker()
         while (true)
         {
             auto ret = this->retMsgQueue->pop();
-            if (ret.clientId ==
+            if (ret.clientId.value_or("BROADCAST") ==
                 AikariTypes::constants::webSocket::WS_WORKER_ACTION_CODES::EXIT)
             {
                 break;
             }
 #ifdef _DEBUG
-            LOG_DEBUG("retMsgWorker: Sending data: " + ret.result.data.dump());
+            LOG_DEBUG(
+                "retMsgWorker: Sending data ({}): \n{}",
+                ret.isBroadcast
+                    ? "Broadcast"
+                    : "To client " + ret.clientId.value_or("UNKNOWN"),
+                ret.result.data.dump()
+            );
 #endif
             nlohmann::json repJson;
-            repJson = { { "success", ret.result.success },
-                        { "eventId", ret.result.eventId },
+            repJson = { { "eventId", ret.result.eventId.value_or("PUSH") },
                         { "code", ret.result.code },
                         { "data", ret.result.data } };
+
+            if (ret.result.success.has_value())
+            {
+                repJson["success"] = ret.result.success.value_or(false);
+            }
+
             if (ret.isBroadcast)
             {
                 auto itr = this->wsStates->clients.begin();
@@ -213,12 +234,21 @@ void MainWSServer::retMsgWorker()
             }
             else
             {
-                auto client = this->wsStates->clients.find(ret.clientId);
+                if (!ret.clientId.has_value())
+                {
+                    LOG_WARN(
+                        "Invalid ws task ret provided: !isBroadcast && "
+                        "!clientId"
+                    );
+                    return;
+                }
+                auto client =
+                    this->wsStates->clients.find(ret.clientId.value());
                 if (client == this->wsStates->clients.end())
                 {
                     LOG_WARN(
                         "Cannot reply to client {}: Client disconnected",
-                        ret.clientId
+                        ret.clientId.value()
                     );
                     return;
                 }
@@ -270,7 +300,7 @@ void MainWSServer::inputMsgWorker()
 // ↓ private
 void MainWSServer::handleOnMsg(
     std::weak_ptr<ix::WebSocket> webSocketWeak,
-    std::shared_ptr<ix::ConnectionState> connectionState,
+    ix::ConnectionState* connectionState,
     const ix::WebSocketMessagePtr& msg
 )
 {
@@ -380,12 +410,10 @@ void MainWSServer::handleOnMsg(
 // ↓ private
 bool MainWSServer::writeRegInfo()
 {
-    auto& lifecycleMgr = AikariLifecycle::AikariStatesManager::getInstance();
-    std::shared_ptr<AikariRegistry::RegistryManager> registryManagerPtr =
-        lifecycleMgr
-            .getVal(&AikariTypes::global::lifecycle::GlobalLifecycleStates::
-                        sharedIns)
-            .registryManagerIns;
+    auto& sharedIns = AikariLifecycle::AikariSharedInstances::getInstance();
+    AikariRegistry::RegistryManager* registryManagerPtr = sharedIns.getPtr(
+        &AikariTypes::global::lifecycle::SharedInstances::registryManagerIns
+    );
 
     if (!registryManagerPtr)
     {

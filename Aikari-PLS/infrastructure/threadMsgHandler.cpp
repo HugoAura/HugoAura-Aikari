@@ -13,14 +13,14 @@ static const std::string mainThreadIncomingMethodHead = "[Main->PLS]";
 namespace AikariPLS::Infrastructure::MsgQueue
 {
 PLSThreadMsgQueueHandler::PLSThreadMsgQueueHandler(
-    std::shared_ptr<MessageQueueTypes::SinglePointMessageQueue<
-        PLSInfTypes::InputMessageStruct>> srcQueue,
-    std::shared_ptr<MessageQueueTypes::SinglePointMessageQueue<
-        PLSInfTypes::RetMessageStruct>> destQueue
+    MessageQueueTypes::SinglePointMessageQueue<PLSInfTypes::InputMessageStruct>*
+        srcQueue,
+    MessageQueueTypes::SinglePointMessageQueue<PLSInfTypes::RetMessageStruct>*
+        destQueue
 )
     : srcQueue(srcQueue), destQueue(destQueue)
 {
-    this->inputMsgWorkerThread = std::make_shared<std::jthread>(
+    this->inputMsgWorkerThread = std::make_unique<std::jthread>(
         &PLSThreadMsgQueueHandler::inputMsgWorker, this
     );
 };

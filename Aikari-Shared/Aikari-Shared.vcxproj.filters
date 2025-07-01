@@ -40,6 +40,9 @@
     <Filter Include="头文件\types">
       <UniqueIdentifier>{a938bdc5-2984-4354-bebc-2c7db1ae5a58}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\utils\windows">
+      <UniqueIdentifier>{d8373fc4-ee4d-4e36-a55b-65bba612b4ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -72,11 +75,11 @@
     <ClInclude Include="includes\Aikari-Shared\base\SingleIns.hpp">
       <Filter>头文件\base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Aikari-PLS\includes\Aikari-PLS-Private\types\lifecycleTypes.h">
-      <Filter>头文件\types</Filter>
-    </ClInclude>
     <ClInclude Include="includes\Aikari-Shared\infrastructure\PoolQueue.hpp">
       <Filter>头文件\infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\utils\windows.h">
+      <Filter>头文件\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -98,13 +101,11 @@
     <ClCompile Include="infrastructure\logger.cpp">
       <Filter>源文件\infrastructure</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg.json">
-      <Filter>资源文件</Filter>
-    </None>
-    <None Include="vcpkg-configuration.json">
-      <Filter>资源文件</Filter>
-    </None>
+    <ClCompile Include="utils\windows\process.cpp">
+      <Filter>源文件\utils\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\windows\network.cpp">
+      <Filter>源文件\utils\windows</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

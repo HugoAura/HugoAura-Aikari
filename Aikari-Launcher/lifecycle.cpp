@@ -5,9 +5,25 @@
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 
-namespace AikariLifecycle
-{
-// --- Begin implementations of AikariStatesManager --- //
+#include "components/config.h"
+#include "components/wsServer.h"
+#include "infrastructure/registry.h"
 
-// --- End implementations of AikariStatesManager --- //
-}  // namespace AikariLifecycle
+namespace AikariTypes::global::lifecycle
+{
+// --- Begin implementations of AikariTypes::global::lifecycle::SharedInstances
+SharedInstances::SharedInstances() = default;
+
+SharedInstances SharedInstances::createDefault()
+{
+    SharedInstances result;
+    return result;
+};
+
+SharedInstances::~SharedInstances() = default;
+SharedInstances::SharedInstances(SharedInstances&&) noexcept = default;
+SharedInstances& SharedInstances::operator=(SharedInstances&&) noexcept =
+    default;
+// --- End implementations of AikariTypes::global::lifecycle::SharedInstances
+
+}  // namespace AikariTypes::global::lifecycle

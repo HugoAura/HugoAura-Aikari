@@ -84,7 +84,6 @@ CMakeUserPresets.json
 # Thirdparty Libs Build Files
 vendor/
 thirdparty/
-external/
 libs/
 
 # macOS

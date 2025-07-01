@@ -18,20 +18,18 @@ static const std::string plsIncomingMethodHead = "[PLS->Main]";
 namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
 {
 void plsIncomingMsgHandler(
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::RetMessageStruct>> retMsgQueue
+    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariPLS::Types::infrastructure::RetMessageStruct>* retMsgQueue
 )
 {
     LOG_INFO(
         "{} Starting PLS->Main message queue handler...",
         LogHeaders::plsIncomingMethodHead
     );
-    auto& lifecycleStates = AikariLifecycle::AikariStatesManager::getInstance();
-    auto sharedIns = lifecycleStates.getVal(
-        &AikariTypes::global::lifecycle::GlobalLifecycleStates::sharedIns
+    auto& sharedIns = AikariLifecycle::AikariSharedInstances::getInstance();
+    auto* wsMgrPtr = sharedIns.getPtr(
+        &AikariTypes::global::lifecycle::SharedInstances::wsServerMgrIns
     );
-    auto& wsMgrPtr = sharedIns.wsServerMgrIns;
 
     try
     {
@@ -67,7 +65,7 @@ void plsIncomingMsgHandler(
                     }
                     AikariTypes::components::websocket::ServerWSRep repFinData{
                         .code = retMsg.code,
-                        .eventId = retMsg.eventId.value_or(""),
+                        .eventId = retMsg.eventId,
                         .success = retMsg.success,
                         .data = retMsg.data,
                     };

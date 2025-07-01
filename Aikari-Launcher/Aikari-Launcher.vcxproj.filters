@@ -185,12 +185,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\default.json" />
-    <None Include="vcpkg.json">
-      <Filter>资源文件</Filter>
-    </None>
-    <None Include="vcpkg-configuration.json">
-      <Filter>资源文件</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Aikari-Launcher.rc">

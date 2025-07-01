@@ -15,7 +15,7 @@ enum class MESSAGE_TYPES
 struct WebSocketInfo
 {
     std::optional<bool> isBroadcast;
-    std::string clientId;
+    std::optional<std::string> clientId;
 };
 
 struct InputMessageStruct
@@ -30,7 +30,7 @@ struct InputMessageStruct
 
 struct RetMessageStruct
 {
-    bool success;
+    std::optional<bool> success;
     int code;
     MESSAGE_TYPES type;
     nlohmann::json data;

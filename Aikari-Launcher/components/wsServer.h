@@ -3,6 +3,7 @@
 
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
+#include <Aikari-Shared/infrastructure/PoolQueue.hpp>
 #include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <filesystem>
 #include <ixwebsocket/IXWebSocketServer.h>
@@ -11,17 +12,11 @@
 #include <string>
 #include <unordered_map>
 
-namespace AikariShared::infrastructure::MessageQueue
-{
-template <typename T>
-class PoolQueue;
-}
-
 namespace AikariLauncherComponents::AikariWebSocketServer
 {
 struct WebSocketStates
 {
-    std::shared_ptr<ix::WebSocketServer> wsSrvIns;
+    std::unique_ptr<ix::WebSocketServer> wsSrvIns;
     std::mutex clientLsMutex;
     std::unordered_map<std::string, std::weak_ptr<ix::WebSocket>> clients;
 };
@@ -46,6 +41,8 @@ class MainWSServer
           wssKeyPath(wssKeyPath),
           wsStates(std::make_shared<WebSocketStates>()) {};
 
+    ~MainWSServer();
+
     int launchWssServer();
     bool tryLaunchWssServer();
     void waitWssServer();
@@ -57,29 +54,31 @@ class MainWSServer
     std::filesystem::path wssKeyPath;
     int8_t maxStartupRetries = 5;
     std::shared_ptr<WebSocketStates> wsStates;
-    std::shared_ptr<
+    std::unique_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariTypes::components::websocket::ServerWSTaskRet>>
         retMsgQueue;
-    std::shared_ptr<
+    std::unique_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariTypes::components::websocket::ClientWSTask>>
         inputMsgQueue;
 
-    std::shared_ptr<std::jthread> retMsgWorkerThread;
-    std::shared_ptr<std::jthread> inputMsgWorkerThread;
+    std::unique_ptr<std::jthread> retMsgWorkerThread;
+    std::unique_ptr<std::jthread> inputMsgWorkerThread;
 
-    std::shared_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+    std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
         AikariTypes::components::websocket::ClientWSTask>>
         threadPool;
 
-    int threadCount = 16;
+    size_t threadCount = 16;
+
+    bool isStopped = false;
 
     void retMsgWorker();
     void inputMsgWorker();
     void handleOnMsg(
         std::weak_ptr<ix::WebSocket> webSocketWeak,
-        std::shared_ptr<ix::ConnectionState> connectionState,
+        ix::ConnectionState* connectionState,
         const ix::WebSocketMessagePtr& msg
     );
     bool writeRegInfo();

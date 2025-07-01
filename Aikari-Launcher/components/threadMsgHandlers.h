@@ -16,8 +16,7 @@ struct RetMessageStruct;
 namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
 {
 void plsIncomingMsgHandler(
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::RetMessageStruct>> retMsgQueue
+    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariPLS::Types::infrastructure::RetMessageStruct>* retMsgQueue
 );
 }  // namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers

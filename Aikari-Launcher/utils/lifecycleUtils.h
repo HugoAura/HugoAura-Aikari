@@ -1,15 +1,12 @@
 ﻿#pragma once
 
 #include <Aikari-Launcher-Private/types/config/configType.h>
-
 #include <functional>
 
 #include "../lifecycle.h"
 
 namespace AikariLifecycle::Utils
 {
-AikariTypes::global::lifecycle::SharedInstances getSharedIns();
-
 namespace Config
 {
 void editConfig(

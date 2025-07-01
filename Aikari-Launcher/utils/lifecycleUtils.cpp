@@ -6,15 +6,6 @@
 
 namespace AikariLifecycle::Utils
 {
-AikariTypes::global::lifecycle::SharedInstances getSharedIns()
-{
-    auto &lifecycleStates = AikariLifecycle::AikariStatesManager::getInstance();
-    auto sharedIns = lifecycleStates.getVal(
-        &AikariTypes::global::lifecycle::GlobalLifecycleStates::sharedIns
-    );
-    return sharedIns;
-};
-
 namespace Config
 {
 void editConfig(
@@ -23,8 +14,10 @@ void editConfig(
     bool writeConfig
 )
 {
-    auto sharedIns = AikariLifecycle::Utils::getSharedIns();
-    auto &configManagerIns = sharedIns.configManagerIns;
+    auto &sharedIns = AikariLifecycle::AikariSharedInstances::getInstance();
+    auto *configManagerIns = sharedIns.getPtr(
+        &AikariTypes::global::lifecycle::SharedInstances::configManagerIns
+    );
     configManagerIns->configEditLock.lock();
     lambda(configManagerIns->config);
     configManagerIns->configEditLock.unlock();

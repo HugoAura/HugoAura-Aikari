@@ -17,10 +17,7 @@ AikariTypes::components::websocket::MODULES getMsgModule(std::string moduleStr);
 
 void handleTask(
     AikariTypes::components::websocket::ClientWSTask task,
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::
-            SinglePointMessageQueue<
-                AikariTypes::components::websocket::ServerWSTaskRet>>
-        retMsgQueue
+    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariTypes::components::websocket::ServerWSTaskRet>* retMsgQueue
 );
 }  // namespace AikariLauncherComponents::AikariWebSocketHandler

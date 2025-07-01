@@ -46,9 +46,7 @@ static const wsTypes::ServerWSRep moduleNotFoundRep = {
 
 void handleTask(
     wsTypes::ClientWSTask task,
-    std::shared_ptr<
-        messageQueue::SinglePointMessageQueue<wsTypes::ServerWSTaskRet>>
-        retMsgQueue
+    messageQueue::SinglePointMessageQueue<wsTypes::ServerWSTaskRet>* retMsgQueue
 )
 {
     wsTypes::MODULES msgModule = getMsgModule(task.content.module);
