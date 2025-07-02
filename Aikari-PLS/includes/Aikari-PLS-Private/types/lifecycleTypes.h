@@ -8,11 +8,11 @@ template <typename T>
 class SinglePointMessageQueue;
 }
 
-namespace AikariPLS::Types::infrastructure
+namespace AikariShared::Types::InterThread
 {
-struct InputMessageStruct;
-struct RetMessageStruct;
-}  // namespace AikariPLS::Types::infrastructure
+struct MainToSubMessageInstance;
+struct SubToMainMessageInstance;
+}  // namespace AikariShared::Types::InterThread
 
 namespace AikariPLS::Infrastructure::MsgQueue
 {
@@ -39,12 +39,12 @@ struct PLSSharedMsgQueues
 {
     std::shared_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::InputMessageStruct>>
+            AikariShared::Types::InterThread::MainToSubMessageInstance>>
         inputMsgQueue;
 
     std::shared_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::RetMessageStruct>>
+            AikariShared::Types::InterThread::SubToMainMessageInstance>>
         retMsgQueue;
 
     static PLSSharedMsgQueues createDefault()

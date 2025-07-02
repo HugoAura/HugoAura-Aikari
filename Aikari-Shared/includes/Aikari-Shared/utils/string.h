@@ -10,4 +10,5 @@ std::wstring StringToWstring(const std::string& str);
 std::string parseHResult(HRESULT hResult);
 std::string parseDWORDResult(DWORD result);
 std::wstring expandEnvStr(const std::wstring& src);
+std::vector<std::string> split(const std::string& s, char delim);
 }  // namespace AikariShared::utils::string

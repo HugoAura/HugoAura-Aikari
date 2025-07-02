@@ -6,7 +6,6 @@
     "libsodium",
     "mbedtls",
     "nlohmann-json",
-    "spdlog",
-    "cppcoro"
+    "spdlog"
   ]
 }

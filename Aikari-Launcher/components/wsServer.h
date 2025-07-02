@@ -3,8 +3,8 @@
 
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
-#include <Aikari-Shared/infrastructure/PoolQueue.hpp>
-#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/queue/PoolQueue.hpp>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 #include <filesystem>
 #include <ixwebsocket/IXWebSocketServer.h>
 #include <memory>

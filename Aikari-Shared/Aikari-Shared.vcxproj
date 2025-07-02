@@ -299,13 +299,17 @@
     <ClInclude Include="includes\Aikari-Shared\base\SingleIns.hpp" />
     <ClInclude Include="includes\Aikari-Shared\infrastructure\logger.h" />
     <ClInclude Include="includes\Aikari-Shared\infrastructure\loggerMacro.h" />
-    <ClInclude Include="includes\Aikari-Shared\infrastructure\PoolQueue.hpp" />
-    <ClInclude Include="includes\Aikari-Shared\infrastructure\SinglePointMessageQueue.hpp" />
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\queue\PoolQueue.hpp" />
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\queue\SinglePointMessageQueue.hpp" />
+    <ClInclude Include="includes\Aikari-Shared\types\itc\shared.h" />
+    <ClInclude Include="includes\Aikari-Shared\utils\crypto.h" />
     <ClInclude Include="includes\Aikari-Shared\utils\registry.h" />
     <ClInclude Include="includes\Aikari-Shared\utils\string.h" />
     <ClInclude Include="includes\Aikari-Shared\utils\windows.h" />
     <ClInclude Include="includes\Aikari-Shared\virtual\IConfigManager.h" />
     <ClInclude Include="includes\Aikari-Shared\virtual\IConfigPayload.h" />
+    <ClInclude Include="includes\Aikari-Shared\virtual\itc\IMainToSubMsgHandlerBase.h" />
+    <ClInclude Include="includes\Aikari-Shared\virtual\itc\ISubToMainMsgHandlerBase.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -319,11 +323,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="utils\crypto.cpp" />
     <ClCompile Include="utils\registry.cpp" />
     <ClCompile Include="utils\string.cpp" />
     <ClCompile Include="utils\windows\network.cpp" />
     <ClCompile Include="utils\windows\process.cpp" />
     <ClCompile Include="virtual\IConfigManager.cpp" />
+    <ClCompile Include="virtual\itc\IMainToSubMsgHandlerBase.cpp" />
+    <ClCompile Include="virtual\itc\ISubToMainMsgHandlerBase.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

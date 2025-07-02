@@ -2,6 +2,7 @@
 
 #include <Aikari-Shared/utils/string.h>
 #include <format>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -130,10 +131,23 @@ std::wstring expandEnvStr(const std::wstring& src)
     if (result == 0)
     {
         throw std::runtime_error(std::format(
-            "Failed to expand env str, error: {}", parseDWORDResult(GetLastError())
+            "Failed to expand env str, error: {}",
+            parseDWORDResult(GetLastError())
         ));
     }
 
     return std::wstring(expandedBuf.data());
 };
+
+std::vector<std::string> split(const std::string& s, char delim)
+{
+    std::stringstream ss(s);
+    std::string item;
+    std::vector<std::string> elems;
+    while (std::getline(ss, item, delim))
+    {
+        elems.push_back(std::move(item));
+    }
+    return elems;
+}
 };  // namespace AikariShared::utils::string

@@ -5,7 +5,8 @@
 #endif
 
 #include <Aikari-PLS/types/entrypoint.h>
-#include <Aikari-PLS/types/infrastructure/messageQueue.h>
+#include <Aikari-Shared/types/itc/shared.h>
+#include <filesystem>
 
 namespace AikariPLS::Exports
 {
@@ -14,7 +15,7 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
     const std::filesystem::path& certDirPath,
     std::shared_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::InputMessageStruct>>
+            AikariShared::Types::InterThread::MainToSubMessageInstance>>
         inputMessageQueue
 );
 

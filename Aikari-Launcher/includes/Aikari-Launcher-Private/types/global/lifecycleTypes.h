@@ -1,15 +1,9 @@
 ﻿#pragma once
 
-#include <Aikari-PLS/types/infrastructure/messageQueue.h>
+#include <Aikari-Shared/types/itc/shared.h>
 #include <atomic>
 #include <memory>
 #include <windows.h>
-
-namespace cppcoro
-{
-class static_thread_pool;
-class io_service;
-}  // namespace cppcoro
 
 namespace AikariRegistry
 {
@@ -22,6 +16,11 @@ namespace AikariWebSocketServer
 {
 class MainWSServer;
 };
+
+namespace SubModuleSystem::ThreadMsgHandlers
+{
+class PLSMsgHandler;
+}
 
 namespace AikariConfig
 {
@@ -44,11 +43,13 @@ enum class APPLICATION_RUNTIME_MODES
     SERVICE,
 };
 
-struct GlobalSharedThreadsRegistry
+struct GlobalSharedHandlersRegistry
 {
-    std::shared_ptr<std::jthread> plsIncomingMsgQueueHandlerThread;
+    std::shared_ptr<AikariLauncherComponents::SubModuleSystem::
+                        ThreadMsgHandlers::PLSMsgHandler>
+        plsIncomingMsgQueueHandler;
 
-    static GlobalSharedThreadsRegistry createDefault()
+    static GlobalSharedHandlersRegistry createDefault()
     {
         return {};
     }
@@ -78,12 +79,12 @@ struct SharedMessageQueues
 {
     std::shared_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::InputMessageStruct>>
+            AikariShared::Types::InterThread::MainToSubMessageInstance>>
         plsInputQueue;
 
     std::shared_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::RetMessageStruct>>
+            AikariShared::Types::InterThread::SubToMainMessageInstance>>
         plsRetQueue;
 };
 

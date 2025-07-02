@@ -3,6 +3,7 @@
 #include "wsServer.h"
 
 #include <Aikari-Launcher-Private/types/constants/webSocket.h>
+#include <Aikari-Shared/utils/crypto.h>
 #include <Aikari-Shared/utils/string.h>
 #include <chrono>
 #include <ixwebsocket/IXSocketTLSOptions.h>
@@ -12,7 +13,6 @@
 #include "../infrastructure/registry.h"
 #include "../lifecycle.h"
 #include "../middleware/wsAuthHandler.h"
-#include "../utils/cryptoUtils.h"
 #include "wsMsgHandler.h"
 
 namespace winStringUtils = AikariShared::utils::string;
@@ -453,7 +453,7 @@ std::string MainWSServer::genAuthToken()
 
     size_t tokenSize = 32;
     std::string authTokenHex =
-        AikariUtils::cryptoUtils::genRandomHexSecure(tokenSize);
+        AikariShared::utils::cryptoUtils::genRandomHexSecure(tokenSize);
 
     return authTokenHex;
 };

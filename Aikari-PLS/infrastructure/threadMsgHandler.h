@@ -1,32 +1,28 @@
 ﻿#pragma once
 
-#include <Aikari-PLS/types/infrastructure/messageQueue.h>
-#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/virtual/itc/IMainToSubMsgHandlerBase.h>
 #include <memory>
 #include <string>
 
 namespace AikariPLS::Infrastructure::MsgQueue
 {
+
 class PLSThreadMsgQueueHandler
+    : public AikariShared::infrastructure::InterThread::MainToSubMsgHandlerBase
 {
    public:
-    PLSThreadMsgQueueHandler(
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::InputMessageStruct>* srcQueue,
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::RetMessageStruct>* destQueue
-    );
+    using AikariShared::infrastructure::InterThread::MainToSubMsgHandlerBase::
+        MainToSubMsgHandlerBase;
 
-    void manualDestroy();
+   protected:
+    void onControlMessage(
+        const AikariShared::Types::InterThread::MainToSubControlMessage& retMsg
+    ) override final;
 
-   private:
-    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-        AikariPLS::Types::infrastructure::InputMessageStruct>* srcQueue;
-    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-        AikariPLS::Types::infrastructure::RetMessageStruct>* destQueue;
-
-    std::unique_ptr<std::jthread> inputMsgWorkerThread;
-
-    void inputMsgWorker();
+    void onWebSocketMessage(
+        const AikariShared::Types::InterThread::MainToSubWebSocketMessage&
+            retMsg
+    ) override final;
 };
 }  // namespace AikariPLS::Infrastructure::MsgQueue

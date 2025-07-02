@@ -15,6 +15,6 @@ typedef AikariShared::base::AikariStatesManagerTemplate<
     AikariSharedInstances;
 
 typedef AikariShared::base::AikariStatesManagerTemplate<
-    AikariTypes::global::lifecycle::GlobalSharedThreadsRegistry>
-    AikariSharedThreads;
+    AikariTypes::global::lifecycle::GlobalSharedHandlersRegistry>
+    AikariSharedHandlers;
 }  // namespace AikariLifecycle

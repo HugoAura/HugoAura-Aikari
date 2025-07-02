@@ -51,9 +51,6 @@
     <ClInclude Include="includes\Aikari-PLS\Aikari-PLS-Exports.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-PLS\types\infrastructure\messageQueue.h">
-      <Filter>头文件\types\infrastructure</Filter>
-    </ClInclude>
     <ClInclude Include="infrastructure\threadMsgHandler.h">
       <Filter>头文件\infrastructure</Filter>
     </ClInclude>

@@ -4,9 +4,9 @@
 
 #include <Aikari-PLS/types/constants/init.h>
 #include <Aikari-PLS/types/constants/msgQueue.h>
-#include <Aikari-PLS/types/infrastructure/messageQueue.h>
-#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/types/itc/shared.h>
 #include <Aikari-Shared/utils/windows.h>
 #include <chrono>
 #include <optional>
@@ -25,9 +25,9 @@ const char* swCoreProcName = "SeewoCore.exe";
 
 static void _pushSwCoreProcKilledEvent(
     AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-        AikariPLS::Types::infrastructure::RetMessageStruct>* msgQueue
-)
-{
+        AikariShared::Types::InterThread::SubToMainMessageInstance>* msgQueue
+) {
+    /*
     AikariPLS::Types::infrastructure::RetMessageStruct
         processKilledBroadcast = {
             .code = 0,
@@ -42,7 +42,7 @@ static void _pushSwCoreProcKilledEvent(
             .wsInfo = plsConstants::msgQueue::WebSocket::baseBroadcastWSInfo
         };
 
-    msgQueue->push(processKilledBroadcast);
+    msgQueue->push(processKilledBroadcast);*/
 };
 
 PLSInitSuccess runPlsInit()

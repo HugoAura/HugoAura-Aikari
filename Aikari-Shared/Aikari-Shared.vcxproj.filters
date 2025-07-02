@@ -43,6 +43,21 @@
     <Filter Include="源文件\utils\windows">
       <UniqueIdentifier>{d8373fc4-ee4d-4e36-a55b-65bba612b4ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\types\itc">
+      <UniqueIdentifier>{1ce1d2cb-1ba4-4498-ab9e-0413156062f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\infrastructure\queue">
+      <UniqueIdentifier>{17b6efd8-9230-4aee-81d2-0a62d2a77743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\infrastructure\itc">
+      <UniqueIdentifier>{5c1ed5bb-21e6-4482-9547-334b462bee50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\virtual\itc">
+      <UniqueIdentifier>{83514fa5-3cee-4b7e-8f68-be2acc07990f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\virtual\itc">
+      <UniqueIdentifier>{d56e44de-a457-4167-8dbf-d3e41ed91af4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -60,9 +75,6 @@
     <ClInclude Include="includes\Aikari-Shared\virtual\IConfigPayload.h">
       <Filter>头文件\virtual</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-Shared\infrastructure\SinglePointMessageQueue.hpp">
-      <Filter>头文件\infrastructure</Filter>
-    </ClInclude>
     <ClInclude Include="includes\Aikari-Shared\utils\registry.h">
       <Filter>头文件\utils</Filter>
     </ClInclude>
@@ -75,11 +87,26 @@
     <ClInclude Include="includes\Aikari-Shared\base\SingleIns.hpp">
       <Filter>头文件\base</Filter>
     </ClInclude>
-    <ClInclude Include="includes\Aikari-Shared\infrastructure\PoolQueue.hpp">
-      <Filter>头文件\infrastructure</Filter>
-    </ClInclude>
     <ClInclude Include="includes\Aikari-Shared\utils\windows.h">
       <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\types\itc\shared.h">
+      <Filter>头文件\types\itc</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\utils\crypto.h">
+      <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\queue\PoolQueue.hpp">
+      <Filter>头文件\infrastructure\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\infrastructure\queue\SinglePointMessageQueue.hpp">
+      <Filter>头文件\infrastructure\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\virtual\itc\IMainToSubMsgHandlerBase.h">
+      <Filter>头文件\virtual\itc</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Shared\virtual\itc\ISubToMainMsgHandlerBase.h">
+      <Filter>头文件\virtual\itc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +133,15 @@
     </ClCompile>
     <ClCompile Include="utils\windows\network.cpp">
       <Filter>源文件\utils\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\crypto.cpp">
+      <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="virtual\itc\IMainToSubMsgHandlerBase.cpp">
+      <Filter>源文件\virtual\itc</Filter>
+    </ClCompile>
+    <ClCompile Include="virtual\itc\ISubToMainMsgHandlerBase.cpp">
+      <Filter>源文件\virtual\itc</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

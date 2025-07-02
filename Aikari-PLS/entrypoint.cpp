@@ -2,10 +2,10 @@
 
 #include <Aikari-PLS/Aikari-PLS-Exports.h>
 #include <Aikari-PLS/types/entrypoint.h>
-#include <Aikari-PLS/types/infrastructure/messageQueue.h>
-#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/infrastructure/logger.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/types/itc/shared.h>
 
 #include "infrastructure/threadMsgHandler.h"
 #include "init.h"
@@ -20,7 +20,7 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
     const std::filesystem::path& certDirPath,
     std::shared_ptr<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::InputMessageStruct>>
+            AikariShared::Types::InterThread::MainToSubMessageInstance>>
         inputMessageQueue
 )
 {
@@ -35,7 +35,7 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
     LOG_INFO("[MODULE_INIT] Aikari Submodule PLS is launching...");
     auto retMessageQueue = std::make_shared<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::RetMessageStruct>>();
+            AikariShared::Types::InterThread::SubToMainMessageInstance>>();
 
     sharedQueuesManager.setVal(
         &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::inputMsgQueue,
@@ -50,7 +50,7 @@ extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
     {
         auto threadMsgHandlerIns = std::make_unique<
             AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>(
-            inputMessageQueue.get(), retMessageQueue.get()
+            inputMessageQueue.get(), retMessageQueue.get(), "PLS"
         );
 
         sharedInsManager.setPtr(

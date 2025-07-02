@@ -1,13 +1,13 @@
 ﻿#include "pch.h"
 
-#include "cryptoUtils.h"
-
+#include <Aikari-Shared/utils/crypto.h>
+#include <format>
 #include <iomanip>
 #include <random>
 #include <sstream>
 #include <vector>
 
-namespace AikariUtils::cryptoUtils
+namespace AikariShared::utils::cryptoUtils
 {
 std::string genRandomHexSecure(size_t& length)
 {
@@ -40,4 +40,16 @@ std::string genRandomHexSecure(size_t& length)
 
     return resultStream.str();
 }
-};  // namespace AikariUtils::cryptoUtils
+
+std::string genRandomHexInsecure(size_t& length)
+{
+    std::stringstream strStream;
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    for (size_t i = 0; i < length; ++i)
+    {
+        int value = std::rand() % 16;
+        strStream << std::hex << value;
+    }
+    return strStream.str();
+};
+};  // namespace AikariShared::utils::cryptoUtils

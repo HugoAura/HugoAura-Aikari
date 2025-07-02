@@ -286,7 +286,6 @@
     <ClInclude Include="includes\Aikari-PLS\types\constants\msgQueue.h" />
     <ClInclude Include="includes\Aikari-PLS\types\constants\init.h" />
     <ClInclude Include="includes\Aikari-PLS\types\entrypoint.h" />
-    <ClInclude Include="includes\Aikari-PLS\types\infrastructure\messageQueue.h" />
     <ClInclude Include="infrastructure\threadMsgHandler.h" />
     <ClInclude Include="init.h" />
     <ClInclude Include="lifecycle.h" />

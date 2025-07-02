@@ -2,8 +2,8 @@
 
 #include "wsMsgHandler.h"
 
-#include <Aikari-PLS/types/infrastructure/messageQueue.h>
-#include <Aikari-Shared/infrastructure/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/types/itc/shared.h>
 #include <nlohmann/json.hpp>
 
 #include "lifecycle.h"
@@ -84,19 +84,16 @@ void handleTask(
                 return;
             }
 
-            AikariPLS::Types::infrastructure::WebSocketInfo curMsgWsInfo{
-                .clientId = task.clientId
-            };
+            AikariShared::Types::InterThread::MainToSubWebSocketMessage
+                curMsgWsInfo{ .method = task.content.method,
+                              .data = task.content.data,
+                              .eventId = task.content.eventId,
+                              .wsInfo = { .clientId = task.clientId } };
 
-            AikariPLS::Types::infrastructure::InputMessageStruct plsInputMsg{
-                .method = task.content.method,
-                .data = task.content.data,
-                .type =
-                    AikariPLS::Types::infrastructure::MESSAGE_TYPES::WS_MESSAGE,
-                .fromModule = "launcher",
-                .eventId = task.content.eventId,
-                .wsInfo = curMsgWsInfo
-            };
+            AikariShared::Types::InterThread::MainToSubMessageInstance
+                plsInputMsg{ .type = AikariShared::Types::InterThread::
+                                 MESSAGE_TYPES::WS_MESSAGE,
+                             .msg = curMsgWsInfo };
 
             sharedMsgQueues.plsInputQueue->push(std::move(plsInputMsg));
         }

@@ -7,8 +7,6 @@
 #include <Aikari-PLS/types/entrypoint.h>
 #include <Aikari-Shared/infrastructure/logger.h>
 #include <chrono>
-#include <cppcoro/io_service.hpp>
-#include <cppcoro/static_thread_pool.hpp>
 #include <csignal>
 #include <cxxopts.hpp>
 #include <future>
@@ -157,7 +155,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
 
     auto plsInputMsgQueue = std::make_shared<
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariPLS::Types::infrastructure::InputMessageStruct>>();
+            AikariShared::Types::InterThread::MainToSubMessageInstance>>();
 
     curSharedMsgQueues.plsInputQueue = plsInputMsgQueue;
 
@@ -172,16 +170,18 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
             plsLaunchResult.retMessageQueue.value();
         LOG_DEBUG("PLS retMessageQueue set up");
 
-        auto plsQueueHandler = std::make_shared<std::jthread>(
-            AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers::
-                plsIncomingMsgHandler,
-            curSharedMsgQueues.plsRetQueue.get()
-        );
+        auto plsQueueHandler =
+            std::make_shared<AikariLauncherComponents::SubModuleSystem::
+                                 ThreadMsgHandlers::PLSMsgHandler>(
+                curSharedMsgQueues.plsRetQueue.get(),
+                curSharedMsgQueues.plsInputQueue.get(),
+                "PLS"
+            );
 
-        auto& threadsMgr = AikariLifecycle::AikariSharedThreads::getInstance();
+        auto& threadsMgr = AikariLifecycle::AikariSharedHandlers::getInstance();
         threadsMgr.setVal(
-            &lifecycleTypes::GlobalSharedThreadsRegistry::
-                plsIncomingMsgQueueHandlerThread,
+            &lifecycleTypes::GlobalSharedHandlersRegistry::
+                plsIncomingMsgQueueHandler,
             plsQueueHandler
         );
     }
@@ -205,15 +205,13 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     {
         AikariPLS::Exports::onExit();
 
-        auto& threadsMgr = AikariLifecycle::AikariSharedThreads::getInstance();
-        if (auto plsQueueHandler =
-                threadsMgr.getVal(&lifecycleTypes::GlobalSharedThreadsRegistry::
-                                      plsIncomingMsgQueueHandlerThread))
+        auto& threadsMgr = AikariLifecycle::AikariSharedHandlers::getInstance();
+        if (auto plsQueueHandler = threadsMgr.getVal(
+                &lifecycleTypes::GlobalSharedHandlersRegistry::
+                    plsIncomingMsgQueueHandler
+            ))
         {
-            if (plsQueueHandler->joinable())
-            {
-                plsQueueHandler->join();
-            }
+            plsQueueHandler->manualDestroy();
         }
 
         LOG_INFO("Clean up for module PLS finished.");

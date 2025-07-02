@@ -2,7 +2,9 @@
 
 #include "threadMsgHandlers.h"
 
-#include <Aikari-PLS/types/infrastructure/messageQueue.h>
+#include <Aikari-Launcher-Public/constants/itcCtrl/network.h>
+#include <Aikari-Shared/types/itc/shared.h>
+#include <Aikari-Shared/utils/string.h>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -10,96 +12,48 @@
 #include "../lifecycle.h"
 #include "wsServer.h"
 
-namespace LogHeaders
-{
-static const std::string plsIncomingMethodHead = "[PLS->Main]";
-}
+namespace itcConstants = AikariLauncherPublic::Constants::InterThread;
 
 namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
 {
-void plsIncomingMsgHandler(
-    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-        AikariPLS::Types::infrastructure::RetMessageStruct>* retMsgQueue
+void PLSMsgHandler::onControlMessage(
+    const AikariShared::Types::InterThread::SubToMainControlMessage& retMsg
 )
 {
-    LOG_INFO(
-        "{} Starting PLS->Main message queue handler...",
-        LogHeaders::plsIncomingMethodHead
-    );
+    std::vector<std::string> route =
+        AikariShared::utils::string::split(retMsg.method, '.');
+    std::string& rootRoute = route.at(0);
+
+    if (rootRoute == itcConstants::Network::PREFIX)
+    {
+    }
+    else
+    {
+    }
+};
+
+void PLSMsgHandler::onWebSocketMessage(
+    const AikariShared::Types::InterThread::SubToMainWebSocketReply& wsReply
+)
+{
     auto& sharedIns = AikariLifecycle::AikariSharedInstances::getInstance();
     auto* wsMgrPtr = sharedIns.getPtr(
         &AikariTypes::global::lifecycle::SharedInstances::wsServerMgrIns
     );
 
-    try
-    {
-        while (true)
-        {
-            auto retMsg = retMsgQueue->pop();
-            switch (retMsg.type)
-            {
-                case AikariPLS::Types::infrastructure::MESSAGE_TYPES::
-                    CONTROL_MESSAGE:
-                {
-#ifdef _DEBUG
-                    LOG_TRACE(
-                        "{} Received ctrl msg, type: {}, data:\n{}",
-                        LogHeaders::plsIncomingMethodHead,
-                        static_cast<int>(retMsg.type),
-                        retMsg.data.dump()
-                    );
-#endif
-                }
-                break;
-                case AikariPLS::Types::infrastructure::MESSAGE_TYPES::
-                    WS_MESSAGE:
-                {
-                    if (!retMsg.wsInfo.has_value())
-                    {
-                        LOG_ERROR(
-                            "{} Invalid message received: Type is ws "
-                            "but no wsInfo provided.",
-                            LogHeaders::plsIncomingMethodHead
-                        );
-                        break;
-                    }
-                    AikariTypes::components::websocket::ServerWSRep repFinData{
-                        .code = retMsg.code,
-                        .eventId = retMsg.eventId,
-                        .success = retMsg.success,
-                        .data = retMsg.data,
-                    };
+    AikariTypes::components::websocket::ServerWSRep repFinData{
+        .code = wsReply.code,
+        .eventId = wsReply.eventId,
+        .success = wsReply.success,
+        .data = wsReply.data,
+    };
 
-                    AikariTypes::components::websocket::ServerWSTaskRet
-                        taskFinRet{
-                            .result = repFinData,
-                            .clientId = retMsg.wsInfo.value().clientId,
-                            .isBroadcast =
-                                retMsg.wsInfo.value().isBroadcast.value_or(false
-                                )
-                        };
+    AikariTypes::components::websocket::ServerWSTaskRet taskFinRet{
+        .result = repFinData,
+        .clientId = wsReply.wsInfo.clientId,
+        .isBroadcast = wsReply.wsInfo.isBroadcast.value_or(false)
+    };
 
-                    wsMgrPtr->pushRetQueue(taskFinRet);
-                }
-                break;
-                case AikariPLS::Types::infrastructure::MESSAGE_TYPES::
-                    DESTROY_MESSAGE:
-                    LOG_INFO(
-                        "{} Destroy sig recv, exiting thread...",
-                        LogHeaders::plsIncomingMethodHead
-                    );
-                    return;
-            }
-        }
-    }
-    catch (const std::exception& err)
-    {
-        LOG_CRITICAL(
-            "{} Critical error occurred running PLS->Main msg handling loop, "
-            "error: {}",
-            LogHeaders::plsIncomingMethodHead,
-            err.what()
-        );
-    }
+    wsMgrPtr->pushRetQueue(taskFinRet);
 };
 }  // namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers

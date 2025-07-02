@@ -64,6 +64,24 @@
     <Filter Include="头文件\types\constants">
       <UniqueIdentifier>{949d1459-6469-41d7-9111-30035f7dcf9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\routes">
+      <UniqueIdentifier>{406581a2-ebba-4348-852f-9fe0e199b60b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\routes\itc">
+      <UniqueIdentifier>{4625cdc1-5bc0-4a9a-986d-77446b2459cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\routes">
+      <UniqueIdentifier>{3e09f228-3a5d-4b77-9672-e906f910496b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\routes\itc">
+      <UniqueIdentifier>{50b1d2eb-b2fe-4038-badd-96a298a59981}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\public\constants">
+      <UniqueIdentifier>{4e3ac316-4d28-4adf-bee6-c31d9ef43b0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\public\constants\itcCtrl">
+      <UniqueIdentifier>{7d4251e8-a56f-4f53-a334-d0b4a2f8a00c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="entrypoint.cpp">
@@ -92,9 +110,6 @@
     </ClCompile>
     <ClCompile Include="middleware\wsAuthHandler.cpp">
       <Filter>源文件\middleware</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\cryptoUtils.cpp">
-      <Filter>源文件\utils</Filter>
     </ClCompile>
     <ClCompile Include="components\wsMsgHandler.cpp">
       <Filter>源文件\components</Filter>
@@ -149,9 +164,6 @@
     <ClInclude Include="includes\Aikari-Launcher-Private\types\middleware\websocket.h">
       <Filter>头文件\types\middleware</Filter>
     </ClInclude>
-    <ClInclude Include="utils\cryptoUtils.h">
-      <Filter>头文件\utils</Filter>
-    </ClInclude>
     <ClInclude Include="components\wsMsgHandler.h">
       <Filter>头文件\components</Filter>
     </ClInclude>
@@ -181,6 +193,12 @@
     </ClInclude>
     <ClInclude Include="includes\Aikari-Launcher-Private\types\constants\webSocket.h">
       <Filter>头文件\types\constants</Filter>
+    </ClInclude>
+    <ClInclude Include="routes\itc\network.h">
+      <Filter>头文件\routes\itc</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\network.h">
+      <Filter>头文件\public\constants\itcCtrl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

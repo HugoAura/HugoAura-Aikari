@@ -34,7 +34,11 @@ bool checkCertExists(
     }
 }
 
-int genEC256TlsCert(std::filesystem::path &baseDir, std::string &certHost)
+int genEC256TlsCert(
+    std::filesystem::path &baseDir,
+    std::string &certHost,
+    std::string &certIdentifier
+)
 {
     mbedtls_pk_context keyContainer;
     mbedtls_entropy_context entropy;
@@ -170,8 +174,10 @@ int genEC256TlsCert(std::filesystem::path &baseDir, std::string &certHost)
             throw std::runtime_error("Failed to set SAN.");
         }
 
-        std::filesystem::path keyPath = baseDir / "wss.key";
-        std::filesystem::path crtPath = baseDir / "wss.crt";
+        std::filesystem::path keyPath =
+            baseDir / std::format("{}.key", certIdentifier);
+        std::filesystem::path crtPath =
+            baseDir / std::format("{}.crt", certIdentifier);
 
         {
             unsigned char keyBuffer[1000];
@@ -270,8 +276,9 @@ bool initWsCert(std::filesystem::path &baseDir, bool force)
     LOG_INFO("Generating WebSocket TLS cert...");
 
     std::string certHost("localhost");
+    std::string certIdentifier("wss");
 
-    int result = genEC256TlsCert(baseDir, certHost);
+    int result = genEC256TlsCert(baseDir, certHost, certIdentifier);
 
     if (result == 0)
     {
