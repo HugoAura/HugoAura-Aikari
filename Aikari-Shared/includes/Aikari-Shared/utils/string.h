@@ -5,10 +5,10 @@
 
 namespace AikariShared::utils::string
 {
-std::string WstringToString(const std::wstring& wstr);
-std::wstring StringToWstring(const std::string& str);
-std::string parseHResult(HRESULT hResult);
-std::string parseDWORDResult(DWORD result);
-std::wstring expandEnvStr(const std::wstring& src);
-std::vector<std::string> split(const std::string& s, char delim);
+    std::string WstringToString(const std::wstring& wstr);
+    std::wstring StringToWstring(const std::string& str);
+    std::string parseHResult(HRESULT hResult);
+    std::string parseDWORDResult(DWORD result);
+    std::wstring expandEnvStr(const std::wstring& src);
+    std::vector<std::string> split(const std::string& s, char delim);
 }  // namespace AikariShared::utils::string

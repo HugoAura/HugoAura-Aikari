@@ -6,7 +6,7 @@
 
 namespace AikariLauncherMiddlewares::WebSocket
 {
-AikariTypes::middleware::websocket::WEBSOCKET_AUTH_STATUS handleClientAuth(
-    const std::string& uri, const std::string& authToken
-);
+    AikariTypes::middleware::websocket::WEBSOCKET_AUTH_STATUS handleClientAuth(
+        const std::string& uri, const std::string& authToken
+    );
 }

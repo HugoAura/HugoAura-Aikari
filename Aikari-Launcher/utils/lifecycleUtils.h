@@ -7,12 +7,13 @@
 
 namespace AikariLifecycle::Utils
 {
-namespace Config
-{
-void editConfig(
-    std::function<void(std::shared_ptr<AikariTypes::config::AikariConfig> &)>
-        lambda,
-    bool writeConfig = false
-);
-};  // namespace Config
+    namespace Config
+    {
+        void editConfig(
+            std::function<
+                void(std::shared_ptr<AikariTypes::config::AikariConfig> &)>
+                lambda,
+            bool writeConfig = false
+        );
+    };  // namespace Config
 };  // namespace AikariLifecycle::Utils

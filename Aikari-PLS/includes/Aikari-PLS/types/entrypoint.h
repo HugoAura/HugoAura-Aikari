@@ -6,17 +6,17 @@
 
 namespace AikariShared::Types::InterThread
 {
-struct SubToMainMessageInstance;
+    struct SubToMainMessageInstance;
 }  // namespace AikariShared::Types::InterThread
 
 namespace AikariPLS::Types::entrypoint
 {
-struct EntrypointRet
-{
-    bool success;
-    std::optional<std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariShared::Types::InterThread::SubToMainMessageInstance>>>
-        retMessageQueue;
-};
+    struct EntrypointRet
+    {
+        bool success;
+        std::optional<std::shared_ptr<
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::SubToMainMessageInstance>>>
+            retMessageQueue;
+    };
 }  // namespace AikariPLS::Types::entrypoint

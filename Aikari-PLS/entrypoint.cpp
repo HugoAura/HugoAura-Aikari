@@ -15,72 +15,73 @@ namespace LifecycleTypes = AikariPLS::Types::lifecycle;
 
 namespace AikariPLS::Exports
 {
-extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
-    const std::filesystem::path& aikariRootPath,
-    const std::filesystem::path& certDirPath,
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariShared::Types::InterThread::MainToSubMessageInstance>>
-        inputMessageQueue
-)
-{
-    auto& sharedInsManager =
-        AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
-    auto& sharedQueuesManager =
-        AikariPLS::Lifecycle::PLSSharedQueuesManager::getInstance();
-
-    AikariShared::LoggerSystem::initLogger(
-        "PLS", 37, 45
-    );  // 37 = White text; 45 = Purple background
-    LOG_INFO("[MODULE_INIT] Aikari Submodule PLS is launching...");
-    auto retMessageQueue = std::make_shared<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariShared::Types::InterThread::SubToMainMessageInstance>>();
-
-    sharedQueuesManager.setVal(
-        &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::inputMsgQueue,
-        inputMessageQueue
-    );
-
-    sharedQueuesManager.setVal(
-        &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::retMsgQueue,
-        retMessageQueue
-    );  // not using setPtr for shared_ptr
-
+    extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
+        const std::filesystem::path& aikariRootPath,
+        const std::filesystem::path& certDirPath,
+        std::shared_ptr<
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::MainToSubMessageInstance>>
+            inputMessageQueue
+    )
     {
-        auto threadMsgHandlerIns = std::make_unique<
-            AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>(
-            inputMessageQueue.get(), retMessageQueue.get(), "PLS"
+        auto& sharedInsManager =
+            AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
+        auto& sharedQueuesManager =
+            AikariPLS::Lifecycle::PLSSharedQueuesManager::getInstance();
+
+        AikariShared::LoggerSystem::initLogger(
+            "PLS", 37, 45
+        );  // 37 = White text; 45 = Purple background
+        LOG_INFO("[MODULE_INIT] Aikari Submodule PLS is launching...");
+        auto retMessageQueue = std::make_shared<
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::SubToMainMessageInstance>>();
+
+        sharedQueuesManager.setVal(
+            &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::inputMsgQueue,
+            inputMessageQueue
         );
 
-        sharedInsManager.setPtr(
-            &LifecycleTypes::PLSSharedIns::threadMsgQueueHandler,
-            std::move(threadMsgHandlerIns)
-        );
-    }
+        sharedQueuesManager.setVal(
+            &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::retMsgQueue,
+            retMessageQueue
+        );  // not using setPtr for shared_ptr
 
-    bool plsInitResult = AikariPLS::Init::runPlsInit();
+        {
+            auto threadMsgHandlerIns = std::make_unique<
+                AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>(
+                inputMessageQueue.get(), retMessageQueue.get(), "PLS"
+            );
 
-    AikariPLS::Types::entrypoint::EntrypointRet launchResult = {
-        .success = plsInitResult, .retMessageQueue = std::move(retMessageQueue)
+            sharedInsManager.setPtr(
+                &LifecycleTypes::PLSSharedIns::threadMsgQueueHandler,
+                std::move(threadMsgHandlerIns)
+            );
+        }
+
+        bool plsInitResult = AikariPLS::Init::runPlsInit();
+
+        AikariPLS::Types::entrypoint::EntrypointRet launchResult = {
+            .success = plsInitResult,
+            .retMessageQueue = std::move(retMessageQueue)
+        };
+
+        return launchResult;
     };
 
-    return launchResult;
-};
+    extern AIKARIPLS_API void onExit()
+    {
+        LOG_INFO("Cleaning up msg queue handlers...");
 
-extern AIKARIPLS_API void onExit()
-{
-    LOG_INFO("Cleaning up msg queue handlers...");
+        auto& sharedInsMgr =
+            AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
 
-    auto& sharedInsMgr =
-        AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
-
-    auto threadMsgHandlerIns =
-        sharedInsMgr.getPtr(&LifecycleTypes::PLSSharedIns::threadMsgQueueHandler
+        auto threadMsgHandlerIns = sharedInsMgr.getPtr(
+            &LifecycleTypes::PLSSharedIns::threadMsgQueueHandler
         );
-    threadMsgHandlerIns->manualDestroy();
+        threadMsgHandlerIns->manualDestroy();
 
-    LOG_INFO("Clean up finished, module PLS is unloaded.");
-    return;
-};
+        LOG_INFO("Clean up finished, module PLS is unloaded.");
+        return;
+    };
 }  // namespace AikariPLS::Exports

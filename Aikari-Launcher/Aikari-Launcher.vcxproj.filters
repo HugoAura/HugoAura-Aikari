@@ -126,6 +126,12 @@
     <ClCompile Include="components\threadMsgHandlers.cpp">
       <Filter>源文件\components</Filter>
     </ClCompile>
+    <ClCompile Include="routes\itc\network.cpp">
+      <Filter>源文件\routes\itc</Filter>
+    </ClCompile>
+    <ClCompile Include="routes\itc\filesystem.cpp">
+      <Filter>源文件\routes\itc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes\Aikari-Launcher-Private\common.h">
@@ -198,6 +204,18 @@
       <Filter>头文件\routes\itc</Filter>
     </ClInclude>
     <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\network.h">
+      <Filter>头文件\public\constants\itcCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\errors.h">
+      <Filter>头文件\public\constants\itcCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\errorTemplates.h">
+      <Filter>头文件\public\constants\itcCtrl</Filter>
+    </ClInclude>
+    <ClInclude Include="routes\itc\filesystem.h">
+      <Filter>头文件\routes\itc</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\filesystem.h">
       <Filter>头文件\public\constants\itcCtrl</Filter>
     </ClInclude>
   </ItemGroup>

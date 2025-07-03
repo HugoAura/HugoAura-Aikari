@@ -3,9 +3,9 @@
 namespace AikariTypes::middleware::websocket
 {
 
-enum class WEBSOCKET_AUTH_STATUS
-{
-    PASSED,
-    DENIED,
-};
-};
+    enum class WEBSOCKET_AUTH_STATUS
+    {
+        PASSED,
+        DENIED,
+    };
+};  // namespace AikariTypes::middleware::websocket

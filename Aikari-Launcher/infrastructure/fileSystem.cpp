@@ -12,73 +12,75 @@ namespace fs = std::filesystem;
 
 namespace AikariFileSystem
 {
-// --- Begin implementations of FileSystemManager --- //
-fs::path FileSystemManager::getProgramDataPath()
-{
-    PWSTR pathPtr = NULL;
-    HRESULT hResult =
-        SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &pathPtr);
-    fs::path finalPath;
-
-    if (SUCCEEDED(hResult))
+    // --- Begin implementations of FileSystemManager --- //
+    fs::path FileSystemManager::getProgramDataPath()
     {
-        try
-        {
-            fs::path programDataPath(pathPtr);
-            LOG_DEBUG(
-                "Get ProgramData path success: {}", programDataPath.string()
-            );
+        PWSTR pathPtr = NULL;
+        HRESULT hResult =
+            SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &pathPtr);
+        fs::path finalPath;
 
-            finalPath = programDataPath;
+        if (SUCCEEDED(hResult))
+        {
+            try
+            {
+                fs::path programDataPath(pathPtr);
+                LOG_DEBUG(
+                    "Get ProgramData path success: {}", programDataPath.string()
+                );
+
+                finalPath = programDataPath;
+            }
+            catch (const fs::filesystem_error& error)
+            {
+                LOG_ERROR(
+                    "⚠ A filesystem error occurred getting the path of "
+                    "ProgramData "
+                    "dir."
+                );
+                LOG_ERROR(error.what());
+                LOG_ERROR("Using the default value.");
+                finalPath = fs::path("C") / "ProgramData";
+            }
+
+            CoTaskMemFree(pathPtr);
         }
-        catch (const fs::filesystem_error& error)
+        else
         {
             LOG_ERROR(
-                "⚠ A filesystem error occurred getting the path of ProgramData "
-                "dir."
+                "⚠ Unexpected error occurred getting the path of ProgramData "
+                "dir, "
+                "trying to use default val."
             );
-            LOG_ERROR(error.what());
-            LOG_ERROR("Using the default value.");
+            LOG_ERROR("Error detail: ");
+            LOG_ERROR(AikariShared::utils::string::parseHResult(hResult));
             finalPath = fs::path("C") / "ProgramData";
         }
 
-        CoTaskMemFree(pathPtr);
-    }
-    else
+        return finalPath;
+    };
+
+    int FileSystemManager::ensureDirExists() const
     {
-        LOG_ERROR(
-            "⚠ Unexpected error occurred getting the path of ProgramData dir, "
-            "trying to use default val."
-        );
-        LOG_ERROR("Error detail: ");
-        LOG_ERROR(AikariShared::utils::string::parseHResult(hResult));
-        finalPath = fs::path("C") / "ProgramData";
+        if (!fs::exists(this->aikariRootDir))
+        {
+            LOG_INFO("Aikari root directory not exists, creating it...");
+            fs::create_directories(this->aikariRootDir);
+        }
+
+        LOG_INFO("Checking log dir...");
+        if (!fs::exists(this->aikariLogDir))
+        {
+            fs::create_directory(this->aikariLogDir);
+        }
+
+        LOG_INFO("Checking config dir...");
+        if (!fs::exists(this->aikariConfigDir))
+        {
+            fs::create_directory(this->aikariConfigDir);
+        }
+
+        return 0;
     }
-
-    return finalPath;
-};
-
-int FileSystemManager::ensureDirExists() const
-{
-    if (!fs::exists(this->aikariRootDir))
-    {
-        LOG_INFO("Aikari root directory not exists, creating it...");
-        fs::create_directories(this->aikariRootDir);
-    }
-
-    LOG_INFO("Checking log dir...");
-    if (!fs::exists(this->aikariLogDir))
-    {
-        fs::create_directory(this->aikariLogDir);
-    }
-
-    LOG_INFO("Checking config dir...");
-    if (!fs::exists(this->aikariConfigDir))
-    {
-        fs::create_directory(this->aikariConfigDir);
-    }
-
-    return 0;
-}
-// --- End implementations of FileSystemManager --- //
+    // --- End implementations of FileSystemManager --- //
 };  // namespace AikariFileSystem

@@ -14,75 +14,77 @@
 
 namespace AikariLauncherComponents::AikariWebSocketServer
 {
-struct WebSocketStates
-{
-    std::unique_ptr<ix::WebSocketServer> wsSrvIns;
-    std::mutex clientLsMutex;
-    std::unordered_map<std::string, std::weak_ptr<ix::WebSocket>> clients;
-};
+    struct WebSocketStates
+    {
+        std::unique_ptr<ix::WebSocketServer> wsSrvIns;
+        std::mutex clientLsMutex;
+        std::unordered_map<std::string, std::weak_ptr<ix::WebSocket>> clients;
+    };
 
-class MainWSServer
-{
-   public:
-    std::string wsBindAddr;
-    int wsPort;
-    std::string authToken;
+    class MainWSServer
+    {
+       public:
+        std::string wsBindAddr;
+        int wsPort;
+        std::string authToken;
 
-    MainWSServer(
-        std::string wsBindAddr,
-        int wsDefaultPort,
-        std::filesystem::path wssCertPath,
-        std::filesystem::path wssKeyPath
-    )
-        : wsBindAddr(wsBindAddr),
-          wsPort(wsDefaultPort),
-          authToken(genAuthToken()),
-          wssCertPath(wssCertPath),
-          wssKeyPath(wssKeyPath),
-          wsStates(std::make_shared<WebSocketStates>()) {};
+        MainWSServer(
+            std::string wsBindAddr,
+            int wsDefaultPort,
+            std::filesystem::path wssCertPath,
+            std::filesystem::path wssKeyPath
+        )
+            : wsBindAddr(wsBindAddr),
+              wsPort(wsDefaultPort),
+              authToken(genAuthToken()),
+              wssCertPath(wssCertPath),
+              wssKeyPath(wssKeyPath),
+              wsStates(std::make_shared<WebSocketStates>()) {};
 
-    ~MainWSServer();
+        ~MainWSServer();
 
-    int launchWssServer();
-    bool tryLaunchWssServer();
-    void waitWssServer();
-    void stopWssServer();
-    void pushRetQueue(AikariTypes::components::websocket::ServerWSTaskRet& ret);
+        int launchWssServer();
+        bool tryLaunchWssServer();
+        void waitWssServer();
+        void stopWssServer();
+        void pushRetQueue(
+            AikariTypes::components::websocket::ServerWSTaskRet& ret
+        );
 
-   private:
-    std::filesystem::path wssCertPath;
-    std::filesystem::path wssKeyPath;
-    int8_t maxStartupRetries = 5;
-    std::shared_ptr<WebSocketStates> wsStates;
-    std::unique_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariTypes::components::websocket::ServerWSTaskRet>>
-        retMsgQueue;
-    std::unique_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+       private:
+        std::filesystem::path wssCertPath;
+        std::filesystem::path wssKeyPath;
+        int8_t maxStartupRetries = 5;
+        std::shared_ptr<WebSocketStates> wsStates;
+        std::unique_ptr<
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariTypes::components::websocket::ServerWSTaskRet>>
+            retMsgQueue;
+        std::unique_ptr<
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariTypes::components::websocket::ClientWSTask>>
+            inputMsgQueue;
+
+        std::unique_ptr<std::jthread> retMsgWorkerThread;
+        std::unique_ptr<std::jthread> inputMsgWorkerThread;
+
+        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
             AikariTypes::components::websocket::ClientWSTask>>
-        inputMsgQueue;
+            threadPool;
 
-    std::unique_ptr<std::jthread> retMsgWorkerThread;
-    std::unique_ptr<std::jthread> inputMsgWorkerThread;
+        size_t threadCount = 16;
 
-    std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
-        AikariTypes::components::websocket::ClientWSTask>>
-        threadPool;
+        bool isStopped = false;
 
-    size_t threadCount = 16;
-
-    bool isStopped = false;
-
-    void retMsgWorker();
-    void inputMsgWorker();
-    void handleOnMsg(
-        std::weak_ptr<ix::WebSocket> webSocketWeak,
-        ix::ConnectionState* connectionState,
-        const ix::WebSocketMessagePtr& msg
-    );
-    bool writeRegInfo();
-    static std::string genAuthToken();
-    static int genRandomPort();
-};
+        void retMsgWorker();
+        void inputMsgWorker();
+        void handleOnMsg(
+            std::weak_ptr<ix::WebSocket> webSocketWeak,
+            ix::ConnectionState* connectionState,
+            const ix::WebSocketMessagePtr& msg
+        );
+        bool writeRegInfo();
+        static std::string genAuthToken();
+        static int genRandomPort();
+    };
 }  // namespace AikariLauncherComponents::AikariWebSocketServer

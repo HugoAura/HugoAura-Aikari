@@ -4,52 +4,52 @@
 
 namespace AikariShared::infrastructure::MessageQueue
 {
-template <typename T>
-class SinglePointMessageQueue;
+    template <typename T>
+    class SinglePointMessageQueue;
 }
 
 namespace AikariShared::Types::InterThread
 {
-struct MainToSubMessageInstance;
-struct SubToMainMessageInstance;
+    struct MainToSubMessageInstance;
+    struct SubToMainMessageInstance;
 }  // namespace AikariShared::Types::InterThread
 
 namespace AikariPLS::Infrastructure::MsgQueue
 {
-class PLSThreadMsgQueueHandler;
+    class PLSThreadMsgQueueHandler;
 }
 
 namespace AikariPLS::Types::lifecycle
 {
-struct PLSSharedIns
-{
-    std::unique_ptr<
-        AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>
-        threadMsgQueueHandler;
-
-    PLSSharedIns();
-    static PLSSharedIns createDefault();
-    ~PLSSharedIns();
-
-    PLSSharedIns(PLSSharedIns&&) noexcept;
-    PLSSharedIns& operator=(PLSSharedIns&&) noexcept;
-};
-
-struct PLSSharedMsgQueues
-{
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariShared::Types::InterThread::MainToSubMessageInstance>>
-        inputMsgQueue;
-
-    std::shared_ptr<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariShared::Types::InterThread::SubToMainMessageInstance>>
-        retMsgQueue;
-
-    static PLSSharedMsgQueues createDefault()
+    struct PLSSharedIns
     {
-        return {};
-    }
-};
+        std::unique_ptr<
+            AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>
+            threadMsgQueueHandler;
+
+        PLSSharedIns();
+        static PLSSharedIns createDefault();
+        ~PLSSharedIns();
+
+        PLSSharedIns(PLSSharedIns&&) noexcept;
+        PLSSharedIns& operator=(PLSSharedIns&&) noexcept;
+    };
+
+    struct PLSSharedMsgQueues
+    {
+        std::shared_ptr<
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::MainToSubMessageInstance>>
+            inputMsgQueue;
+
+        std::shared_ptr<
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::SubToMainMessageInstance>>
+            retMsgQueue;
+
+        static PLSSharedMsgQueues createDefault()
+        {
+            return {};
+        }
+    };
 }  // namespace AikariPLS::Types::lifecycle

@@ -99,37 +99,37 @@ class AikariCustomFormatter : public spdlog::formatter
 
 namespace AikariShared::LoggerSystem
 {
-int initLogger(
-    const std::string& moduleName, int moduleTextColor, int moduleBgColor
-)
-{
-    SetConsoleOutputCP(CP_UTF8
-    );  // Support emoji output 🥰, refer to:
-        // https://stackoverflow.com/questions/71342226/c-not-printing-emojis-as-expected
+    int initLogger(
+        const std::string& moduleName, int moduleTextColor, int moduleBgColor
+    )
+    {
+        SetConsoleOutputCP(CP_UTF8
+        );  // Support emoji output 🥰, refer to:
+            // https://stackoverflow.com/questions/71342226/c-not-printing-emojis-as-expected
 
-    std::string moduleSectionContent = std::format(
-        "\033[0;{}m\033[{}m|{}|\033[0m",
-        moduleTextColor,
-        moduleBgColor,
-        moduleName
-    );
+        std::string moduleSectionContent = std::format(
+            "\033[0;{}m\033[{}m|{}|\033[0m",
+            moduleTextColor,
+            moduleBgColor,
+            moduleName
+        );
 
-    auto consoleSink =
-        std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-    consoleSink->set_level(spdlog::level::trace);
-    consoleSink->set_formatter(
-        std::make_unique<AikariCustomFormatter>(moduleSectionContent)
-    );
+        auto consoleSink =
+            std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+        consoleSink->set_level(spdlog::level::trace);
+        consoleSink->set_formatter(
+            std::make_unique<AikariCustomFormatter>(moduleSectionContent)
+        );
 
-    std::vector loggerSinks{ consoleSink };
-    auto defaultLogger = std::make_shared<spdlog::logger>(
-        "defaultLogger", loggerSinks.begin(), loggerSinks.end()
-    );
-    defaultLogger->set_level(spdlog::level::trace);
-    spdlog::register_logger(defaultLogger);
+        std::vector loggerSinks{ consoleSink };
+        auto defaultLogger = std::make_shared<spdlog::logger>(
+            "defaultLogger", loggerSinks.begin(), loggerSinks.end()
+        );
+        defaultLogger->set_level(spdlog::level::trace);
+        spdlog::register_logger(defaultLogger);
 
-    defaultLogger->info("📃 Logger for module {} initialized!", moduleName);
-    return 0;
-}
+        defaultLogger->info("📃 Logger for module {} initialized!", moduleName);
+        return 0;
+    }
 
 }  // namespace AikariShared::LoggerSystem

@@ -17,6 +17,8 @@ PointerAlignment: Left
 
 ColumnLimit: 80
 
+NamespaceIndentation: All
+
 BinPackArguments: false
 BinPackParameters: false
 Cpp11BracedListStyle: false

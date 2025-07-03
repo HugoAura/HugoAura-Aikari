@@ -336,6 +336,8 @@
     <ClCompile Include="lifecycle.cpp" />
     <ClCompile Include="middleware\wsAuthHandler.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="routes\itc\filesystem.cpp" />
+    <ClCompile Include="routes\itc\network.cpp" />
     <ClCompile Include="utils\lifecycleUtils.cpp" />
     <ClCompile Include="utils\sslUtils.cpp" />
   </ItemGroup>
@@ -351,6 +353,9 @@
     <ClInclude Include="includes\Aikari-Launcher-Private\types\global\lifecycleTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\infrastructure\cliParseTypes.h" />
     <ClInclude Include="includes\Aikari-Launcher-Private\types\middleware\websocket.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\errors.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\errorTemplates.h" />
+    <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\filesystem.h" />
     <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\network.h" />
     <ClInclude Include="includes\Aikari-Launcher-Public\version.h" />
     <ClInclude Include="infrastructure\cliParse.h" />
@@ -361,6 +366,7 @@
     <ClInclude Include="middleware\wsAuthHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="routes\itc\filesystem.h" />
     <ClInclude Include="routes\itc\network.h" />
     <ClInclude Include="utils\lifecycleUtils.h" />
     <ClInclude Include="utils\sslUtils.h" />

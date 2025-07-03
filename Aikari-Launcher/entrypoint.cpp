@@ -65,9 +65,17 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         AikariLifecycle::AikariSharedInstances::getInstance();
 
     LOG_INFO("Initializing file system manager...");
-    auto fileSystemManagerIns =
-        std::make_unique<AikariFileSystem::FileSystemManager>();
-    fileSystemManagerIns->ensureDirExists();
+    {
+        auto fileSystemManagerIns =
+            std::make_unique<AikariFileSystem::FileSystemManager>();
+        fileSystemManagerIns->ensureDirExists();
+        sharedInstances.setPtr(
+            &lifecycleTypes::SharedInstances::fsManagerIns,
+            std::move(fileSystemManagerIns)
+        );
+    }
+    auto* fileSystemManagerIns =
+        sharedInstances.getPtr(&lifecycleTypes::SharedInstances::fsManagerIns);
 
     LOG_INFO("Initializing registry manager...");
     {

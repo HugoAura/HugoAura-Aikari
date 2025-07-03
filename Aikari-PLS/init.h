@@ -2,7 +2,7 @@
 
 namespace AikariPLS::Init
 {
-typedef bool PLSInitSuccess;
+    typedef bool PLSInitSuccess;
 
-PLSInitSuccess runPlsInit();
+    PLSInitSuccess runPlsInit();
 }  // namespace AikariPLS::Init

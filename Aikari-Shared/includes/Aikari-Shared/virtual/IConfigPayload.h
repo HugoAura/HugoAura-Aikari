@@ -4,10 +4,10 @@
 
 namespace AikariShared::virtualIns
 {
-struct IConfigPayload
-{
-    std::string module;
+    struct IConfigPayload
+    {
+        std::string module;
 
-    virtual ~IConfigPayload() = default;
-};
+        virtual ~IConfigPayload() = default;
+    };
 }  // namespace AikariShared::virtualIns

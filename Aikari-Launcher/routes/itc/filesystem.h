@@ -3,10 +3,10 @@
 #include <Aikari-Shared/types/itc/shared.h>
 #include <nlohmann/json.hpp>
 
-namespace AikariLauncherRoutes::InterThread::Network
+namespace AikariLauncherRoutes::InterThread::FileSystem
 {
     AikariShared::Types::InterThread::MainToSubControlReplyMessage
-    handleNetworkCtrlMessage(
+    handleFsCtrlMessage(
         const AikariShared::Types::InterThread::SubToMainControlMessage&
             incoming,
         const std::vector<std::string>& routes

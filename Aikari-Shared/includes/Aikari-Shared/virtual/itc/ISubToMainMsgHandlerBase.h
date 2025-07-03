@@ -13,74 +13,76 @@
 
 namespace AikariShared::infrastructure::InterThread
 {
-const int DEFAULT_THREAD_COUNT = 4;
+    const int DEFAULT_THREAD_COUNT = 4;
 
-class ISubToMainMsgHandler
-{
-   public:
-    virtual ~ISubToMainMsgHandler() = default;
+    class ISubToMainMsgHandler
+    {
+       public:
+        virtual ~ISubToMainMsgHandler() = default;
 
-   private:
-    virtual void retMsgWorker() = 0;
-};
+       private:
+        virtual void retMsgWorker() = 0;
+    };
 
-class SubToMainMsgHandlerBase : public ISubToMainMsgHandler
-{
-   public:
-    SubToMainMsgHandlerBase(
+    class SubToMainMsgHandlerBase : public ISubToMainMsgHandler
+    {
+       public:
+        SubToMainMsgHandlerBase(
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::SubToMainMessageInstance>*
+                srcQueue,
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::MainToSubMessageInstance>*
+                reportQueue,
+            const std::string subModuleName
+        );
+
+        void manualDestroy();
+
+        void addCtrlMsgCallbackListener(
+            const AikariShared::Types::InterThread::eventId& eventId,
+            std::function<void(
+                AikariShared::Types::InterThread::SubToMainControlReplyMessage
+            )> callbackLambda
+        );
+
+       protected:
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::SubToMainMessageInstance>*
-            srcQueue,
+            srcQueue;
         AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::MainToSubMessageInstance>*
-            reportQueue,
-        const std::string subModuleName
-    );
+            reportQueue;
 
-    void manualDestroy();
+        const std::string logHeader;
 
-    void addCtrlMsgCallbackListener(
-        const AikariShared::Types::InterThread::eventId& eventId,
-        std::function<
-            void(AikariShared::Types::InterThread::SubToMainControlReplyMessage
-            )>& callbackLambda
-    );
+        std::map<
+            AikariShared::Types::InterThread::eventId,
+            std::vector<std::function<void(AikariShared::Types::InterThread::
+                                               SubToMainControlReplyMessage)>>>
+            listeners;
 
-   protected:
-    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-        AikariShared::Types::InterThread::SubToMainMessageInstance>* srcQueue;
-    AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-        AikariShared::Types::InterThread::MainToSubMessageInstance>*
-        reportQueue;
+        std::unique_ptr<std::jthread> srcMsgWorkerThread;
+        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+            AikariShared::Types::InterThread::SubToMainMessageInstance>>
+            threadPool;
 
-    const std::string logHeader;
+        virtual void onControlMessage(
+            const AikariShared::Types::InterThread::SubToMainControlMessage&
+                retMsg
+        ) {};
+        virtual void onControlReply(const AikariShared::Types::InterThread::
+                                        SubToMainControlReplyMessage& retMsg
+        ) {};
+        virtual void onWebSocketMessage(
+            const AikariShared::Types::InterThread::SubToMainWebSocketReply&
+                wsReply
+        ) {};
 
-    std::map<
-        AikariShared::Types::InterThread::eventId,
-        std::vector<std::function<void(AikariShared::Types::InterThread::
-                                           SubToMainControlReplyMessage)>>>
-        listeners;
+        void retMsgWorker() override;
 
-    std::unique_ptr<std::jthread> srcMsgWorkerThread;
-    std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
-        AikariShared::Types::InterThread::SubToMainMessageInstance>>
-        threadPool;
-
-    virtual void onControlMessage(
-        const AikariShared::Types::InterThread::SubToMainControlMessage& retMsg
-    ) {};
-    virtual void onControlReply(
-        const AikariShared::Types::InterThread::SubToMainControlReplyMessage&
-            retMsg
-    ) {};
-    virtual void onWebSocketMessage(
-        const AikariShared::Types::InterThread::SubToMainWebSocketReply& wsReply
-    ) {};
-
-    void retMsgWorker() override;
-
-    virtual void handleMsg(
-        AikariShared::Types::InterThread::SubToMainMessageInstance& msgIns
-    );
-};
+        virtual void handleMsg(
+            AikariShared::Types::InterThread::SubToMainMessageInstance& msgIns
+        );
+    };
 }  // namespace AikariShared::infrastructure::InterThread
