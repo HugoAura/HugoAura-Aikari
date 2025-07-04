@@ -100,7 +100,7 @@ namespace AikariRegistry
         int success = 0;
         HKEY hKey;
 
-        LONG result = RegCreateKeyEx(
+        LONG result = RegCreateKeyExW(
             HKEY_USERS,
             key.c_str(),
             0,
@@ -108,7 +108,7 @@ namespace AikariRegistry
             REG_OPTION_NON_VOLATILE,
             KEY_WRITE,
             NULL,
-            &hKey,
+            reinterpret_cast<PHKEY>(&hKey),
             NULL
         );
 

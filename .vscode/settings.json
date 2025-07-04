@@ -1,0 +1,8 @@
+{
+  "cmake.automaticReconfigure": false,
+  "cmake.configureOnEdit": false,
+  "cmake.configureOnOpen": false,
+  "C_Cpp.default.cppStandard": "c++23",
+  "C_Cpp.default.cStandard": "c23",
+  "C_Cpp.formatting": "clangFormat"
+}

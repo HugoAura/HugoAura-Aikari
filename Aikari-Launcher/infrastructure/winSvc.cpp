@@ -89,7 +89,7 @@ namespace AikariWinSvc
             fullLaunchParam.c_str(),
             NULL,
             NULL,
-            svcDeps,
+            reinterpret_cast<LPCWSTR>(svcDeps),
             NULL,
             NULL
         );

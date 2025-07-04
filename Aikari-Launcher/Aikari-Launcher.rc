@@ -1,4 +1,4 @@
-﻿// Microsoft Visual C++ generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
 
@@ -51,7 +51,46 @@ END
 // RCDATA
 //
 
-IDR_AIKARI_DEFAULT_JSON RCDATA                    "resources\\default.json"
+IDR_AIKARI_DEFAULT_JSON RCDATA                  "resources\\default.json"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,0,1,0
+ PRODUCTVERSION 0,0,1,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404b0"
+        BEGIN
+            VALUE "CompanyName", "HugoAura Devs"
+            VALUE "FileDescription", "Aikari, unified UX tweak tool for Seewo family softwares."
+            VALUE "FileVersion", "0.0.1.0"
+            VALUE "InternalName", "Aikari Launcher"
+            VALUE "LegalCopyright", "Copyright (C) 2025 HugoAura Devs, All rights reserved."
+            VALUE "OriginalFilename", "Aikari-Launcher.exe"
+            VALUE "ProductName", "Aikari Launcher"
+            VALUE "ProductVersion", "0.0.1.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////

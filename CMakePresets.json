@@ -1,0 +1,130 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base-config-vs",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "base-config-ninja",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "base-x64-debug",
+      "hidden": true,
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "base-arm64-debug",
+      "hidden": true,
+      "architecture": {
+        "value": "arm64",
+        "strategy": "set"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "base-x64-release",
+      "hidden": true,
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "base-arm64-release",
+      "hidden": true,
+      "architecture": {
+        "value": "arm64",
+        "strategy": "set"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "vs-x64-debug",
+      "displayName": "x64 Debug - Visual Studio",
+      "inherits": ["base-config-vs", "base-x64-debug"]
+    },
+    {
+      "name": "vs-arm64-debug",
+      "displayName": "ARM64 Debug - Visual Studio",
+      "inherits": ["base-config-vs", "base-arm64-debug"]
+    },
+    {
+      "name": "vs-x64-release",
+      "displayName": "x64 Release - Visual Studio",
+      "inherits": ["base-config-vs", "base-x64-release"]
+    },
+    {
+      "name": "vs-arm64-release",
+      "displayName": "ARM64 Release - Visual Studio",
+      "inherits": ["base-config-vs", "base-arm64-release"]
+    },
+    {
+      "name": "ninja-debug",
+      "displayName": "Debug - Ninja",
+      "inherits": ["base-config-ninja"],
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "ninja-release",
+      "displayName": "Release - Ninja",
+      "inherits": ["base-config-ninja"],
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vs-debug-build-x64",
+      "configurePreset": "vs-x64-debug",
+      "displayName": "Build - Visual Studio (Debug, X64)"
+    },
+    {
+      "name": "vs-debug-build-arm64",
+      "configurePreset": "vs-arm64-debug",
+      "displayName": "Build - Visual Studio (Debug, ARM64)"
+    },
+    {
+      "name": "vs-release-build-x64",
+      "configurePreset": "vs-x64-release",
+      "displayName": "Build - Visual Studio (Release, X64)"
+    },
+    {
+      "name": "vs-release-build-arm64",
+      "configurePreset": "vs-arm64-release",
+      "displayName": "Build - Visual Studio (Release, ARM64)"
+    },
+    {
+      "name": "ninja-debug-build",
+      "configurePreset": "ninja-debug",
+      "displayName": "Build - Ninja (Debug)"
+    },
+    {
+      "name": "ninja-release-build",
+      "configurePreset": "ninja-release",
+      "displayName": "Build - Ninja (Release)"
+    }
+  ]
+}
