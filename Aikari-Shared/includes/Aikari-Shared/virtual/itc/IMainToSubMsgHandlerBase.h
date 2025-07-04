@@ -42,7 +42,7 @@ namespace AikariShared::infrastructure::InterThread
 
         void addCtrlMsgCallbackListener(
             const AikariShared::Types::InterThread::eventId& eventId,
-            std::function<void(AikariShared::Types::InterThread::
+            std::move_only_function<void(AikariShared::Types::InterThread::
                                    MainToSubControlReplyMessage msg)>
                 callbackLambda
         );
@@ -51,6 +51,11 @@ namespace AikariShared::infrastructure::InterThread
             AikariShared::Types::InterThread::MainToSubControlReplyMessage>
         createCtrlMsgPromise(
             const AikariShared::Types::InterThread::eventId& eventId
+        );
+
+        virtual AikariShared::Types::InterThread::MainToSubControlReplyMessage
+        sendCtrlMsgSync(
+            AikariShared::Types::InterThread::SubToMainControlMessage& ctrlMsg
         );
 
        protected:
@@ -65,9 +70,9 @@ namespace AikariShared::infrastructure::InterThread
 
         std::map<
             AikariShared::Types::InterThread::eventId,
-            std::vector<
-                std::function<void(AikariShared::Types::InterThread::
-                                       MainToSubControlReplyMessage msg)>>>
+            std::vector<std::move_only_function<
+                void(AikariShared::Types::InterThread::
+                         MainToSubControlReplyMessage msg)>>>
             listeners;
 
         std::unique_ptr<std::jthread> srcMsgWorkerThread;

@@ -185,10 +185,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnablePREfast>true</EnablePREfast>
@@ -210,10 +210,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnablePREfast>true</EnablePREfast>
@@ -233,10 +233,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnablePREfast>true</EnablePREfast>
@@ -258,10 +258,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnablePREfast>true</EnablePREfast>
@@ -281,10 +281,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnablePREfast>true</EnablePREfast>
@@ -306,10 +306,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;$(CustomPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\includes;$(ProjectDir);$(SolutionDir)\Extern;$(SolutionDir)\Aikari-PLS\includes;$(SolutionDir)\Aikari-Shared\includes</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <EnablePREfast>true</EnablePREfast>
@@ -336,8 +336,8 @@
     <ClCompile Include="lifecycle.cpp" />
     <ClCompile Include="middleware\wsAuthHandler.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="routes\itc\filesystem.cpp" />
-    <ClCompile Include="routes\itc\network.cpp" />
+    <ClCompile Include="routes\itc\filesystemRoute.cpp" />
+    <ClCompile Include="routes\itc\networkRoute.cpp" />
     <ClCompile Include="utils\lifecycleUtils.cpp" />
     <ClCompile Include="utils\sslUtils.cpp" />
   </ItemGroup>
@@ -366,8 +366,8 @@
     <ClInclude Include="middleware\wsAuthHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="routes\itc\filesystem.h" />
-    <ClInclude Include="routes\itc\network.h" />
+    <ClInclude Include="routes\itc\filesystemRoute.h" />
+    <ClInclude Include="routes\itc\networkRoute.h" />
     <ClInclude Include="utils\lifecycleUtils.h" />
     <ClInclude Include="utils\sslUtils.h" />
   </ItemGroup>

@@ -126,10 +126,10 @@
     <ClCompile Include="components\threadMsgHandlers.cpp">
       <Filter>源文件\components</Filter>
     </ClCompile>
-    <ClCompile Include="routes\itc\network.cpp">
+    <ClCompile Include="routes\itc\networkRoute.cpp">
       <Filter>源文件\routes\itc</Filter>
     </ClCompile>
-    <ClCompile Include="routes\itc\filesystem.cpp">
+    <ClCompile Include="routes\itc\filesystemRoute.cpp">
       <Filter>源文件\routes\itc</Filter>
     </ClCompile>
   </ItemGroup>
@@ -200,7 +200,7 @@
     <ClInclude Include="includes\Aikari-Launcher-Private\types\constants\webSocket.h">
       <Filter>头文件\types\constants</Filter>
     </ClInclude>
-    <ClInclude Include="routes\itc\network.h">
+    <ClInclude Include="routes\itc\networkRoute.h">
       <Filter>头文件\routes\itc</Filter>
     </ClInclude>
     <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\network.h">
@@ -212,7 +212,7 @@
     <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\errorTemplates.h">
       <Filter>头文件\public\constants\itcCtrl</Filter>
     </ClInclude>
-    <ClInclude Include="routes\itc\filesystem.h">
+    <ClInclude Include="routes\itc\filesystemRoute.h">
       <Filter>头文件\routes\itc</Filter>
     </ClInclude>
     <ClInclude Include="includes\Aikari-Launcher-Public\constants\itcCtrl\filesystem.h">

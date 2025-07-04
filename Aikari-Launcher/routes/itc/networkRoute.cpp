@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include "network.h"
+#include "networkRoute.h"
 
 #include <Aikari-Launcher-Public/constants/itcCtrl/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/errors.h>
@@ -16,36 +16,6 @@ namespace itcConstants = AikariLauncherPublic::Constants::InterThread;
 
 namespace AikariLauncherRoutes::InterThread::Network
 {
-    itcTypes::MainToSubControlReplyMessage handleNetworkCtrlMessage(
-        const itcTypes::SubToMainControlMessage& incoming,
-        const std::vector<std::string>& routes
-    )
-    {
-        const std::string& subRoute = routes.at(1);
-        const std::string& fullRoute = incoming.method;
-        itcTypes::MainToSubControlReplyMessage result = {
-            .eventId = incoming.eventId
-        };
-
-        if (subRoute == itcConstants::Network::TLS::_PREFIX)
-        {
-            if (fullRoute == itcConstants::Network::TLS::GEN_TLS_CERTS)
-            {
-                result.data = TLS::_genTlsCert(incoming.data);
-            }
-            else
-            {
-                result.data = itcConstants::Errors::Templates::ROUTE_NOT_FOUND;
-            }
-        }
-        else
-        {
-            result.data = itcConstants::Errors::Templates::ROUTE_NOT_FOUND;
-        }
-
-        return result;
-    };
-
     namespace TLS
     {
         static nlohmann::json _genTlsCert(const nlohmann::json& clientData)
@@ -104,5 +74,35 @@ namespace AikariLauncherRoutes::InterThread::Network
                      { "message", "Successfully generated" } };
         }
     }  // namespace TLS
+
+    itcTypes::MainToSubControlReplyMessage handleNetworkCtrlMessage(
+        const itcTypes::SubToMainControlMessage& incoming,
+        const std::vector<std::string>& routes
+    )
+    {
+        const std::string& subRoute = routes.at(1);
+        const std::string& fullRoute = incoming.method;
+        itcTypes::MainToSubControlReplyMessage result = {
+            .eventId = incoming.eventId
+        };
+
+        if (subRoute == itcConstants::Network::TLS::_PREFIX)
+        {
+            if (fullRoute == itcConstants::Network::TLS::GEN_TLS_CERTS)
+            {
+                result.data = TLS::_genTlsCert(incoming.data);
+            }
+            else
+            {
+                result.data = itcConstants::Errors::Templates::ROUTE_NOT_FOUND;
+            }
+        }
+        else
+        {
+            result.data = itcConstants::Errors::Templates::ROUTE_NOT_FOUND;
+        }
+
+        return result;
+    };
 
 }  // namespace AikariLauncherRoutes::InterThread::Network

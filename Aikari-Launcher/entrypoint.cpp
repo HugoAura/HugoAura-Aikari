@@ -186,8 +186,9 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
                 "PLS"
             );
 
-        auto& threadsMgr = AikariLifecycle::AikariSharedHandlers::getInstance();
-        threadsMgr.setVal(
+        auto& handlersMgr =
+            AikariLifecycle::AikariSharedHandlers::getInstance();
+        handlersMgr.setVal(
             &lifecycleTypes::GlobalSharedHandlersRegistry::
                 plsIncomingMsgQueueHandler,
             plsQueueHandler
@@ -220,6 +221,11 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
             ))
         {
             plsQueueHandler->manualDestroy();
+        }
+
+        if (plsLaunchResult.plsRuntimeThread->joinable())
+        {
+            plsLaunchResult.plsRuntimeThread->join();
         }
 
         LOG_INFO("Clean up for module PLS finished.");

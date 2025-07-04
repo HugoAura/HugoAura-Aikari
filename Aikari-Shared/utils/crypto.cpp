@@ -9,7 +9,7 @@
 
 namespace AikariShared::utils::cryptoUtils
 {
-    std::string genRandomHexSecure(size_t& length)
+    std::string genRandomHexSecure(size_t length)
     {
         if (length == 0 || length % 2 != 0)
         {
@@ -41,7 +41,7 @@ namespace AikariShared::utils::cryptoUtils
         return resultStream.str();
     }
 
-    std::string genRandomHexInsecure(size_t& length)
+    std::string genRandomHexInsecure(size_t length)
     {
         std::stringstream strStream;
         std::srand(static_cast<unsigned int>(std::time(nullptr)));

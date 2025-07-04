@@ -18,5 +18,7 @@ namespace AikariPLS::Types::entrypoint
             AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::SubToMainMessageInstance>>>
             retMessageQueue;
+
+        std::unique_ptr<std::jthread> plsRuntimeThread;
     };
 }  // namespace AikariPLS::Types::entrypoint

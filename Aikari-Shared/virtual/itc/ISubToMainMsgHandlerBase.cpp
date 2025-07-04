@@ -49,7 +49,7 @@ namespace AikariShared::infrastructure::InterThread
 
     void SubToMainMsgHandlerBase::addCtrlMsgCallbackListener(
         const AikariShared::Types::InterThread::eventId& eventId,
-        std::function<
+        std::move_only_function<
             void(AikariShared::Types::InterThread::SubToMainControlReplyMessage
             )> callbackLambda
     )
@@ -132,7 +132,7 @@ namespace AikariShared::infrastructure::InterThread
                                 );
 
                                 std::jthread listenerThread(
-                                    callbackLambda, msgContent
+                                    std::move(callbackLambda), msgContent
                                 );
                                 listenerThread.detach();
                             }

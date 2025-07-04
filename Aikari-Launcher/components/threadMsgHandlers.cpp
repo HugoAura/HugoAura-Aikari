@@ -12,8 +12,8 @@
 #include <string>
 
 #include "lifecycle.h"
-#include "routes/itc/filesystem.h"
-#include "routes/itc/network.h"
+#include "routes/itc/filesystemRoute.h"
+#include "routes/itc/networkRoute.h"
 #include "wsServer.h"
 
 namespace itcConstants = AikariLauncherPublic::Constants::InterThread;

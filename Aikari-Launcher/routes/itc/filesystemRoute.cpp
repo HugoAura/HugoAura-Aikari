@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include "filesystem.h"
+#include "filesystemRoute.h"
 
 #include <Aikari-Launcher-Public/constants/itcCtrl/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/errors.h>
@@ -14,6 +14,44 @@ namespace itcConstants = AikariLauncherPublic::Constants::InterThread;
 
 namespace AikariLauncherRoutes::InterThread::FileSystem
 {
+    namespace Base
+    {
+        static nlohmann::json _getDir(const nlohmann::json& param)
+        {
+            auto& sharedIns =
+                AikariLifecycle::AikariSharedInstances::getInstance();
+            auto* fsMgr = sharedIns.getPtr(
+                &AikariTypes::global::lifecycle::SharedInstances::fsManagerIns
+            );
+            const std::string dirType = param.value("dirType", "");
+            nlohmann::json result;
+            result["success"] = true;
+            if (dirType == "auraRoot")
+            {
+                result["path"] = fsMgr->hugoAuraRootDir.string();
+            }
+            else if (dirType == "aikariRoot")
+            {
+                result["path"] = fsMgr->aikariRootDir.string();
+            }
+            else if (dirType == "aikariConf")
+            {
+                result["path"] = fsMgr->aikariConfigDir.string();
+            }
+            else if (dirType == "aikariLog")
+            {
+                result["path"] = fsMgr->aikariLogDir.string();
+            }
+            else
+            {
+                result["diagnoseCode"] = itcConstants::Errors::INVALID_ARG;
+                result["success"] = false;
+            }
+
+            return result;
+        }
+    }  // namespace Base
+
     itcTypes::MainToSubControlReplyMessage handleFsCtrlMessage(
         const itcTypes::SubToMainControlMessage& incoming,
         const std::vector<std::string>& routes
@@ -43,42 +81,4 @@ namespace AikariLauncherRoutes::InterThread::FileSystem
 
         return result;
     };
-
-    namespace Base
-    {
-        static nlohmann::json _getDir(const nlohmann::json& param)
-        {
-            auto& sharedIns =
-                AikariLifecycle::AikariSharedInstances::getInstance();
-            auto* fsMgr = sharedIns.getPtr(
-                &AikariTypes::global::lifecycle::SharedInstances::fsManagerIns
-            );
-            const std::string dirType = param.value("dirType", "");
-            nlohmann::json result;
-            result["success"] = true;
-            if (dirType == "auraRoot")
-            {
-                result["path"] = fsMgr->hugoAuraRootDir;
-            }
-            else if (dirType == "aikariRoot")
-            {
-                result["path"] = fsMgr->aikariRootDir;
-            }
-            else if (dirType == "aikariConf")
-            {
-                result["path"] = fsMgr->aikariConfigDir;
-            }
-            else if (dirType == "aikariLog")
-            {
-                result["path"] = fsMgr->aikariLogDir;
-            }
-            else
-            {
-                result["diagnoseCode"] = itcConstants::Errors::INVALID_ARG;
-                result["success"] = false;
-            }
-
-            return result;
-        }
-    }  // namespace Base
 }  // namespace AikariLauncherRoutes::InterThread::FileSystem

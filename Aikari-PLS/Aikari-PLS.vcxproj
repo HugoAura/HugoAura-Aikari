@@ -164,9 +164,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Launcher/includes;$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -185,9 +185,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Launcher/includes;$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -204,9 +204,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Launcher/includes;$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -225,9 +225,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Launcher/includes;$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -244,9 +244,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Launcher/includes;$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -265,9 +265,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(SolutionDir)/External;$(ProjectDir);$(SolutionDir)/Aikari-Launcher/includes;$(SolutionDir)/Aikari-Shared/includes;$(ProjectDir)/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>

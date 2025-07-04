@@ -59,11 +59,13 @@ namespace AikariPLS::Exports
             );
         }
 
-        bool plsInitResult = AikariPLS::Init::runPlsInit();
+        auto plsInitThread =
+            std::make_unique<std::jthread>(AikariPLS::Init::runPlsInit);
 
         AikariPLS::Types::entrypoint::EntrypointRet launchResult = {
-            .success = plsInitResult,
-            .retMessageQueue = std::move(retMessageQueue)
+            .success = true,
+            .retMessageQueue = std::move(retMessageQueue),
+            .plsRuntimeThread = std::move(plsInitThread)
         };
 
         return launchResult;
