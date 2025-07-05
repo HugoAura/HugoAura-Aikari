@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "fileSystem.h"
+﻿#include "fileSystem.h"
 
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Shared/utils/string.h>

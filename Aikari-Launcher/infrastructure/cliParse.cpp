@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Launcher-Private/common.h>
+﻿#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/infrastructure/cliParseTypes.h>
 #include <cxxopts.hpp>
 

@@ -1,8 +1,5 @@
 project_add_library(Aikari-Shared STATIC
     Aikari-Shared.cpp
-    pch.cpp
-    pch.h
-    framework.h
     infrastructure/logger.cpp
     utils/crypto.cpp
     utils/registry.cpp
@@ -23,6 +20,14 @@ target_link_libraries(Aikari-Shared PRIVATE nlohmann_json::nlohmann_json)
 # SPDLog
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(Aikari-Shared PRIVATE spdlog::spdlog_header_only)
+
+target_precompile_headers(Aikari-Shared
+  PUBLIC
+    <string>
+    <vector>
+    <spdlog/spdlog.h>
+    <nlohmann/json.hpp>
+)
 
 # --- Link --- #
 

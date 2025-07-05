@@ -1,12 +1,11 @@
-﻿#include "pch.h"
-
-#include <Aikari-PLS/Aikari-PLS-Exports.h>
+﻿#include <Aikari-PLS/Aikari-PLS-Exports.h>
 #include <Aikari-PLS/types/entrypoint.h>
 #include <Aikari-Shared/infrastructure/logger.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/types/itc/shared.h>
 
+#include "components/mqttBroker.h"
 #include "infrastructure/threadMsgHandler.h"
 #include "init.h"
 #include "lifecycle.h"
@@ -82,6 +81,10 @@ namespace AikariPLS::Exports
             &LifecycleTypes::PLSSharedIns::threadMsgQueueHandler
         );
         threadMsgHandlerIns->manualDestroy();
+
+        auto mqttBrokerIns =
+            sharedInsMgr.getPtr(&LifecycleTypes::PLSSharedIns::mqttBroker);
+        mqttBrokerIns->cleanUp();
 
         LOG_INFO("Clean up finished, module PLS is unloaded.");
         return;

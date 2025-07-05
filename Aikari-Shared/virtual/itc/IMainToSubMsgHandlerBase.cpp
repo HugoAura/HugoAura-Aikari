@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Shared/virtual/itc/IMainToSubMsgHandlerBase.h>
+﻿#include <Aikari-Shared/virtual/itc/IMainToSubMsgHandlerBase.h>
 
 namespace itcTypes = AikariShared::Types::InterThread;
 

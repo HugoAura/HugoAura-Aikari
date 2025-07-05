@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "wsAuthHandler.h"
+﻿#include "wsAuthHandler.h"
 
 #include <ada.h>
 

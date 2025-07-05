@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "threadMsgHandlers.h"
+﻿#include "threadMsgHandlers.h"
 
 #include <Aikari-Launcher-Public/constants/itcCtrl/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/filesystem.h>
@@ -11,9 +9,9 @@
 #include <stdexcept>
 #include <string>
 
-#include "lifecycle.h"
-#include "routes/itc/filesystemRoute.h"
-#include "routes/itc/networkRoute.h"
+#include "../lifecycle.h"
+#include "../routes/itc/filesystemRoute.h"
+#include "../routes/itc/networkRoute.h"
 #include "wsServer.h"
 
 namespace itcConstants = AikariLauncherPublic::Constants::InterThread;

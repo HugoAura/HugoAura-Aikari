@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "init.h"
+﻿#include "init.h"
 
 #include <Aikari-Launcher-Public/constants/itcCtrl/filesystem.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/network.h>
@@ -15,6 +13,7 @@
 #include <infrastructure/threadMsgHandler.h>
 #include <optional>
 
+#include "components/mqttBroker.h"
 #include "lifecycle.h"
 
 namespace plsConstants = AikariPLS::Types::constants;
@@ -54,7 +53,7 @@ namespace AikariPLS::Init
         msgQueue->push(msgIns);
     };
 
-    static bool _initMqttCert(
+    static std::variant<std::filesystem::path, bool> _initMqttCert(
         AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler*
             msgQueueHandler
     )
@@ -91,9 +90,10 @@ namespace AikariPLS::Init
                 aikariDir / "config" / "certs" / "mqtt.crt"
             ))
         {
-            LOG_INFO("MQTT TLS cert already generated, skipping regeneration..."
+            LOG_INFO(
+                "MQTT TLS cert already generated, skipping regeneration..."
             );
-            return true;
+            return aikariDir;
         }
 
         itcConstants::SubToMainControlMessage initCertMsg = {
@@ -123,7 +123,9 @@ namespace AikariPLS::Init
         }
 
         LOG_INFO("Successfully generated MQTT TLS cert.");
-        return true;
+
+        LOG_DEBUG("Return {}", aikariDir.string());
+        return aikariDir;
     };
 
     PLSInitSuccess runPlsInit()
@@ -173,11 +175,49 @@ namespace AikariPLS::Init
         }
 
         LOG_INFO("Ensuring MQTT TLS cert...");
-        bool result = _initMqttCert(msgQueueHandlerPtr);
-        if (!result)
+        std::filesystem::path aikariDir;
+        auto result = _initMqttCert(msgQueueHandlerPtr);
+        try
         {
-            LOG_CRITICAL("Failed to init MQTT cert, exiting PLS...");
-            return false;
+            if (!std::get<bool>(result))
+            {
+                LOG_CRITICAL("Failed to init MQTT cert, exiting PLS...");
+                return false;
+            }
+        }
+        catch (...)
+        {
+            aikariDir = std::get<std::filesystem::path>(result);
+        }
+
+        LOG_INFO("Starting MQTT Broker server...");
+        LOG_DEBUG(aikariDir.string());
+        AikariPLS::Components::MQTTBroker::BrokerLaunchArg brokerLaunchArg = {
+            .certPath =
+                (aikariDir / "config" / "certs" /
+                 std::format(
+                     "{}.crt",
+                     plsConstants::init::networkInit::TLS_CERT_IDENTIFIER
+                 ))
+                    .string(),
+            .keyPath = (aikariDir / "config" / "certs" /
+                        std::format(
+                            "{}.key",
+                            plsConstants::init::networkInit::TLS_CERT_IDENTIFIER
+                        ))
+                           .string(),
+            .hostname = plsConstants::init::networkInit::HOSTNAME,
+            .port = plsConstants::init::networkInit::PORT
+        };
+        {
+            auto brokerIns =
+                std::make_unique<AikariPLS::Components::MQTTBroker::Broker>(
+                    brokerLaunchArg
+                );
+            sharedIns.setPtr(
+                &AikariPLS::Types::lifecycle::PLSSharedIns::mqttBroker,
+                std::move(brokerIns)
+            );
         }
 
         return true;

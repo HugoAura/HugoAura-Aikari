@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "threadMsgHandler.h"
+﻿#include "threadMsgHandler.h"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 

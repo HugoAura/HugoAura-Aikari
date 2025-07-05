@@ -1,15 +1,13 @@
-﻿#include "pch.h"
-
-#include "networkRoute.h"
+﻿#include "networkRoute.h"
 
 #include <Aikari-Launcher-Public/constants/itcCtrl/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/errors.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/network.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 
-#include "infrastructure/filesystem.h"
-#include "lifecycle.h"
-#include "utils/sslUtils.h"
+#include "../../infrastructure/filesystem.h"
+#include "../../lifecycle.h"
+#include "../../utils/sslUtils.h"
 
 namespace itcTypes = AikariShared::Types::InterThread;
 namespace itcConstants = AikariLauncherPublic::Constants::InterThread;

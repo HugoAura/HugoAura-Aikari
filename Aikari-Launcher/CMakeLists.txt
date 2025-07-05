@@ -2,8 +2,6 @@ project_add_executable(Aikari-Launcher
     entrypoint.cpp
     lifecycle.cpp
     lifecycle.h
-    pch.cpp
-    pch.h
     resource.h
     Aikari-Launcher.rc
     components/config.cpp
@@ -60,6 +58,15 @@ target_link_libraries(Aikari-Launcher PRIVATE MbedTLS::mbedtls)
 find_package(ixwebsocket CONFIG REQUIRED)
 target_link_libraries(Aikari-Launcher PRIVATE ixwebsocket::ixwebsocket)
 
+target_precompile_headers(Aikari-Launcher
+  PUBLIC
+    <string>
+    <vector>
+    <memory>
+    <spdlog/spdlog.h>
+    <nlohmann/json.hpp>
+)
+
 # --- Link --- #
 target_link_libraries(Aikari-Launcher
   PUBLIC
@@ -74,7 +81,7 @@ target_link_libraries(Aikari-Launcher
 # --- Include --- #
 target_include_directories(Aikari-Launcher
   PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_include_directories(Aikari-Launcher

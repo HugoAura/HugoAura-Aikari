@@ -19,6 +19,11 @@ namespace AikariPLS::Infrastructure::MsgQueue
     class PLSThreadMsgQueueHandler;
 }
 
+namespace AikariPLS::Components::MQTTBroker
+{
+    class Broker;
+}
+
 namespace AikariPLS::Types::lifecycle
 {
     struct PLSSharedIns
@@ -26,6 +31,7 @@ namespace AikariPLS::Types::lifecycle
         std::unique_ptr<
             AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>
             threadMsgQueueHandler;
+        std::unique_ptr<AikariPLS::Components::MQTTBroker::Broker> mqttBroker;
 
         PLSSharedIns();
         static PLSSharedIns createDefault();

@@ -11,6 +11,7 @@ namespace AikariPLS::Types::constants::init
             "$aura.pls.init.pushSwCoreOnKillEvent";
 
         const char* HOSTNAME = "iot-broker-mis.seewo.com";
+        const int PORT = 8883;
         const char* TLS_CERT_IDENTIFIER = "mqtt";
     }  // namespace networkInit
 }  // namespace AikariPLS::Types::constants::init

@@ -72,7 +72,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
             AikariTypes::components::websocket::ClientWSTask>>
             threadPool;
 
-        size_t threadCount = 16;
+        size_t threadCount = 4;
 
         bool isStopped = false;
 

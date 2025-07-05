@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Launcher-Private/common.h>
+﻿#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 #include <Aikari-Launcher-Public/version.h>
 #include <Aikari-PLS/Aikari-PLS-Exports.h>

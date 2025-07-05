@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Shared/infrastructure/loggerMacro.h>
+﻿#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/windows.h>
 #include <TlHelp32.h>
 #include <windows.h>

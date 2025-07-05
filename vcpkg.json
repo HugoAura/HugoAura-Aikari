@@ -6,6 +6,7 @@
     "libsodium",
     "mbedtls",
     "nlohmann-json",
-    "spdlog"
+    "spdlog",
+    "paho-embedded-mqtt"
   ]
 }

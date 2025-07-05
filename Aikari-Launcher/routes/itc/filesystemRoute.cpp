@@ -1,13 +1,11 @@
-﻿#include "pch.h"
-
-#include "filesystemRoute.h"
+﻿#include "filesystemRoute.h"
 
 #include <Aikari-Launcher-Public/constants/itcCtrl/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/errors.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/filesystem.h>
 
-#include "infrastructure/filesystem.h"
-#include "lifecycle.h"
+#include "../../infrastructure/filesystem.h"
+#include "../../lifecycle.h"
 
 namespace itcTypes = AikariShared::Types::InterThread;
 namespace itcConstants = AikariLauncherPublic::Constants::InterThread;

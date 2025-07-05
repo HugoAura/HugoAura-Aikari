@@ -5,9 +5,8 @@ project_add_library(Aikari-PLS SHARED
     init.h
     lifecycle.cpp
     lifecycle.h
-    pch.cpp
-    pch.h
-    framework.h
+    components/mqttBroker.cpp
+    components/mqttBroker.h
     infrastructure/threadMsgHandler.cpp
     infrastructure/threadMsgHandler.h
     utils/windowsApi.cpp
@@ -24,8 +23,20 @@ target_link_libraries(Aikari-PLS PRIVATE spdlog::spdlog_header_only)
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(Aikari-PLS PRIVATE nlohmann_json::nlohmann_json)
 
-# --- Defs --- #
+# mbedTLS
+find_package(MbedTLS CONFIG REQUIRED)
+target_link_libraries(Aikari-PLS PRIVATE MbedTLS::mbedtls)
 
+target_precompile_headers(Aikari-PLS
+  PRIVATE
+    <string>
+    <vector>
+    <memory>
+    <spdlog/spdlog.h>
+    <nlohmann/json.hpp>
+)
+
+# --- Defs --- #
 target_compile_definitions(Aikari-PLS
   PRIVATE
     AIKARIPLS_EXPORTS

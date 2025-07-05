@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "winSvc.h"
+﻿#include "winSvc.h"
 
 #include <Aikari-Shared/utils/string.h>
 

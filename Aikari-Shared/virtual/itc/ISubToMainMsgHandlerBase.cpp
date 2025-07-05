@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Shared/virtual/itc/ISubToMainMsgHandlerBase.h>
+﻿#include <Aikari-Shared/virtual/itc/ISubToMainMsgHandlerBase.h>
 
 // mostly same as IMTSMsgHandlerBase, but some logic & types are different
 

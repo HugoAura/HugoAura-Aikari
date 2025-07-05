@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 target_compile_options(Aikari-Global-Virtual INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
     $<$<CXX_COMPILER_ID:Clang>:-finput-charset=UTF-8>
@@ -25,6 +27,10 @@ target_compile_options(Aikari-Global-Virtual INTERFACE
 target_compile_definitions(Aikari-Global-Virtual INTERFACE
     _UNICODE
     UNICODE
+)
+
+target_compile_definitions(Aikari-Global-Virtual INTERFACE
+    $<IF:$<CONFIG:Debug>,SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE,SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG>
 )
 
 # --- Functions --- #

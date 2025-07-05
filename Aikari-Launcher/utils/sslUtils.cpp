@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "sslUtils.h"
+﻿#include "sslUtils.h"
 
 #include <chrono>
 #include <fstream>

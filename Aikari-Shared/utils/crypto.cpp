@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Shared/utils/crypto.h>
+﻿#include <Aikari-Shared/utils/crypto.h>
 #include <format>
 #include <iomanip>
 #include <random>

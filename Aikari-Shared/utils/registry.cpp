@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Shared/utils/registry.h>
+﻿#include <Aikari-Shared/utils/registry.h>
 #include <Aikari-Shared/utils/string.h>
 #include <format>
 #include <stdexcept>

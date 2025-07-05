@@ -4,5 +4,11 @@
   "cmake.configureOnOpen": false,
   "C_Cpp.default.cppStandard": "c++23",
   "C_Cpp.default.cStandard": "c23",
-  "C_Cpp.formatting": "clangFormat"
+  "C_Cpp.formatting": "clangFormat",
+  "editor.tabSize": 4,
+  "files.associations": {
+    "chrono": "cpp",
+    "thread": "cpp",
+    "memory": "cpp"
+  }
 }

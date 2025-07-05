@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Aikari-Shared/infrastructure/logger.h>
+﻿#include <Aikari-Shared/infrastructure/logger.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <windows.h>

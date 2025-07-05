@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "registry.h"
+﻿#include "registry.h"
 
 #include <Aikari-Shared/utils/string.h>
 

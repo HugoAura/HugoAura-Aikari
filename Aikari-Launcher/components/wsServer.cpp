@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "wsServer.h"
+﻿#include "wsServer.h"
 
 #include <Aikari-Launcher-Private/types/constants/webSocket.h>
 #include <Aikari-Shared/utils/crypto.h>

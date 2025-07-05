@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include "config.h"
+﻿#include "config.h"
 
 #include <Aikari-Launcher-Private/types/config/configType.h>
 

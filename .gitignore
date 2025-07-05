@@ -32,6 +32,7 @@ install/
 *.al
 *.so
 *.so.*
+compile_commands.json
 
 # Visual Studio
 Debug/
@@ -74,6 +75,7 @@ vcpkg_installed/
 
 # CMake
 CMakeUserPresets.json
+CMakeFiles
 
 # User Preferences
 *.user
