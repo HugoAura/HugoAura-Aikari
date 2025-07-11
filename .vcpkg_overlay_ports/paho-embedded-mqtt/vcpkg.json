@@ -1,9 +1,0 @@
-{
-  "name": "paho-embedded-mqtt",
-  "version-string": "1.1.0",
-  "description": "Paho MQTT C client library for embedded systems. Paho is an Eclipse IoT project (https://iot.eclipse.org/)",
-  "dependencies": [
-    "vcpkg-cmake",
-    "vcpkg-cmake-config"
-  ]
-}

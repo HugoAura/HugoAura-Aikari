@@ -11,7 +11,8 @@
                 "_UNICODE"
             ],
             "windowsSdkVersion": "10.0.26100.0",
-            "compilerPath": "cl.exe"
+            "compilerPath": "cl.exe",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

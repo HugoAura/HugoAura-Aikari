@@ -1,5 +1,6 @@
-#pragma once
+﻿#pragma once
 
+#include <Aikari-Shared/infrastructure/queue/PoolQueue.hpp>
 #include <atomic>
 #include <filesystem>
 #include <functional>
@@ -11,6 +12,8 @@
 #include <memory>
 #include <string>
 #include <thread>
+
+#include "mqttBrokerHandler.h"
 
 namespace AikariPLS::Components::MQTTBroker
 {
@@ -58,7 +61,16 @@ namespace AikariPLS::Components::MQTTBroker
         NetContexts netCtx;
         OtherMBedTLSInstances mbedCtx;
 
-        std::vector<unsigned char> clientMsgBuffer;
+        std::vector<async_mqtt::packet_variant> pendingPkts;
+
+        std::unique_ptr<
+            AikariPLS::Components::MQTTBroker::Class::MQTTBrokerConnection>
+            connection;
+        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+            std::stringstream>>
+            threadPool;
+
+        size_t threadCount = 8;
 
         std::string hostname;
         int port;
@@ -66,6 +78,12 @@ namespace AikariPLS::Components::MQTTBroker
         std::string keyPath;
 
         std::unique_ptr<std::jthread> serverLoop;
+
+        std::function<void(std::stringstream)> handleRecv;
+
+        void resetCurConnection();
+
+        void processConnectPackage(std::string& package);
 
         void listenLoop();
     };

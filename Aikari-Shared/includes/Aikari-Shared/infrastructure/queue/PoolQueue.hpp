@@ -47,6 +47,15 @@ namespace AikariShared::infrastructure::MessageQueue
             cv.notify_one();
         }
 
+        void insertTask(TaskType newTask)
+        {
+            {
+                std::unique_lock<std::mutex> uLock(this->taskMutex);
+                this->tasks.emplace(std::move(newTask));
+            }
+            cv.notify_one();
+        }
+
        private:
         std::vector<std::jthread> workers;
         std::queue<TaskType> tasks;
@@ -60,27 +69,24 @@ namespace AikariShared::infrastructure::MessageQueue
         {
             while (true)
             {
-                TaskType curTask;
-                {
-                    std::unique_lock<std::mutex> uLock(this->taskMutex);
-                    cv.wait(
-                        uLock,
-                        [this]
-                        {
-                            return !this->isRunning || !this->tasks.empty();
-                        }
-                    );
-
-                    if (!this->isRunning)
+                std::unique_lock<std::mutex> uLock(this->taskMutex);
+                cv.wait(
+                    uLock,
+                    [this]
                     {
-                        return;
+                        return !this->isRunning || !this->tasks.empty();
                     }
+                );
 
-                    curTask = std::move(this->tasks.front());
-                    this->tasks.pop();
-                    uLock.unlock();
+                if (!this->isRunning)
+                {
+                    return;
                 }
-                this->execFunction(curTask);
+
+                TaskType curTask = std::move(this->tasks.front());
+                this->tasks.pop();
+                uLock.unlock();
+                this->execFunction(std::move(curTask));
             }
         }
     };

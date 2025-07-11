@@ -7,6 +7,9 @@
     "mbedtls",
     "nlohmann-json",
     "spdlog",
-    "paho-embedded-mqtt"
+    {
+      "name": "async-mqtt",
+      "default-features": false
+    }
   ]
 }

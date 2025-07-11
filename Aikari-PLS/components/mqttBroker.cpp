@@ -1,4 +1,4 @@
-#include "mqttBroker.h"
+﻿#include "mqttBroker.h"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <WinSock2.h>
@@ -17,6 +17,19 @@ namespace AikariPLS::Components::MQTTBroker
         this->serverLoop = std::make_unique<std::jthread>(
             &Broker::startTlsServerLoop, this, arg
         );
+
+        this->handleRecv = [this](std::stringstream istreamData)
+        {
+            if (this->connection != NULL)
+            {
+                this->connection->recv(istreamData);
+            }
+        };
+        this->threadPool =
+            std::make_unique<AikariShared::infrastructure::MessageQueue::
+                                 PoolQueue<std::stringstream>>(
+                this->threadCount, this->handleRecv
+            );
     };
 
     Broker::~Broker()
@@ -195,6 +208,45 @@ namespace AikariPLS::Components::MQTTBroker
         }
     }
 
+    void Broker::resetCurConnection()
+    {
+        mbedtls_ssl_close_notify(&this->sslCtx);
+        mbedtls_net_free(&this->netCtx.clientFd);
+        mbedtls_ssl_session_reset(&this->sslCtx);
+        this->connection.reset();
+    };
+
+    void Broker::processConnectPackage(std::string& package)
+    {
+        std::string original("MQIsdp");
+        auto findResult = package.find(original);
+        if (findResult == std::string::npos)
+        {
+            return;
+        }
+
+        LOG_DEBUG("CONNECT packet found, replacing headers...");
+        package[findResult - 2] = 0x00;
+        package[findResult - 1] = 0x04;
+        package.replace(findResult, original.length(), "MQTT");
+        package[findResult + 4] = 0x04;
+
+        auto originalLastLength = package[findResult - 3];
+        package[findResult - 3] = originalLastLength - 0x02;
+
+#ifdef _DEBUG
+
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (unsigned char c : package)
+        {
+            ss << std::setw(2) << static_cast<int>(c);
+        }
+        LOG_TRACE("Replace result: {}", ss.str());
+
+#endif
+    };
+
     void Broker::listenLoop()
     {
         mbedtls_net_context* curClientFd = NULL;
@@ -203,6 +255,8 @@ namespace AikariPLS::Components::MQTTBroker
 
         while (!this->shouldExit)
         {
+            // 加个 writeFd 可能更好, 但目前应该没必要
+
             fd_set readFds;
             struct timeval timeVal;
 
@@ -305,13 +359,29 @@ namespace AikariPLS::Components::MQTTBroker
                     LOG_DEBUG("SSL handshake completed.");
 
                     curClientFd = &this->netCtx.clientFd;
+
+                    this->connection =
+                        std::make_unique<AikariPLS::Components::MQTTBroker::
+                                             Class::MQTTBrokerConnection>(
+                            [this](async_mqtt::packet_variant packet)
+                            {
+                                this->pendingPkts.emplace_back(packet);
+                            },
+                            [this]()
+                            {
+                                this->resetCurConnection();
+                            },
+                            [this](async_mqtt::error_code errCode)
+                            {
+                            }
+                        );
                 }
             }
 
             if (curClientFd != NULL &&
                 FD_ISSET(this->netCtx.clientFd.fd, &readFds))
             {
-                unsigned char clientMsgBuffer[8192];
+                unsigned char clientMsgBuffer[4096];
                 memset(clientMsgBuffer, 0, sizeof(clientMsgBuffer));
                 taskTempRet = mbedtls_ssl_read(
                     &sslCtx, clientMsgBuffer, sizeof(clientMsgBuffer) - 1
@@ -320,14 +390,27 @@ namespace AikariPLS::Components::MQTTBroker
                 if (taskTempRet > 0)
                 {
                     int packetLength = taskTempRet;
+
+                    std::string strReadData(
+                        reinterpret_cast<char*>(clientMsgBuffer), taskTempRet
+                    );
+
+                    if (clientMsgBuffer[0] == 0x10)
+                    {  // Maybe CONNECT pkt
+                        this->processConnectPackage(strReadData);
+                    }
+
 #ifdef _DEBUG
                     LOG_TRACE(
                         "New data received, bytes: {}, data:\n{}",
                         packetLength,
-                        (char*)clientMsgBuffer
+                        strReadData
                     );
 #endif
-                    this->clientMsgBuffer.insert(this->clientMsgBuffer.end(), clientMsgBuffer, clientMsgBuffer + taskTempRet);
+
+                    std::stringstream strStream(strReadData);
+
+                    this->threadPool->insertTask(std::move(strStream));
                 }
                 else if (taskTempRet == MBEDTLS_ERR_SSL_WANT_READ ||
                          taskTempRet == MBEDTLS_ERR_SSL_WANT_WRITE)
@@ -355,12 +438,31 @@ namespace AikariPLS::Components::MQTTBroker
                     }
 
                     LOG_DEBUG("Client disconnected, cleaning up...");
-                    mbedtls_ssl_close_notify(&this->sslCtx);
-                    mbedtls_net_free(&this->netCtx.clientFd);
-                    mbedtls_ssl_session_reset(&this->sslCtx);
+                    this->resetCurConnection();
 
                     curClientFd = NULL;
                 }
+            }
+
+            if (curClientFd != NULL && !this->pendingPkts.empty())
+            {
+                for (auto& pkt : this->pendingPkts)
+                {
+                    std::vector<unsigned char> pendingBuf;
+                    auto pktBufSeq = pkt.const_buffer_sequence();
+                    for (auto& pktBuf : pktBufSeq)
+                    {
+                        pendingBuf.insert(
+                            pendingBuf.end(),
+                            (const unsigned char*)pktBuf.data(),
+                            (const unsigned char*)pktBuf.data() + pktBuf.size()
+                        );
+                    }
+                    mbedtls_ssl_write(
+                        &this->sslCtx, pendingBuf.data(), pendingBuf.size()
+                    );
+                }
+                this->pendingPkts.clear();
             }
         }
 
