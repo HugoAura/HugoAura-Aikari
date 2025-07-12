@@ -1,4 +1,5 @@
 ﻿#include <Aikari-Launcher-Private/common.h>
+#include <Aikari-Launcher-Private/types/constants/entrypoint.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 #include <Aikari-Launcher-Public/version.h>
 #include <Aikari-PLS/Aikari-PLS-Exports.h>
@@ -9,6 +10,7 @@
 #include <cxxopts.hpp>
 #include <future>
 #include <ixwebsocket/IXNetSystem.h>
+#include <windows.h>
 
 #include "components/config.h"
 #include "components/threadMsgHandlers.h"
@@ -22,6 +24,8 @@
 #include "utils/sslUtils.h"
 
 namespace lifecycleTypes = AikariTypes::global::lifecycle;
+
+namespace entrypointConstants = AikariTypes::constants::entrypoint;
 
 std::promise<bool> aikariAlivePromise;
 
@@ -49,6 +53,18 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
                        std::chrono::system_clock::now().time_since_epoch()
     )
                        .count();
+
+    HINSTANCE selfHIns = GetModuleHandleW(NULL);
+    if (selfHIns == NULL)
+    {
+        LOG_CRITICAL(
+            "--- DO NOT REPORT THIS TO HUGOAURA, THIS IS NOT A BUG OR A CRASH "
+            "---"
+        );
+        LOG_CRITICAL("Failed to get the handle of main process, exiting...");
+        LOG_CRITICAL("Please check your system environment.");
+        return entrypointConstants::EXIT_CODES::HINS_GET_FAILED;
+    }
 
     auto& lifecycleStates = AikariLifecycle::AikariStatesManager::getInstance();
     LOG_INFO("Initializing states manager...");
@@ -91,7 +107,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     if (regKeyValidateResult == -1)
     {
         LOG_CRITICAL("Registry initialization failed, exiting Aikari...");
-        return -1;
+        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
     }
 
     LOG_INFO("Initializing config manager...");
@@ -100,7 +116,8 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
             AikariLauncherComponents::AikariConfig::LauncherConfigManager>(
             "launcher",
             fileSystemManagerIns->aikariConfigDir / "config.json",
-            IDR_AIKARI_DEFAULT_JSON
+            IDR_AIKARI_DEFAULT_JSON,
+            selfHIns
         );
         sharedInstances.setPtr(
             &lifecycleTypes::SharedInstances::configManagerIns,
@@ -114,7 +131,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     if (!initConfigResult)
     {
         LOG_CRITICAL("Config initialization failed, exiting Aikari...");
-        return -1;
+        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
     }
 
     LOG_INFO("Initializing TLS certificates...");
@@ -128,7 +145,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
         LOG_CRITICAL(
             "Failed to initialize WebSocket TLS cert, exiting Aikari..."
         );
-        return -1;
+        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
     }
 
     LOG_INFO("Initializing Windows socket environment...");
@@ -152,7 +169,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     if (!wsLaunchResult)
     {
         LOG_CRITICAL("Failed to launch Aikari ws server, exiting Aikari...");
-        return -1;
+        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
     }
 
     auto curSharedMsgQueues = lifecycleStates.getVal(
@@ -238,7 +255,7 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     sharedInstances.resetPtr(&lifecycleTypes::SharedInstances::wsServerMgrIns);
 
     LOG_INFO("👋 Clean up completed, goodbye.");
-    return 0;
+    return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
 }
 
 int main(int argc, const char* argv[])
@@ -278,11 +295,13 @@ int main(int argc, const char* argv[])
         if (winSvcMgrIns->isServiceExists)
         {
             LOG_WARN("Aikari Svc already installed, skipping installation.");
-            return 0;
+            return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
         }
 
         bool instResult = winSvcMgrIns->installService();
-        return instResult ? 0 : -1;
+        return instResult
+                   ? entrypointConstants::EXIT_CODES::NORMAL_EXIT
+                   : entrypointConstants::EXIT_CODES::SERVICE_ACTION_FAILED;
     }
     else if (parseRet.serviceCtrl == "uninstall")
     {
@@ -290,11 +309,13 @@ int main(int argc, const char* argv[])
         if (!winSvcMgrIns->isServiceExists)
         {
             LOG_WARN("Aikari Svc not installed, cannot uninstall.");
-            return 0;
+            return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
         }
 
         bool uninstResult = winSvcMgrIns->uninstallService();
-        return uninstResult ? 0 : -1;
+        return uninstResult
+                   ? entrypointConstants::EXIT_CODES::NORMAL_EXIT
+                   : entrypointConstants::EXIT_CODES::SERVICE_ACTION_FAILED;
     }
 
     signal(SIGINT, exitSignalHandler);

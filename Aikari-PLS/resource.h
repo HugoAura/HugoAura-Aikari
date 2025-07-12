@@ -1,0 +1,1 @@
+#define IDR_SEEWO_BROKER_CERT 101

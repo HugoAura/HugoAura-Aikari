@@ -1,0 +1,9 @@
+#pragma code_page(65001)
+
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+#include "winres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
+IDR_SEEWO_BROKER_CERT RCDATA "resources\\certs\\seewo_broker_godaddy_ca.crt"

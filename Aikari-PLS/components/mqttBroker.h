@@ -15,6 +15,10 @@
 
 #include "mqttBrokerHandler.h"
 
+/*
+ * MQTT Broker is initialized in init.cpp
+ * Mounted on sharedIns
+ */
 namespace AikariPLS::Components::MQTTBroker
 {
     constexpr const char* pers = "Caused by playing Gensh1n 1mpact";
@@ -45,12 +49,12 @@ namespace AikariPLS::Components::MQTTBroker
     class Broker
     {
        public:
-        Broker(BrokerLaunchArg arg);
+        Broker(const BrokerLaunchArg& arg);
 
         ~Broker();
 
-        void startTlsServerLoop(BrokerLaunchArg arg);
-        void cleanUp();
+        void startTlsServerLoop(const BrokerLaunchArg& arg);
+        void cleanUp(bool ignoreThreadJoin);
 
        private:
         bool cleaned = false;
@@ -60,8 +64,6 @@ namespace AikariPLS::Components::MQTTBroker
         mbedtls_ssl_context sslCtx;
         NetContexts netCtx;
         OtherMBedTLSInstances mbedCtx;
-
-        std::vector<async_mqtt::packet_variant> pendingPkts;
 
         std::unique_ptr<
             AikariPLS::Components::MQTTBroker::Class::MQTTBrokerConnection>

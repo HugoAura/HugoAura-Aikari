@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <string>
-#include <wtypes.h>
+#include <windows.h>
 
 namespace AikariShared::utils::string
 {

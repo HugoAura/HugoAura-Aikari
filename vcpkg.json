@@ -1,6 +1,12 @@
 {
+  "name": "hugoaura-aikari",
+  "version": "0.0.1",
   "dependencies": [
     "ada-url",
+    {
+      "name": "async-mqtt",
+      "default-features": false
+    },
     "cxxopts",
     "ixwebsocket",
     "libsodium",
@@ -8,8 +14,17 @@
     "nlohmann-json",
     "spdlog",
     {
-      "name": "async-mqtt",
-      "default-features": false
+      "name": "curl",
+      "features": [
+        "mbedtls",
+        "ssl"
+      ]
+    },
+    {
+      "name": "cpr",
+      "features": [
+        "ssl"
+      ]
     }
   ]
 }

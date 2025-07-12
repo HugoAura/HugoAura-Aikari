@@ -1,5 +1,7 @@
 ﻿#include "mqttBroker.h"
 
+#define CUSTOM_LOG_HEADER "[MQTT Broker]"
+
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <WinSock2.h>
 
@@ -7,7 +9,7 @@
 
 namespace AikariPLS::Components::MQTTBroker
 {
-    Broker::Broker(BrokerLaunchArg arg)
+    Broker::Broker(const BrokerLaunchArg& arg)
     {
         this->hostname = arg.hostname;
         this->port = arg.port;
@@ -20,7 +22,7 @@ namespace AikariPLS::Components::MQTTBroker
 
         this->handleRecv = [this](std::stringstream istreamData)
         {
-            if (this->connection != NULL)
+            if (this->connection != nullptr)
             {
                 this->connection->recv(istreamData);
             }
@@ -34,18 +36,18 @@ namespace AikariPLS::Components::MQTTBroker
 
     Broker::~Broker()
     {
-        this->cleanUp();
+        this->cleanUp(false);
     };
 
-    void Broker::cleanUp()
+    void Broker::cleanUp(bool ignoreThreadJoin)
     {
         if (this->cleaned)
             return;
 
-        LOG_DEBUG("Cleaning up MQTT Broker server contexts...");
+        CUSTOM_LOG_DEBUG("Cleaning up MQTT Broker server context...");
         this->cleaned = true;
         this->shouldExit = true;
-        if (this->serverLoop->joinable())
+        if (this->serverLoop->joinable() && !ignoreThreadJoin)
         {
             this->serverLoop->join();
         }
@@ -59,11 +61,11 @@ namespace AikariPLS::Components::MQTTBroker
         mbedtls_entropy_free(&this->mbedCtx.entropyCtx);
     };
 
-    void Broker::startTlsServerLoop(BrokerLaunchArg arg)
+    void Broker::startTlsServerLoop(const BrokerLaunchArg& arg)
     {
         try
         {
-            int taskTempRet;
+            int taskTempRet = 0;
 
             mbedtls_net_init(&this->netCtx.listenFd);
             mbedtls_net_init(&this->netCtx.clientFd);
@@ -74,9 +76,9 @@ namespace AikariPLS::Components::MQTTBroker
             mbedtls_entropy_init(&this->mbedCtx.entropyCtx);
             mbedtls_ctr_drbg_init(&this->mbedCtx.ctrDrbg);
 
-            LOG_INFO("MQTT Broker TLS server context init success.");
+            CUSTOM_LOG_INFO("MQTT Broker TLS server context init success.");
 
-            LOG_DEBUG("Settings up random num generator...");
+            CUSTOM_LOG_DEBUG("Setting up random num generator...");
 
             taskTempRet = mbedtls_ctr_drbg_seed(
                 &this->mbedCtx.ctrDrbg,
@@ -88,47 +90,47 @@ namespace AikariPLS::Components::MQTTBroker
 
             if (taskTempRet != 0)
             {
-                LOG_ERROR(
+                CUSTOM_LOG_ERROR(
                     "Failed to set up ctrDrbg, error code: {}", taskTempRet
                 );
-                cleanUp();
+                cleanUp(true);
                 return;
             }
 
-            LOG_DEBUG("Random num generator init done.");
+            CUSTOM_LOG_DEBUG("Random num generator init done.");
 
-            LOG_DEBUG("Loading server cert...");
+            CUSTOM_LOG_DEBUG("Loading server cert...");
             taskTempRet = mbedtls_x509_crt_parse_file(
                 &this->mbedCtx.srvCert, this->certPath.c_str()
             );
             if (taskTempRet != 0)
             {
-                LOG_ERROR(
+                CUSTOM_LOG_ERROR(
                     "Failed to init server cert, error code: {}", taskTempRet
                 );
-                cleanUp();
+                cleanUp(true);
                 return;
             }
 
             taskTempRet = mbedtls_pk_parse_keyfile(
                 &this->mbedCtx.privKey,
                 this->keyPath.c_str(),
-                NULL,
+                nullptr,
                 mbedtls_ctr_drbg_random,
                 &this->mbedCtx.ctrDrbg
             );
             if (taskTempRet != 0)
             {
-                LOG_ERROR(
+                CUSTOM_LOG_ERROR(
                     "Failed to init server pKey, error code: {}", taskTempRet
                 );
-                cleanUp();
+                cleanUp(true);
                 return;
             }
 
-            LOG_DEBUG("TLS cert & key init done.");
+            CUSTOM_LOG_DEBUG("TLS cert & key init done.");
 
-            LOG_INFO(
+            CUSTOM_LOG_INFO(
                 "MQTT Broker binding to ssl://{}:{}", this->hostname, this->port
             );
             taskTempRet = mbedtls_net_bind(
@@ -139,16 +141,16 @@ namespace AikariPLS::Components::MQTTBroker
             );
             if (taskTempRet != 0)
             {
-                LOG_ERROR(
+                CUSTOM_LOG_ERROR(
                     "Failed while binding to addr, error code: {}", taskTempRet
                 );
-                cleanUp();
+                cleanUp(true);
                 return;
             }
 
-            LOG_INFO("Bind to ssl://{}:{}", this->hostname, this->port);
+            CUSTOM_LOG_INFO("Bind to ssl://{}:{}", this->hostname, this->port);
 
-            LOG_DEBUG("Setting up default TLS config...");
+            CUSTOM_LOG_DEBUG("Setting up default TLS config...");
             taskTempRet = mbedtls_ssl_config_defaults(
                 &this->mbedCtx.sslConfig,
                 MBEDTLS_SSL_IS_SERVER,
@@ -157,15 +159,15 @@ namespace AikariPLS::Components::MQTTBroker
             );
             if (taskTempRet != 0)
             {
-                LOG_ERROR(
+                CUSTOM_LOG_ERROR(
                     "Failed to set default TLS config, error code: {}",
                     taskTempRet
                 );
-                cleanUp();
+                cleanUp(true);
                 return;
             }
 
-            LOG_DEBUG("Setting RNG and cert config...");
+            CUSTOM_LOG_DEBUG("Setting RNG and cert config...");
             mbedtls_ssl_conf_rng(
                 &this->mbedCtx.sslConfig,
                 mbedtls_ctr_drbg_random,
@@ -177,20 +179,20 @@ namespace AikariPLS::Components::MQTTBroker
                 &this->mbedCtx.privKey
             );
 
-            LOG_DEBUG("Applying TLS config to sslCtx...");
+            CUSTOM_LOG_DEBUG("Applying TLS config to sslCtx...");
             taskTempRet =
                 mbedtls_ssl_setup(&this->sslCtx, &this->mbedCtx.sslConfig);
             if (taskTempRet != 0)
             {
-                LOG_ERROR(
+                CUSTOM_LOG_ERROR(
                     "Failed to apply TLS config, error code: {}", taskTempRet
                 );
-                cleanUp();
+                cleanUp(true);
                 return;
             }
 
-            LOG_INFO("MQTT Broker TLS config applied.");
-            LOG_INFO(
+            CUSTOM_LOG_INFO("MQTT Broker TLS config applied.");
+            CUSTOM_LOG_INFO(
                 "MQTT Broker TLS server initialized. Listening on ssl://{}:{}",
                 this->hostname,
                 this->port
@@ -200,7 +202,7 @@ namespace AikariPLS::Components::MQTTBroker
         }
         catch (const std::exception& err)
         {
-            LOG_ERROR(
+            CUSTOM_LOG_ERROR(
                 "An unexpected error occurred in MQTT Broker loop: {}",
                 err.what()
             );
@@ -225,7 +227,7 @@ namespace AikariPLS::Components::MQTTBroker
             return;
         }
 
-        LOG_DEBUG("CONNECT packet found, replacing headers...");
+        CUSTOM_LOG_DEBUG("CONNECT packet found, replacing headers...");
         package[findResult - 2] = 0x00;
         package[findResult - 1] = 0x04;
         package.replace(findResult, original.length(), "MQTT");
@@ -242,16 +244,16 @@ namespace AikariPLS::Components::MQTTBroker
         {
             ss << std::setw(2) << static_cast<int>(c);
         }
-        LOG_TRACE("Replace result: {}", ss.str());
+        CUSTOM_LOG_TRACE("Replace result: {}", ss.str());
 
 #endif
     };
 
     void Broker::listenLoop()
     {
-        mbedtls_net_context* curClientFd = NULL;
+        mbedtls_net_context* curClientFd = nullptr;
 
-        LOG_DEBUG("Waiting for client connection...");
+        CUSTOM_LOG_DEBUG("Waiting for client connection...");
 
         while (!this->shouldExit)
         {
@@ -266,207 +268,220 @@ namespace AikariPLS::Components::MQTTBroker
             timeVal.tv_sec = 1;
             timeVal.tv_usec = 0;
 
-            if (curClientFd != NULL)
+            if (curClientFd != nullptr)
             {
                 FD_SET(curClientFd->fd, &readFds);
             }
 
             int taskTempRet;
 
-            taskTempRet = select(0, &readFds, NULL, NULL, &timeVal);
+            taskTempRet = select(0, &readFds, nullptr, nullptr, &timeVal);
 
             if (taskTempRet < 0)
             {
-                LOG_ERROR("Unexpected error running select()");
+                CUSTOM_LOG_ERROR("Unexpected error running select()");
                 break;
             }
 
-            if (FD_ISSET(this->netCtx.listenFd.fd, &readFds))
+            do  // create a scope
             {
-                LOG_DEBUG("New activity on listenFd detected.");
-                // Incoming connection available
-                if (curClientFd != NULL)
+                if (FD_ISSET(this->netCtx.listenFd.fd, &readFds))
                 {
-                    mbedtls_net_context tempCtx;
-                    mbedtls_net_init(&tempCtx);
-                    mbedtls_net_accept(
-                        &this->netCtx.listenFd, &tempCtx, NULL, 0, NULL
-                    );
-                    mbedtls_net_free(&tempCtx);
-                    LOG_DEBUG(
-                        "A client has already connected, closing new "
-                        "connection..."
-                    );
-                }
-                else
-                {
-                    LOG_DEBUG("Handshaking with new client...");
-                    // so cur no client, new client connecting
-                    taskTempRet = mbedtls_net_accept(
-                        &this->netCtx.listenFd,
-                        &this->netCtx.clientFd,
-                        NULL,
-                        0,
-                        NULL
-                    );
-
-                    if (taskTempRet != 0)
+                    CUSTOM_LOG_DEBUG("New activity on listenFd detected.");
+                    // Incoming connection available
+                    if (curClientFd != nullptr)
                     {
-                        LOG_ERROR(
-                            "Unexpected error occurred in mbedtls_net_accept, "
-                            "error "
-                            "code: "
-                            "{}",
-                            taskTempRet
+                        mbedtls_net_context tempCtx;
+                        mbedtls_net_init(&tempCtx);
+                        mbedtls_net_accept(
+                            &this->netCtx.listenFd,
+                            &tempCtx,
+                            nullptr,
+                            0,
+                            nullptr
                         );
-                        this->cleanUp();
-                        return;
+                        mbedtls_net_free(&tempCtx);
+                        CUSTOM_LOG_DEBUG(
+                            "A client has already connected, closing new "
+                            "connection..."
+                        );
                     }
-                    LOG_DEBUG("New connection accepted.");
-
-                    mbedtls_ssl_set_bio(
-                        &this->sslCtx,
-                        &this->netCtx.clientFd,
-                        mbedtls_net_send,
-                        mbedtls_net_recv,
-                        NULL
-                    );
-
-                    LOG_DEBUG("Performing handshake...");
-                    bool handshakeResult = true;
-                    while ((taskTempRet = mbedtls_ssl_handshake(&sslCtx)) != 0)
+                    else
                     {
-                        if (taskTempRet != MBEDTLS_ERR_SSL_WANT_READ &&
-                            taskTempRet != MBEDTLS_ERR_SSL_WANT_WRITE)
+                        CUSTOM_LOG_DEBUG("Handshaking with new client...");
+                        // so cur no client, new client connecting
+                        taskTempRet = mbedtls_net_accept(
+                            &this->netCtx.listenFd,
+                            &this->netCtx.clientFd,
+                            nullptr,
+                            0,
+                            nullptr
+                        );
+
+                        if (taskTempRet != 0)
                         {
-                            LOG_ERROR(
-                                "An error occurred while handshaking with "
-                                "client, "
+                            CUSTOM_LOG_ERROR(
+                                "Unexpected error occurred in "
+                                "mbedtls_net_accept, "
                                 "error "
-                                "code: ",
+                                "code: "
+                                "{}",
                                 taskTempRet
                             );
-                            handshakeResult = false;
-                            break;
+                            this->resetCurConnection();
+                            break;  // jump out from this do-while scope
                         }
-                    }
+                        CUSTOM_LOG_DEBUG("New connection accepted.");
 
-                    if (handshakeResult == false)
-                    {
-                        continue;
-                    }
+                        mbedtls_ssl_set_bio(
+                            &this->sslCtx,
+                            &this->netCtx.clientFd,
+                            mbedtls_net_send,
+                            mbedtls_net_recv,
+                            nullptr
+                        );
 
-                    LOG_DEBUG("SSL handshake completed.");
-
-                    curClientFd = &this->netCtx.clientFd;
-
-                    this->connection =
-                        std::make_unique<AikariPLS::Components::MQTTBroker::
-                                             Class::MQTTBrokerConnection>(
-                            [this](async_mqtt::packet_variant packet)
+                        CUSTOM_LOG_DEBUG("Performing handshake...");
+                        bool handshakeResult = true;
+                        while ((taskTempRet = mbedtls_ssl_handshake(&sslCtx)) !=
+                               0)
+                        {
+                            if (taskTempRet != MBEDTLS_ERR_SSL_WANT_READ &&
+                                taskTempRet != MBEDTLS_ERR_SSL_WANT_WRITE)
                             {
-                                this->pendingPkts.emplace_back(packet);
-                            },
-                            [this]()
-                            {
-                                this->resetCurConnection();
-                            },
-                            [this](async_mqtt::error_code errCode)
-                            {
+                                CUSTOM_LOG_ERROR(
+                                    "An error occurred while handshaking with "
+                                    "client, "
+                                    "error "
+                                    "code: ",
+                                    taskTempRet
+                                );
+                                handshakeResult = false;
+                                break;
                             }
-                        );
-                }
-            }
+                        }
 
-            if (curClientFd != NULL &&
-                FD_ISSET(this->netCtx.clientFd.fd, &readFds))
-            {
-                unsigned char clientMsgBuffer[4096];
-                memset(clientMsgBuffer, 0, sizeof(clientMsgBuffer));
-                taskTempRet = mbedtls_ssl_read(
-                    &sslCtx, clientMsgBuffer, sizeof(clientMsgBuffer) - 1
-                );
+                        if (handshakeResult == false)
+                        {
+                            continue;
+                        }
 
-                if (taskTempRet > 0)
-                {
-                    int packetLength = taskTempRet;
+                        CUSTOM_LOG_DEBUG("SSL handshake completed.");
 
-                    std::string strReadData(
-                        reinterpret_cast<char*>(clientMsgBuffer), taskTempRet
-                    );
+                        curClientFd = &this->netCtx.clientFd;
 
-                    if (clientMsgBuffer[0] == 0x10)
-                    {  // Maybe CONNECT pkt
-                        this->processConnectPackage(strReadData);
-                    }
+                        this->connection =
+                            std::make_unique<AikariPLS::Components::MQTTBroker::
+                                                 Class::MQTTBrokerConnection>(
+                                [this,
+                                 curClientFd](async_mqtt::packet_variant packet)
+                                {
+                                    if (curClientFd == nullptr)
+                                    {
+                                        return;
+                                    }
 
-#ifdef _DEBUG
-                    LOG_TRACE(
-                        "New data received, bytes: {}, data:\n{}",
-                        packetLength,
-                        strReadData
-                    );
-#endif
-
-                    std::stringstream strStream(strReadData);
-
-                    this->threadPool->insertTask(std::move(strStream));
-                }
-                else if (taskTempRet == MBEDTLS_ERR_SSL_WANT_READ ||
-                         taskTempRet == MBEDTLS_ERR_SSL_WANT_WRITE)
-                {
-                    // ignore
-                }
-                else if (taskTempRet <= 0)
-                {
-                    switch (taskTempRet)
-                    {
-                        case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
-                            LOG_DEBUG("Client connection closed.");
-                            break;
-                        case MBEDTLS_ERR_NET_CONN_RESET:
-                            LOG_ERROR("Client connection reset.");
-                            break;
-                        case MBEDTLS_ERR_NET_RECV_FAILED:
-                            LOG_ERROR("Failed to run mbedtls_net_recv.");
-                            break;
-                        default:
-                            LOG_DEBUG(
-                                "mbedtls_ssl_read returned {}", taskTempRet
+                                    std::vector<unsigned char> pendingBuf;
+                                    auto pktBufSeq =
+                                        packet.const_buffer_sequence();
+                                    for (auto& pktBuf : pktBufSeq)
+                                    {
+                                        pendingBuf.insert(
+                                            pendingBuf.end(),
+                                            (const unsigned char*)pktBuf.data(),
+                                            (const unsigned char*)pktBuf.data(
+                                            ) + pktBuf.size()
+                                        );
+                                    }
+                                    mbedtls_ssl_write(
+                                        &this->sslCtx,
+                                        pendingBuf.data(),
+                                        pendingBuf.size()
+                                    );
+                                },
+                                [this]()
+                                {
+                                    this->resetCurConnection();
+                                },
+                                [this](async_mqtt::error_code errCode)
+                                {
+                                }
                             );
-                            break;
                     }
-
-                    LOG_DEBUG("Client disconnected, cleaning up...");
-                    this->resetCurConnection();
-
-                    curClientFd = NULL;
                 }
-            }
+            } while (false);
 
-            if (curClientFd != NULL && !this->pendingPkts.empty())
+            do
             {
-                for (auto& pkt : this->pendingPkts)
+                if (curClientFd != nullptr &&
+                    FD_ISSET(this->netCtx.clientFd.fd, &readFds))
                 {
-                    std::vector<unsigned char> pendingBuf;
-                    auto pktBufSeq = pkt.const_buffer_sequence();
-                    for (auto& pktBuf : pktBufSeq)
-                    {
-                        pendingBuf.insert(
-                            pendingBuf.end(),
-                            (const unsigned char*)pktBuf.data(),
-                            (const unsigned char*)pktBuf.data() + pktBuf.size()
-                        );
-                    }
-                    mbedtls_ssl_write(
-                        &this->sslCtx, pendingBuf.data(), pendingBuf.size()
+                    unsigned char clientMsgBuffer[4096] = {};
+                    taskTempRet = mbedtls_ssl_read(
+                        &sslCtx, clientMsgBuffer, sizeof(clientMsgBuffer) - 1
                     );
+
+                    if (taskTempRet > 0)
+                    {
+                        std::string strReadData(
+                            reinterpret_cast<char*>(clientMsgBuffer),
+                            taskTempRet
+                        );
+
+                        if (clientMsgBuffer[0] == 0x10)
+                        {  // Maybe CONNECT pkt
+                            this->processConnectPackage(strReadData);
+                        }
+                        /*
+                        #ifdef _DEBUG
+                                            LOG_TRACE(
+                                                "New data received, bytes: {},
+                        data:\n{}", taskTempRet, strReadData
+                                            );
+                        #endif
+                        */
+                        std::stringstream strStream(strReadData);
+
+                        this->threadPool->insertTask(std::move(strStream));
+                    }
+                    else if (taskTempRet == MBEDTLS_ERR_SSL_WANT_READ ||
+                             taskTempRet == MBEDTLS_ERR_SSL_WANT_WRITE)
+                    {
+                        // ignore
+                    }
+                    else if (taskTempRet <= 0)
+                    {
+                        switch (taskTempRet)
+                        {
+                            case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
+                                CUSTOM_LOG_DEBUG("Client connection closed.");
+                                break;
+                            case MBEDTLS_ERR_NET_CONN_RESET:
+                                CUSTOM_LOG_ERROR("Client connection reset.");
+                                break;
+                            case MBEDTLS_ERR_NET_RECV_FAILED:
+                                CUSTOM_LOG_ERROR(
+                                    "Failed to run mbedtls_net_recv."
+                                );
+                                break;
+                            default:
+                                CUSTOM_LOG_DEBUG(
+                                    "mbedtls_ssl_read returned {}", taskTempRet
+                                );
+                                break;
+                        }
+
+                        CUSTOM_LOG_DEBUG("Client disconnected, cleaning up...");
+                        this->resetCurConnection();
+
+                        curClientFd = nullptr;
+                    }
                 }
-                this->pendingPkts.clear();
-            }
+            } while (false);
         }
 
         mbedtls_ssl_close_notify(&this->sslCtx);
         mbedtls_ssl_session_reset(&this->sslCtx);
+        CUSTOM_LOG_INFO("Broker stopped.");
     }
 }  // namespace AikariPLS::Components::MQTTBroker

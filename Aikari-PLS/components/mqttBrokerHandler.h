@@ -32,7 +32,8 @@ namespace AikariPLS::Components::MQTTBroker::Class
 
         void on_close() override final;
         void on_error(async_mqtt::error_code errCode) override final;
-        void on_packet_id_release(async_mqtt::packet_id_type packetId
+        void on_packet_id_release(
+            async_mqtt::packet_id_type packetId
         ) override final;
         void on_timer_op(
             async_mqtt::timer_op op,
@@ -44,5 +45,9 @@ namespace AikariPLS::Components::MQTTBroker::Class
         std::function<void(async_mqtt::packet_variant packet)> onSendLambda_;
         std::function<void()> onCloseLambda_;
         std::function<void(async_mqtt::error_code errCode)> onErrorLambda_;
+
+        async_mqtt::packet_id_type getPacketId();
+
+        std::string clientId = "UNKNOWN";
     };
 }  // namespace AikariPLS::Components::MQTTBroker::Class

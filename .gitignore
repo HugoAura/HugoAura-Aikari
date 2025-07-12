@@ -88,6 +88,9 @@ vendor/
 thirdparty/
 libs/
 
+# Editor files
+.idea/
+
 # macOS
 .DS_Store
 

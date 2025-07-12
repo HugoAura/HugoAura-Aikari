@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <mutex>
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 
 namespace AikariShared::base
 {
@@ -45,6 +46,10 @@ namespace AikariShared::base
         typename T::element_type* getPtr(T StoreType::* key)
         {
             std::lock_guard<std::mutex> lock(this->_mutex_lock_);
+            if (this->_state_.*key == nullptr)
+            {
+                return nullptr;
+            }
             return (this->_state_.*key).get();
         }
 

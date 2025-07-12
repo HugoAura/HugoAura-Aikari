@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
+#include <minwindef.h>
 
 namespace AikariShared::infrastructure::MessageQueue
 {
@@ -19,10 +20,18 @@ namespace AikariPLS::Infrastructure::MsgQueue
     class PLSThreadMsgQueueHandler;
 }
 
-namespace AikariPLS::Components::MQTTBroker
+namespace AikariPLS::Components
 {
-    class Broker;
-}
+    namespace MQTTBroker
+    {
+        class Broker;
+    }
+
+    namespace MQTTClient
+    {
+        class Client;
+    }
+}  // namespace AikariPLS::Components
 
 namespace AikariPLS::Types::lifecycle
 {
@@ -32,6 +41,8 @@ namespace AikariPLS::Types::lifecycle
             AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>
             threadMsgQueueHandler;
         std::unique_ptr<AikariPLS::Components::MQTTBroker::Broker> mqttBroker;
+        std::unique_ptr<AikariPLS::Components::MQTTClient::Client> mqttClient;
+        HMODULE hModuleIns;
 
         PLSSharedIns();
         static PLSSharedIns createDefault();

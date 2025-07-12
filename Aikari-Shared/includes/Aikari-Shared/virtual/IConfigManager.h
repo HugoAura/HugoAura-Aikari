@@ -1,11 +1,10 @@
 ﻿#pragma once
 
 #include <filesystem>
+#include <minwindef.h>
 #include <mutex>
 #include <nlohmann/json.hpp>
 #include <string>
-
-#include "IConfigPayload.h"
 
 namespace AikariShared::virtualIns
 {
@@ -39,6 +38,8 @@ namespace AikariShared::virtualIns
         virtual void deepMergeConfig(
             const nlohmann::json& defaultConfig, nlohmann::json& userConfig
         ) const;
+
+        HINSTANCE hInstance_;
     };
 
     template <typename DerivedRoot, typename ConfigType>
@@ -50,12 +51,14 @@ namespace AikariShared::virtualIns
         IConfigManagerBase(
             std::string module,
             std::filesystem::path configPath,
-            int defaultConfigResId
+            int defaultConfigResId,
+            HINSTANCE hInstance
         )
         {
             this->module = module;
             this->configPath = configPath;
             this->defaultConfigResId = defaultConfigResId;
+            this->hInstance_ = hInstance;
         };
 
         void loadConfig(nlohmann::json& configData) override final

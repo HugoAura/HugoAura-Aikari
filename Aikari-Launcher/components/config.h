@@ -3,7 +3,6 @@
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/config/configType.h>
 #include <Aikari-Shared/virtual/IConfigManager.h>
-#include <Aikari-Shared/virtual/IConfigPayload.h>
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -20,9 +19,12 @@ namespace AikariLauncherComponents::AikariConfig
         LauncherConfigManager(
             std::string module,
             std::filesystem::path configPath,
-            int defaultConfigResId
+            int defaultConfigResId,
+            HINSTANCE hInstance
         )
-            : IConfigManagerBase(module, configPath, defaultConfigResId) {};
+            : IConfigManagerBase(
+                  module, configPath, defaultConfigResId, hInstance
+              ) {};
 
         void loadConfigImpl(nlohmann::json& configData) override;
         nlohmann::json getStringifyConfigImpl() override;

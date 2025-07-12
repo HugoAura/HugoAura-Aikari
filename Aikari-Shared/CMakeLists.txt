@@ -2,6 +2,7 @@ project_add_library(Aikari-Shared STATIC
     Aikari-Shared.cpp
     infrastructure/logger.cpp
     utils/crypto.cpp
+    utils/network.cpp
     utils/registry.cpp
     utils/string.cpp
     utils/windows/network.cpp

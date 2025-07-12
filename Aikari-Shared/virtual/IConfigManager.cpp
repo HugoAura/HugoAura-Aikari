@@ -1,7 +1,7 @@
 ﻿#include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/utils/windows.h>
 #include <Aikari-Shared/virtual/IConfigManager.h>
 #include <fstream>
-#include <windows.h>
 
 namespace AikariShared::virtualIns
 {
@@ -36,36 +36,22 @@ namespace AikariShared::virtualIns
         ret.success = false;
         ret.result = "";
 
-        HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(resId), RT_RCDATA);
-        if (hRes == NULL)
-        {
-            ret.errorDetail = std::make_optional<std::string>(
-                "Failed to find res. ResId: " + std::to_string(resId)
+        auto loadResRet =
+            AikariShared::utils::windows::rc::loadStringResource<char>(
+                this->hInstance_, resId
             );
-            return ret;
-        }
 
-        HGLOBAL hResLoad = LoadResource(NULL, hRes);
-        if (hResLoad == NULL)
+        ret.success = loadResRet.success;
+        if (loadResRet.success)
+        {
+            ret.result = std::string(loadResRet.retPtr, loadResRet.size);
+        }
+        else
         {
             ret.errorDetail =
-                std::make_optional<std::string>("Failed to load res.");
-            return ret;
+                std::make_optional<std::string>(loadResRet.message);
         }
 
-        void* resPtr = LockResource(hResLoad);
-        if (resPtr == NULL)
-        {
-            ret.errorDetail = std::make_optional<std::string>(
-                "Unexpected error while locking res."
-            );
-            return ret;
-        }
-
-        DWORD resSize = SizeofResource(NULL, hRes);
-
-        ret.result = std::string(static_cast<char*>(resPtr), resSize);
-        ret.success = true;
         return ret;
     };
 

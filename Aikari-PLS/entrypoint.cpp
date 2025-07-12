@@ -6,6 +6,7 @@
 #include <Aikari-Shared/types/itc/shared.h>
 
 #include "components/mqttBroker.h"
+#include "components/mqttClient.h"
 #include "infrastructure/threadMsgHandler.h"
 #include "init.h"
 #include "lifecycle.h"
@@ -84,7 +85,17 @@ namespace AikariPLS::Exports
 
         auto mqttBrokerIns =
             sharedInsMgr.getPtr(&LifecycleTypes::PLSSharedIns::mqttBroker);
-        mqttBrokerIns->cleanUp();
+        if (mqttBrokerIns != nullptr)
+        {
+            mqttBrokerIns->cleanUp(false);
+        }
+
+        auto mqttClientIns =
+            sharedInsMgr.getPtr(&LifecycleTypes::PLSSharedIns::mqttClient);
+        if (mqttClientIns != nullptr)
+        {
+            mqttClientIns->cleanUp(false);
+        }
 
         LOG_INFO("Clean up finished, module PLS is unloaded.");
         return;

@@ -5,10 +5,14 @@
     init.cpp
     lifecycle.h
     lifecycle.cpp
+    resource.h
+    Aikari-PLS.rc
     components/mqttBroker.h
     components/mqttBroker.cpp
     components/mqttBrokerHandler.h
     components/mqttBrokerHandler.cpp
+    components/mqttClient.h
+    components/mqttClient.cpp
     infrastructure/threadMsgHandler.h
     infrastructure/threadMsgHandler.cpp
     utils/windowsApi.cpp
@@ -28,6 +32,10 @@ target_link_libraries(Aikari-PLS PRIVATE nlohmann_json::nlohmann_json)
 # mbedTLS
 find_package(MbedTLS CONFIG REQUIRED)
 target_link_libraries(Aikari-PLS PRIVATE MbedTLS::mbedtls)
+
+# cpr
+find_package(cpr CONFIG REQUIRED)
+target_link_libraries(Aikari-PLS PRIVATE cpr::cpr)
 
 # async_mqtt
 find_package(async_mqtt_iface CONFIG REQUIRED)

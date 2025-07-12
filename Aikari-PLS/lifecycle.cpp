@@ -1,6 +1,7 @@
 ﻿#include <Aikari-PLS-Private/types/lifecycleTypes.h>
 
 #include "components/mqttBroker.h"
+#include "components/mqttClient.h"
 #include "infrastructure/threadMsgHandler.h"
 
 namespace AikariPLS::Types::lifecycle
