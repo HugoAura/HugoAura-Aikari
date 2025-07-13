@@ -74,8 +74,9 @@ namespace AikariShared::infrastructure::InterThread
         std::move_only_function<void(
             AikariShared::Types::InterThread::MainToSubControlReplyMessage msg
         )>
-            lambda = [promise = std::move(replyPromise
-                      )](itcTypes::MainToSubControlReplyMessage msg) mutable
+            lambda = [promise = std::move(replyPromise)](
+                         itcTypes::MainToSubControlReplyMessage msg
+                     ) mutable
         {
             promise.set_value(msg);
         };
@@ -85,6 +86,10 @@ namespace AikariShared::infrastructure::InterThread
         return future;
     };
 
+    /**
+     *
+     * @warning 它会把输入的 msg param 给 move 走
+     */
     itcTypes::MainToSubControlReplyMessage
     MainToSubMsgHandlerBase::sendCtrlMsgSync(
         itcTypes::SubToMainControlMessage& ctrlMsg
@@ -150,7 +155,8 @@ namespace AikariShared::infrastructure::InterThread
                         );  // if convert failed, error will be directly
                             // catched
 
-                    this->onControlMessage(msgContent
+                    this->onControlMessage(
+                        msgContent
                     );  // we're in a standalone thread, so just go sync
                 }
                 break;

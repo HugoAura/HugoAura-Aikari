@@ -1,6 +1,7 @@
 ﻿#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/constants/entrypoint.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
+#include <Aikari-Launcher-Public/constants/lifecycle.h>
 #include <Aikari-Launcher-Public/version.h>
 #include <Aikari-PLS/Aikari-PLS-Exports.h>
 #include <Aikari-PLS/types/entrypoint.h>
@@ -45,7 +46,10 @@ static void exitSignalHandler(int signum)
     aikariAlivePromise.set_value(true);
 }
 
-int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
+int launchAikari(
+    const AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES&
+        runtimeMode
+)
 {
     std::future<bool> aikariAliveFuture = aikariAlivePromise.get_future();
 
@@ -151,8 +155,8 @@ int launchAikari(lifecycleTypes::APPLICATION_RUNTIME_MODES& runtimeMode)
     LOG_INFO("Initializing Windows socket environment...");
     ix::initNetSystem();
     LOG_INFO("Starting Aikari WebSocket server...");
-    int wsDefaultPort = configManagerPtr->config->wsPreferPort;
     {
+        int wsDefaultPort = configManagerPtr->config->wsPreferPort;
         auto wsServerManagerIns = std::make_unique<
             AikariLauncherComponents::AikariWebSocketServer::MainWSServer>(
             "127.0.0.1", wsDefaultPort, certDir / "wss.crt", certDir / "wss.key"
@@ -285,9 +289,13 @@ int main(int argc, const char* argv[])
             break;
     }
 
-    lifecycleTypes::APPLICATION_RUNTIME_MODES curRuntimeMode =
-        parseRet.isDebug ? lifecycleTypes::APPLICATION_RUNTIME_MODES::DEBUG
-                         : lifecycleTypes::APPLICATION_RUNTIME_MODES::NORMAL;
+    // TODO: Service
+    AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
+        curRuntimeMode =
+            parseRet.isDebug ? AikariLauncherPublic::Constants::Lifecycle::
+                                   APPLICATION_RUNTIME_MODES::DEBUG
+                             : AikariLauncherPublic::Constants::Lifecycle::
+                                   APPLICATION_RUNTIME_MODES::NORMAL;
 
     if (parseRet.serviceCtrl == "install")
     {

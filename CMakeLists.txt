@@ -17,7 +17,7 @@ target_compile_options(Aikari-Global-Virtual INTERFACE
 )
 
 target_compile_options(Aikari-Global-Virtual INTERFACE
-    $<$<CXX_COMPILER_ID:MSVC>:/await /FS /W3 /Zc:wchar_t>
+    $<$<CXX_COMPILER_ID:MSVC>:/await /FS /W3 /Zc:wchar_t /bigobj>
 )
 
 target_compile_options(Aikari-Global-Virtual INTERFACE

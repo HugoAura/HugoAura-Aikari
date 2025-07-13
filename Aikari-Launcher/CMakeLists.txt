@@ -22,6 +22,8 @@ project_add_executable(Aikari-Launcher
     infrastructure/winSvc.h
     middleware/wsAuthHandler.cpp
     middleware/wsAuthHandler.h
+    routes/itc/baseRoute.cpp
+    routes/itc/baseRoute.h
     routes/itc/filesystemRoute.cpp
     routes/itc/filesystemRoute.h
     routes/itc/networkRoute.cpp

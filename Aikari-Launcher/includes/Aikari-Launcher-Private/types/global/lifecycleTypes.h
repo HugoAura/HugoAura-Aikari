@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <Aikari-Launcher-Public/constants/lifecycle.h>
 #include <Aikari-Shared/types/itc/shared.h>
 #include <atomic>
 #include <memory>
@@ -41,13 +42,6 @@ namespace AikariShared::infrastructure::MessageQueue
 
 namespace AikariTypes::global::lifecycle
 {
-    enum class APPLICATION_RUNTIME_MODES
-    {
-        NORMAL,
-        DEBUG,
-        SERVICE,
-    };
-
     struct GlobalSharedHandlersRegistry
     {
         std::shared_ptr<AikariLauncherComponents::SubModuleSystem::
@@ -96,7 +90,8 @@ namespace AikariTypes::global::lifecycle
 
     struct GlobalLifecycleStates
     {
-        APPLICATION_RUNTIME_MODES runtimeMode;
+        AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
+            runtimeMode;
         long long launchTime;
         SERVICE_STATUS svcStatus;
         SERVICE_STATUS_HANDLE svcStatusHandle;
@@ -105,7 +100,8 @@ namespace AikariTypes::global::lifecycle
 
         static GlobalLifecycleStates createDefault()
         {
-            return { .runtimeMode = APPLICATION_RUNTIME_MODES::NORMAL,
+            return { .runtimeMode = AikariLauncherPublic::Constants::Lifecycle::
+                         APPLICATION_RUNTIME_MODES::NORMAL,
                      .launchTime = 0,
                      .svcStatus = { 0 },
                      .svcStatusHandle = NULL,

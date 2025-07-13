@@ -3,6 +3,7 @@
 #include <Aikari-Launcher-Public/constants/itcCtrl/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/errors.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/filesystem.h>
+#include <nlohmann/json.hpp>
 
 #include "../../infrastructure/filesystem.h"
 #include "../../lifecycle.h"

@@ -17,6 +17,10 @@ namespace AikariShared::infrastructure::MessageQueue
         SinglePointMessageQueue& operator=(const SinglePointMessageQueue&) =
             delete;
 
+        /**
+         *
+         * @warning 此方法不会自动 move 传递的 arg
+         */
         void push(MessageType val)
         {
             std::lock_guard<std::mutex> lockGuard(this->lock);

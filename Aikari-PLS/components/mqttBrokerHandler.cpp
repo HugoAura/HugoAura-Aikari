@@ -1,11 +1,18 @@
 ﻿#include "mqttBrokerHandler.h"
 
+#define CUSTOM_LOG_HEADER "[MQTT Broker]"
+
 #include <Aikari-PLS-Private/types/constants/mqtt.h>
 #include <Aikari-PLS/types/constants/init.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/utils/string.h>
 #include <functional>
 
+#include "../../Aikari-Launcher/lifecycle.h"
+#include "../lifecycle.h"
+#include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "mqttClient.h"
+#include "mqttLifecycle.h"
 
 namespace mqttConstants = AikariPLS::Types::PrivateConstants::MQTT;
 
@@ -17,12 +24,20 @@ namespace AikariPLS::Components::MQTTBroker::Class
         std::function<void(async_mqtt::error_code errCode)> onErrLambda
     )
         : BrokerConnection(async_mqtt::protocol_version::v3_1_1),
-          onSendLambda_(onSendLambda),
-          onCloseLambda_(onCloseLambda),
-          onErrorLambda_(onErrLambda)
+          onSendLambda_(std::move(onSendLambda)),
+          onCloseLambda_(std::move(onCloseLambda)),
+          onErrorLambda_(std::move(onErrLambda))
     {
         this->set_auto_ping_response(true);
         this->set_auto_pub_response(true);
+
+        auto& sharedStates =
+            AikariPLS::Lifecycle::PLSSharedStates::getInstance();
+        this->isDebugEnv =
+            (sharedStates.getVal(
+                 &AikariPLS::Types::lifecycle::PLSSharedStates::runtimeMode
+             ) == AikariLauncherPublic::Constants::Lifecycle::
+                      APPLICATION_RUNTIME_MODES::DEBUG);
     };
 
     void MQTTBrokerConnection::on_send(
@@ -31,11 +46,19 @@ namespace AikariPLS::Components::MQTTBroker::Class
             release_packet_id_if_send_error
     )
     {
+        this->logSendPacket(packet);
+
         this->onSendLambda_(std::move(packet));
     };
 
     void MQTTBrokerConnection::on_receive(async_mqtt::packet_variant packet)
     {
+        auto& sharedMqttQueues =
+            AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
+        auto* brokerToClientQueue =
+            sharedMqttQueues.getPtr(&AikariPLS::Types::lifecycle::MQTT::
+                                        PLSMQTTMsgQueues::brokerToClientQueue);
+
         packet.visit(
             async_mqtt::overload{
                 /// --- ↓ CONNECT ↓ --- ///
@@ -45,11 +68,11 @@ namespace AikariPLS::Components::MQTTBroker::Class
                     auto username = pkt.user_name().value_or("UNKNOWN");
                     auto password = pkt.password().value_or("UNKNOWN");
 
-                    LOG_DEBUG(
+                    CUSTOM_LOG_DEBUG(
                         "{} Received CONNECT packet\n{}\n"
                         "Client ID: {} | UserName: {} | Password: {}",
-                        logHeader,
-                        dataHr,
+                        Constants::recvOper,
+                        Constants::dataHr,
                         pkt.client_id(),
                         username,
                         password
@@ -70,18 +93,32 @@ namespace AikariPLS::Components::MQTTBroker::Class
                                             .password = password,
                                             .keepAliveSec = pkt.keep_alive() };
 
+                    // Init shared client info: deviceId
+                    auto& sharedClientInfo = AikariPLS::Lifecycle::MQTT::
+                        PLSMQTTSharedRealClientInfo::getInstance();
+                    sharedClientInfo.setVal(
+                        &AikariPLS::Types::lifecycle::MQTT::
+                            PLSMQTTRealClientInfo::deviceId,
+                        this->clientId
+                    );
+
                     // Init MQTT client
                     AikariPLS::Components::MQTTClient::
                         ClientLifecycleController::initAndMountClientIns(
                             std::move(clientLaunchArg)
                         );
 
-                    const async_mqtt::v3_1_1::connack_packet connAckPkt(
+                    // dispatch
+                    /*
+                    async_mqtt::v3_1_1::connack_packet connAckPkt(
                         true,
                         (async_mqtt::connect_return_code
                         )mqttConstants::Broker::CONNACK::CONN_ACCEPT
                     );
                     this->send(std::move(connAckPkt));
+                    */
+
+                    // Wait for client's CONNACK
                 },
                 /// --- ↑ CONNECT ↑ --- ///
                 /// --- ↓ SUBSCRIBE ↓ --- ///
@@ -105,24 +142,85 @@ namespace AikariPLS::Components::MQTTBroker::Class
                         );
                     }
 #ifdef _DEBUG
-                    LOG_TRACE(
+                    CUSTOM_LOG_TRACE(
                         "{} Received SUBSCRIBE packet\n{}\n"
                         "Topics:\n{}"  // No need for \n, opts already have one
                         "{}\n"
                         "Packet ID: {} | Client ID: {}",
-                        logHeader,
-                        dataHr,
+                        Constants::recvOper,
+                        Constants::dataHr,
                         opts,
-                        propHr,
+                        Constants::propHr,
                         pkt.packet_id(),
                         this->clientId
                     );
 #endif
+
+                    // Init shared client info: productKey
+                    if (!this->isSharedInfoInitialized)
+                    // ↑ this variable is used for preventing exec getVal on
+                    // SharedRealClientInfo every time onRecv (mutex perf cost)
+                    {
+                        auto& sharedClientInfo = AikariPLS::Lifecycle::MQTT::
+                            PLSMQTTSharedRealClientInfo::getInstance();
+                        auto isInitialized = sharedClientInfo.getVal(
+                            &AikariPLS::Types::lifecycle::MQTT::
+                                PLSMQTTRealClientInfo::isInitialized
+                        );
+
+                        if (!isInitialized)
+                        {
+                            std::string sampleTopic = subOpts[0].all_topic();
+                            if (sampleTopic.find("/sys") != std::string::npos)
+                            {
+                                auto splitResult =
+                                    AikariShared::utils::string::split(
+                                        sampleTopic, '/'
+                                    );
+
+                                if (splitResult.size() > 1)
+                                {
+                                    sharedClientInfo.setVal(
+                                        &AikariPLS::Types::lifecycle::MQTT::
+                                            PLSMQTTRealClientInfo::productKey,
+                                        splitResult.at(1)
+                                    );
+
+                                    sharedClientInfo.setVal(
+                                        &AikariPLS::Types::lifecycle::MQTT::
+                                            PLSMQTTRealClientInfo::
+                                                isInitialized,
+                                        true
+                                    );
+
+                                    CUSTOM_LOG_DEBUG(
+                                        "Updated productKey info: {}",
+                                        splitResult.at(1)
+                                    );
+                                    this->isSharedInfoInitialized = true;
+                                }
+                            }
+                        }
+                    }
+
+                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                        subscribeTransparentPassPkt = {
+                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                                PKT_TRANSPARENT,
+                            .packet = pkt
+                        };
+
+                    brokerToClientQueue->push(
+                        std::move(subscribeTransparentPassPkt)
+                    );
+
+                    /*
                     async_mqtt::v3_1_1::suback_packet subAckPkt(
                         pkt.packet_id(), std::move(ackReturns)
                     );
 
                     this->send(std::move(subAckPkt));
+                    */
                 },
                 /// --- ↑ SUBSCRIBE ↑ --- ///
                 /// --- ↓ UNSUBSCRIBE ↓ --- ///
@@ -136,21 +234,32 @@ namespace AikariPLS::Components::MQTTBroker::Class
                     {
                         opts += opt.all_topic() + "\n";
                     }
-                    LOG_TRACE(
+                    CUSTOM_LOG_TRACE(
                         "{} Received UNSUBSCRIBE packet\n{}\n"
                         "Topics:\n{}"
                         "{}\n"
                         "Packet ID: {} | Client ID: {}",
-                        logHeader,
-                        dataHr,
+                        Constants::recvOper,
+                        Constants::dataHr,
                         opts,
-                        propHr,
+                        Constants::propHr,
                         pkt.packet_id(),
                         this->clientId
                     );
 #endif
                     async_mqtt::v3_1_1::unsuback_packet unsubAckPkt(
                         pkt.packet_id()
+                    );
+
+                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                        unsubscribeTransparentPassPkt = {
+                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                                PKT_TRANSPARENT,
+                            .packet = pkt
+                        };
+
+                    brokerToClientQueue->push(
+                        std::move(unsubscribeTransparentPassPkt)
                     );
 
                     this->send(std::move(unsubAckPkt));
@@ -161,15 +270,15 @@ namespace AikariPLS::Components::MQTTBroker::Class
                 {
                     const auto publishOpts = pkt.opts();
 
-                    LOG_DEBUG(
+                    CUSTOM_LOG_DEBUG(
                         "{} Received PUBLISH packet\n{}\n"
                         "Payload:\n{}"
                         "\n{}\n"
                         "Topic: {} | QoS: {} | Packet ID: {} | Client ID: {}",
-                        logHeader,
-                        dataHr,
+                        Constants::recvOper,
+                        Constants::dataHr,
                         pkt.payload(),
-                        propHr,
+                        Constants::propHr,
                         pkt.topic(),
                         static_cast<std::uint8_t>(publishOpts.get_qos()),
                         pkt.packet_id(),
@@ -177,17 +286,36 @@ namespace AikariPLS::Components::MQTTBroker::Class
                     );
 
                     // No need for ack, auto reply is ON
+
+                    // TODO: Run hooks
+
+                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket publishPkt = {
+                        .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                            PKT_TRANSPARENT,
+                        .packet = pkt
+                    };
+
+                    brokerToClientQueue->push(std::move(publishPkt));
                 },
                 /// --- ↑ PUBLISH ↑ --- ///
                 /// --- ↓ DISCONNECT ↓ --- ///
                 [&](async_mqtt::v3_1_1::disconnect_packet const& pkt)
                 {
-                    LOG_DEBUG(
+                    CUSTOM_LOG_DEBUG(
                         "{} Received DISCONNECT packet\n"
                         "Closing connection for client {}, bye...",
-                        logHeader,
+                        Constants::recvOper,
                         this->clientId
                     );
+
+                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                        disconnectPkt = {
+                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                                PKT_TRANSPARENT,
+                            .packet = pkt
+                        };
+
+                    brokerToClientQueue->push(std::move(disconnectPkt));
                 },
                 /// --- ↑ DISCONNECT ↑ --- ///
                 [](auto const&)
@@ -198,6 +326,15 @@ namespace AikariPLS::Components::MQTTBroker::Class
 
     void MQTTBrokerConnection::on_close()
     {
+        this->isSharedInfoInitialized = false;
+        auto& sharedClientInfo = AikariPLS::Lifecycle::MQTT::
+            PLSMQTTSharedRealClientInfo::getInstance();
+        sharedClientInfo.setVal(
+            &AikariPLS::Types::lifecycle::MQTT::PLSMQTTRealClientInfo::
+                isInitialized,
+            false
+        );
+
         AikariPLS::Components::MQTTClient::ClientLifecycleController::
             resetClientIns(false);
 
@@ -206,9 +343,9 @@ namespace AikariPLS::Components::MQTTBroker::Class
 
     void MQTTBrokerConnection::on_error(async_mqtt::error_code errCode)
     {
-        LOG_ERROR(
-            "{} An error occurred with MQTT connection, error code: {}",
-            logHeader,
+        CUSTOM_LOG_ERROR(
+            "An error occurred with connection between Real Client <-> Fake "
+            "Broker, error: {}",
             errCode.message()
         );
         this->onErrorLambda_(std::move(errCode));
@@ -219,7 +356,7 @@ namespace AikariPLS::Components::MQTTBroker::Class
     )
     {
 #ifdef _DEBUG
-        LOG_TRACE("{} Packet ID released: {}", logHeader, packetId);
+        CUSTOM_LOG_TRACE("Packet ID released: {}", packetId);
 #endif
     };
 
@@ -238,11 +375,61 @@ namespace AikariPLS::Components::MQTTBroker::Class
         }
         else
         {
-            LOG_WARN(
+            CUSTOM_LOG_WARN(
                 "{} Warning: no free packet ID remains.",
-                logHeader
+                Constants::ascendOper
             );  // no need for retry, 因为现在这个场景中几乎不可能触发这种情况
             return static_cast<async_mqtt::packet_id_type>(0);
         }
+    }
+
+    void MQTTBrokerConnection::logSendPacket(
+        const async_mqtt::packet_variant& packet
+    )
+    {
+        if (!isDebugEnv)
+            return;
+        packet.visit(
+            async_mqtt::overload{
+                [&](async_mqtt::v3_1_1::connack_packet const& pkt)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "{} Replying CONNACK packet", Constants::ascendOper
+                    );
+                },
+                [&](async_mqtt::v3_1_1::publish_packet const& pkt)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "{} Sending PUBLISH packet\n{}\n"
+                        "Payload:\n{}"
+                        "\n{}\n"
+                        "Topic: {} | QoS: {} | Packet ID: {}",
+                        Constants::ascendOper,
+                        Constants::dataHr,
+                        pkt.payload(),
+                        Constants::propHr,
+                        pkt.topic(),
+                        static_cast<std::uint8_t>(pkt.opts().get_qos()),
+                        pkt.packet_id()
+                    );
+                },
+                /*
+                [&](async_mqtt::v3_1_1::suback_packet const& pkt)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "{} Sending SUBACK packet", Constants::ascendOper
+                    );
+                },
+                [&](async_mqtt::v3_1_1::unsuback_packet const& pkt)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "{} Sending UNSUBACK packet", Constants::ascendOper
+                    );
+                }
+                */
+                [](auto const&)
+                {
+                } }
+        );
     }
 }  // namespace AikariPLS::Components::MQTTBroker::Class

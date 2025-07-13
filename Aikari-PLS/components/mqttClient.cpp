@@ -10,6 +10,9 @@
 
 #include "../lifecycle.h"
 #include "../resource.h"
+#include "../utils/mqttPacketUtils.h"
+#include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
+#include "mqttLifecycle.h"
 
 namespace AikariPLS::Components::MQTTClient
 {
@@ -27,6 +30,22 @@ namespace AikariPLS::Components::MQTTClient
 
         this->clientLoop =
             std::make_unique<std::jthread>(&Client::startClientLoop, this);
+
+        this->handleRecv = [this](std::stringstream istreamData)
+        {
+            if (this->connection != nullptr)
+            {
+                this->connection->recv(istreamData);
+            }
+        };
+        this->recvThreadPool =
+            std::make_unique<AikariShared::infrastructure::MessageQueue::
+                                 PoolQueue<std::stringstream>>(
+                this->recvThreadCount, this->handleRecv
+            );
+        this->initSendThreadPool();
+        this->sendQueueWorker =
+            std::make_unique<std::jthread>(&Client::startSendQueueWorker, this);
     };
 
     Client::~Client()
@@ -44,10 +63,30 @@ namespace AikariPLS::Components::MQTTClient
         CUSTOM_LOG_DEBUG("Cleaning up MQTT Client context...");
         this->cleaned = true;
         this->shouldExit = true;
+
+        auto& mqttSharedQueues =
+            AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
+        auto* sendQueuePtr =
+            mqttSharedQueues.getPtr(&AikariPLS::Types::lifecycle::MQTT::
+                                        PLSMQTTMsgQueues::clientToBrokerQueue);
+
+        sendQueuePtr->push(
+            {
+                .type =
+                    Types::mqttMsgQueue::PACKET_OPERATION_TYPE::CTRL_THREAD_END,
+            }
+        );
+
         if (this->clientLoop->joinable() && !ignoreThreadJoin)
         {
             this->clientLoop->join();
         }
+        if (this->sendQueueWorker->joinable() && !ignoreThreadJoin)
+        {
+            this->sendQueueWorker->join();
+        }
+
+        std::lock_guard<std::mutex> lock(this->sslCtxLock);
         mbedtls_net_free(&this->netCtxs.serverFd);
         mbedtls_x509_crt_free(&this->mbedCtx.caCrt);
         mbedtls_ssl_free(&this->sslCtx);
@@ -168,7 +207,7 @@ namespace AikariPLS::Components::MQTTClient
                 &this->mbedCtx.sslConfig, MBEDTLS_SSL_VERIFY_REQUIRED
             );
             mbedtls_ssl_conf_ca_chain(
-                &this->mbedCtx.sslConfig, &this->mbedCtx.caCrt, NULL
+                &this->mbedCtx.sslConfig, &this->mbedCtx.caCrt, nullptr
             );
             mbedtls_ssl_conf_rng(
                 &this->mbedCtx.sslConfig,
@@ -228,19 +267,105 @@ namespace AikariPLS::Components::MQTTClient
         return true;
     }
 
+    void Client::startSendQueueWorker()
+    {
+        try
+        {
+            auto& mqttSharedQueues =
+                AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
+            auto* sendQueuePtr = mqttSharedQueues.getPtr(
+                &AikariPLS::Types::lifecycle::MQTT::PLSMQTTMsgQueues::
+                    brokerToClientQueue
+            );
+
+            while (!this->shouldExit)
+            {
+                auto task = sendQueuePtr->pop();
+
+                if (task.type == AikariPLS::Types::mqttMsgQueue::
+                                     PACKET_OPERATION_TYPE::CTRL_THREAD_END)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "Exiting Fake Broker -> Fake Client msg queue "
+                        "listening thread..."
+                    );
+                    return;
+                }
+
+                this->sendThreadPool->insertTask(std::move(task));
+            }
+        }
+        catch (const std::exception& err)
+        {
+            CUSTOM_LOG_ERROR(
+                "Critical error occurred in Fake Broker -> Fake Client -> Real "
+                "Broker msg queue worker, error: {}",
+                err.what()
+            );
+        }
+    }
+
+    void Client::initSendThreadPool()
+    {
+        this->sendThreadPool.reset();
+        this->sendThreadPool = std::make_unique<
+            AikariShared::infrastructure::MessageQueue::PoolQueue<
+                AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>(
+            this->sendThreadCount,
+            [this](AikariPLS::Types::mqttMsgQueue::FlaggedPacket packet)
+            {
+                if (this->isConnectionActive)
+                {
+                    switch (packet.type)
+                    {
+                        case AikariPLS::Types::mqttMsgQueue::
+                            PACKET_OPERATION_TYPE::PKT_TRANSPARENT:
+                        case AikariPLS::Types::mqttMsgQueue::
+                            PACKET_OPERATION_TYPE::PKT_MODIFIED:
+                        {
+                            // TODO: error handling (maybe)
+                            std::function<async_mqtt::packet_id_type()>
+                                genNewPacketId = [this]()
+                            {
+                                return this->connection
+                                    ->acquire_unique_packet_id()
+                                    .value_or(0);
+                            };
+                            auto newPacket = AikariPLS::Utils::MQTTPacketUtils::
+                                reconstructPacketWithPktId(
+                                    packet.packet.value(), genNewPacketId
+                                );
+                            this->connection->send(std::move(newPacket));
+                        }
+                        break;
+
+                        case AikariPLS::Types::mqttMsgQueue::
+                            PACKET_OPERATION_TYPE::PKT_DROP:
+                        default:
+                        {
+                        }
+                        break;
+                    }
+                }
+            }
+        );
+    }
+
     void Client::resetConnection()
     {
+        this->sslCtxLock.lock();
         mbedtls_ssl_close_notify(&this->sslCtx);
         mbedtls_net_free(&this->netCtxs.serverFd);
         mbedtls_ssl_session_reset(&this->sslCtx);
-        // this->connection.reset...
+        this->sslCtxLock.unlock();
+        this->connection.reset();
     };
 
     void Client::runConnLoop()
     {
         CUSTOM_LOG_DEBUG("Ready to connect to the server.");
 
-        bool isConnectionActive = false;
+        this->isConnectionActive = false;
 
         while (!this->shouldExit)
         {
@@ -248,11 +373,12 @@ namespace AikariPLS::Components::MQTTClient
 
             do
             {
-                if (!isConnectionActive)
+                if (!this->isConnectionActive)
                 {
-                    if (this->isConnectRetryDisabled)
+                    if (this->isConnectRetryDisabled || retryTimes >= maxRetry)
                     {
-                        break;  // jump out from do while (false)
+                        this->cleanUp(true);
+                        return;
                     }
 
                     // handshake using config
@@ -261,12 +387,16 @@ namespace AikariPLS::Components::MQTTClient
                         this->launchArg.targetHost,
                         this->launchArg.targetPort
                     );
+
+                    std::unique_lock<std::mutex> lock(this->sslCtxLock
+                    );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,
                         this->hostRealIP.c_str(),
                         std::to_string(this->launchArg.targetPort).c_str(),
                         MBEDTLS_NET_PROTO_TCP
                     );
+
                     if (taskTempRet != 0)
                     {
                         CUSTOM_LOG_ERROR(
@@ -282,7 +412,7 @@ namespace AikariPLS::Components::MQTTClient
                         &this->netCtxs.serverFd,
                         mbedtls_net_send,
                         mbedtls_net_recv,
-                        NULL
+                        nullptr
                     );
 
                     CUSTOM_LOG_INFO("Handshaking with server...");
@@ -333,8 +463,62 @@ namespace AikariPLS::Components::MQTTClient
                     }
                     CUSTOM_LOG_DEBUG("Certificate verified.");
 
+                    lock.unlock();
                     CUSTOM_LOG_INFO("Connection established.");
-                    isConnectionActive = true;
+                    this->isConnectionActive = true;
+
+                    this->connection =
+                        std::make_unique<AikariPLS::Components::MQTTClient::
+                                             Class::MQTTClientConnection>(
+                            [this](async_mqtt::packet_variant packet)
+                            {
+                                if (!this->isConnectionActive)
+                                    return;
+
+                                std::vector<unsigned char> pendingBuf;
+                                auto pktBufSeq = packet.const_buffer_sequence();
+                                for (auto& pktBuf : pktBufSeq)
+                                {
+                                    pendingBuf.insert(
+                                        pendingBuf.end(),
+                                        (const unsigned char*)pktBuf.data(),
+                                        (const unsigned char*)pktBuf.data() +
+                                            pktBuf.size()
+                                    );
+                                }
+
+                                std::lock_guard<std::mutex> lock(
+                                    this->sslCtxLock
+                                );
+                                mbedtls_ssl_write(
+                                    &this->sslCtx,
+                                    pendingBuf.data(),
+                                    pendingBuf.size()
+                                );
+                            },
+                            [this]()
+                            {
+                                this->resetConnection();
+                                this->isConnectionActive = false;
+                            },
+                            [this](async_mqtt::error_code errCode)
+                            {
+                            },
+                            [this]()
+                            {
+                                this->retryTimes = 0;
+                                this->isConnectRetryDisabled = false;
+                            }
+                        );
+
+                    async_mqtt::v3_1_1::connect_packet connPacket(
+                        true,
+                        this->launchArg.keepAliveSec,
+                        this->launchArg.clientId,
+                        this->launchArg.username,
+                        this->launchArg.password
+                    );
+                    this->connection->send(std::move(connPacket));
                 }
             } while (false);
 
@@ -359,12 +543,15 @@ namespace AikariPLS::Components::MQTTClient
             {
                 if (taskTempRet > 0 &&
                     FD_ISSET(this->netCtxs.serverFd.fd, &readFds) &&
-                    isConnectionActive)
+                    this->isConnectionActive)
                 {
                     unsigned char buffer[4096] = {};
+
+                    this->sslCtxLock.lock();
                     taskTempRet = mbedtls_ssl_read(
                         &this->sslCtx, buffer, sizeof(buffer) - 1
                     );
+                    this->sslCtxLock.unlock();
 
                     // Begin ssl_read ret switch
                     if (taskTempRet > 0)
@@ -372,12 +559,12 @@ namespace AikariPLS::Components::MQTTClient
                         std::string strIncomingData(
                             reinterpret_cast<char*>(buffer), taskTempRet
                         );
-#ifdef _DEBUG
-                        CUSTOM_LOG_TRACE(
-                            "New data from server: {}", strIncomingData
-                        );
-#endif
-                        // data from server, to be processed
+
+                        // data from broker
+
+                        std::stringstream strStream(strIncomingData);
+
+                        this->recvThreadPool->insertTask(std::move(strStream));
                     }
                     else if (taskTempRet == MBEDTLS_ERR_SSL_WANT_READ ||
                              taskTempRet == MBEDTLS_ERR_SSL_WANT_WRITE)
@@ -409,15 +596,18 @@ namespace AikariPLS::Components::MQTTClient
                         CUSTOM_LOG_DEBUG("Server disconnected, cleaning up...");
                         this->resetConnection();
 
-                        isConnectionActive = false;
+                        this->isConnectionActive = false;
+                        this->retryTimes++;
                     }
                     // End ssl_read ret switch
                 }  // LEVEL = taskRet > 0 && FDISSET
             } while (false);
         }
 
+        this->sslCtxLock.lock();
         mbedtls_ssl_close_notify(&this->sslCtx);
         mbedtls_ssl_session_reset(&this->sslCtx);
+        this->sslCtxLock.unlock();
         CUSTOM_LOG_INFO("Client stopped.");
     }
 

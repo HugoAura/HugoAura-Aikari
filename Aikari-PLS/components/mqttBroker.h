@@ -13,6 +13,7 @@
 #include <string>
 #include <thread>
 
+#include "Aikari-PLS-Private/types/lifecycleTypes.h"
 #include "mqttBrokerHandler.h"
 
 /*
@@ -35,6 +36,7 @@ namespace AikariPLS::Components::MQTTBroker
     {
         mbedtls_net_context listenFd;
         mbedtls_net_context clientFd;
+        mbedtls_net_context* curClientFd;
     };
 
     struct OtherMBedTLSInstances
@@ -56,10 +58,13 @@ namespace AikariPLS::Components::MQTTBroker
         void startTlsServerLoop(const BrokerLaunchArg& arg);
         void cleanUp(bool ignoreThreadJoin);
 
+        void startSendQueueWorker();
+
        private:
         bool cleaned = false;
 
         std::atomic<bool> shouldExit = false;
+        std::mutex sslCtxLock;
 
         mbedtls_ssl_context sslCtx;
         NetContexts netCtx;
@@ -70,9 +75,17 @@ namespace AikariPLS::Components::MQTTBroker
             connection;
         std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
             std::stringstream>>
-            threadPool;
+            recvThreadPool;
+        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+            AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>
+            sendThreadPool;
 
-        size_t threadCount = 8;
+        void initSendThreadPool();
+
+        size_t recvThreadCount = 4;
+        size_t sendThreadCount = 4;
+
+        std::unique_ptr<std::jthread> sendQueueWorker;
 
         std::string hostname;
         int port;

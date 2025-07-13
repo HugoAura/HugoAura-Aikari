@@ -1,7 +1,9 @@
 ﻿#include "init.h"
 
+#include <Aikari-Launcher-Public/constants/itcCtrl/base.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/filesystem.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/network.h>
+#include <Aikari-Launcher-Public/constants/lifecycle.h>
 #include <Aikari-PLS/types/constants/init.h>
 #include <Aikari-PLS/types/constants/msgQueue.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
@@ -28,108 +30,145 @@ namespace AikariPLS::Init
 
     constexpr const char* swCoreProcName = "SeewoCore.exe";
 
-    static void _pushSwCoreProcKilledEvent(
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            itcConstants::SubToMainMessageInstance>* msgQueue
-    )
+    namespace HelperFns
     {
-        itcConstants::SubToMainWebSocketReply wsMsg = {
-            .success = true,
-            .code = 0,
-            .data = { { "message",
-                        plsConstants::init::networkInit::
-                            SW_CORE_PROC_KILLED_MSG },
-                      { "method",
-                        plsConstants::init::networkInit::
-                            SW_CORE_PROC_KILLED_PUSH_METHOD } },
-            .eventId = plsConstants::msgQueue::WebSocket::WS_MSG_TYPE_PUSH,
-            .wsInfo = { .isBroadcast = true }
-        };
-
-        itcConstants::SubToMainMessageInstance msgIns = {
-            .type = itcConstants::MESSAGE_TYPES::WS_MESSAGE, .msg = wsMsg
-        };
-
-        msgQueue->push(msgIns);
-    };
-
-    static std::variant<std::filesystem::path, bool> _initMqttCert(
-        AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler*
-            msgQueueHandler
-    )
-    {
-        itcConstants::SubToMainControlMessage getDirMsg = {
-            .method = AikariLauncherPublic::Constants::InterThread::FileSystem::
-                Base::GET_DIR,
-            .data = { { "dirType", "aikariRoot" } },
-            .fromModule = plsConstants::msgQueue::MODULE_NAME,
-            .eventId =
-                AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
-        };
-
-        auto getDirResult = msgQueueHandler->sendCtrlMsgSync(getDirMsg);
-
-        if (!getDirResult.data.value("success", false))
+        static void _pushSwCoreProcKilledEvent(
+            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+                itcConstants::SubToMainMessageInstance>* msgQueue
+        )
         {
-            LOG_ERROR(
-                "Failed to init MQTT cert: Failed to get default directory "
-                "info. Diagnose code: {}",
-                getDirResult.data.value("diagnoseCode", "UNKNOWN")
-            );
-            return false;
-        }
+            itcConstants::SubToMainWebSocketReply wsMsg = {
+                .success = true,
+                .code = 0,
+                .data = { { "message",
+                            plsConstants::init::networkInit::
+                                SW_CORE_PROC_KILLED_MSG },
+                          { "method",
+                            plsConstants::init::networkInit::
+                                SW_CORE_PROC_KILLED_PUSH_METHOD } },
+                .eventId = plsConstants::msgQueue::WebSocket::WS_MSG_TYPE_PUSH,
+                .wsInfo = { .isBroadcast = true }
+            };
 
-        std::filesystem::path aikariDir(
-            static_cast<std::string>(getDirResult.data.at("path"))
-        );
+            itcConstants::SubToMainMessageInstance msgIns = {
+                .type = itcConstants::MESSAGE_TYPES::WS_MESSAGE, .msg = wsMsg
+            };
+
+            msgQueue->push(msgIns);
+        };
+
+        static std::variant<std::filesystem::path, bool> _initMqttCert(
+            AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler*
+                msgQueueHandler
+        )
+        {
+            itcConstants::SubToMainControlMessage getDirMsg = {
+                .method = AikariLauncherPublic::Constants::InterThread::
+                    FileSystem::Base::GET_DIR,
+                .data = { { "dirType", "aikariRoot" } },
+                .fromModule = plsConstants::msgQueue::MODULE_NAME,
+                .eventId =
+                    AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
+            };
+
+            auto getDirResult = msgQueueHandler->sendCtrlMsgSync(getDirMsg);
+
+            if (!getDirResult.data.value("success", false))
+            {
+                LOG_ERROR(
+                    "Failed to init MQTT cert: Failed to get default directory "
+                    "info. Diagnose code: {}",
+                    getDirResult.data.value("diagnoseCode", "UNKNOWN")
+                );
+                return false;
+            }
+
+            std::filesystem::path aikariDir(
+                static_cast<std::string>(getDirResult.data.at("path"))
+            );
 #ifdef _DEBUG
-        LOG_TRACE("Init MQTT cert: Got AikariDir: {}", aikariDir.string());
+            LOG_TRACE("Init MQTT cert: Got AikariDir: {}", aikariDir.string());
 #endif
 
-        if (std::filesystem::exists(
-                aikariDir / "config" / "certs" / "mqtt.crt"
-            ))
-        {
-            LOG_INFO(
-                "MQTT TLS cert already generated, skipping regeneration..."
-            );
-            return aikariDir;
-        }
+            if (std::filesystem::exists(
+                    aikariDir / "config" / "certs" / "mqtt.crt"
+                ))
+            {
+                LOG_INFO(
+                    "MQTT TLS cert already generated, skipping regeneration..."
+                );
+                return aikariDir;
+            }
 
-        itcConstants::SubToMainControlMessage initCertMsg = {
-            .method = AikariLauncherPublic::Constants::InterThread::Network::
-                TLS::GEN_TLS_CERTS,
-            .data = { { "baseDir", (aikariDir / "config" / "certs").string() },
-                      { "hostname", plsConstants::init::networkInit::HOSTNAME },
-                      { "identifier",
-                        plsConstants::init::networkInit::
-                            TLS_CERT_IDENTIFIER } },
-            .fromModule = plsConstants::msgQueue::MODULE_NAME,
-            .eventId =
-                AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
+            itcConstants::SubToMainControlMessage initCertMsg = {
+                .method = AikariLauncherPublic::Constants::InterThread::
+                    Network::TLS::GEN_TLS_CERTS,
+                .data = { { "baseDir",
+                            (aikariDir / "config" / "certs").string() },
+                          { "hostname",
+                            plsConstants::init::networkInit::HOSTNAME },
+                          { "identifier",
+                            plsConstants::init::networkInit::
+                                TLS_CERT_IDENTIFIER } },
+                .fromModule = plsConstants::msgQueue::MODULE_NAME,
+                .eventId =
+                    AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
+            };
+
+            auto initCertResult = msgQueueHandler->sendCtrlMsgSync(initCertMsg);
+
+            if (!initCertResult.data.value("success", false))
+            {
+                LOG_ERROR(
+                    "Failed to init MQTT cert: Error generating cert: {} | "
+                    "Diagnose code: {}",
+                    initCertResult.data.value("message", "Unknown Error"),
+                    initCertResult.data.value("diagnoseCode", "UNKNONW")
+                );
+                return false;
+            }
+
+            LOG_INFO("Successfully generated MQTT TLS cert.");
+
+            LOG_DEBUG("Return {}", aikariDir.string());
+            return aikariDir;
         };
 
-        auto initCertResult = msgQueueHandler->sendCtrlMsgSync(initCertMsg);
-
-        if (!initCertResult.data.value("success", false))
+        static AikariLauncherPublic::Constants::Lifecycle::
+            APPLICATION_RUNTIME_MODES
+            _getRuntimeMode(
+                AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler*
+                    msgQueueHandler
+            )
         {
-            LOG_ERROR(
-                "Failed to init MQTT cert: Error generating cert: {} | "
-                "Diagnose code: {}",
-                initCertResult.data.value("message", "Unknown Error"),
-                initCertResult.data.value("diagnoseCode", "UNKNONW")
-            );
-            return false;
-        }
+            itcConstants::SubToMainControlMessage getRuntimeModeMsg = {
+                .method = AikariLauncherPublic::Constants::InterThread::Base::
+                    Props::GET_RUNTIME_MODE,
+                .data = {},
+                .fromModule = plsConstants::msgQueue::MODULE_NAME,
+                .eventId =
+                    AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
+            };
 
-        LOG_INFO("Successfully generated MQTT TLS cert.");
+            auto getRuntimeModeResult =
+                msgQueueHandler->sendCtrlMsgSync(getRuntimeModeMsg);
 
-        LOG_DEBUG("Return {}", aikariDir.string());
-        return aikariDir;
-    };
+            int runtimeModeRaw = getRuntimeModeResult.data.value("mode", 0);
+
+            auto runtimeMode =
+                static_cast<AikariLauncherPublic::Constants::Lifecycle::
+                                APPLICATION_RUNTIME_MODES>(runtimeModeRaw);
+
+            return runtimeMode;
+        };
+
+    }  // namespace HelperFns
 
     PLSInitSuccess runPlsInit()
     {
+        auto& sharedStates =
+            AikariPLS::Lifecycle::PLSSharedStates::getInstance();
+
         auto& sharedIns =
             AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
 
@@ -142,6 +181,14 @@ namespace AikariPLS::Init
 
         auto* retMsgQueuePtr = sharedMsgQueues.getPtr(
             &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::retMsgQueue
+        );
+
+        LOG_DEBUG("Pulling Aikari runtime mode...");
+        const auto runtimeMode = HelperFns::_getRuntimeMode(msgQueueHandlerPtr);
+        LOG_TRACE("Runtime mode: {}", static_cast<int>(runtimeMode));
+        sharedStates.setVal(
+            &AikariPLS::Types::lifecycle::PLSSharedStates::runtimeMode,
+            runtimeMode
         );
 
         LOG_INFO("Checking hosts file entry...");
@@ -163,7 +210,7 @@ namespace AikariPLS::Init
                     [retMsgQueuePtr]()
                     {
                         std::this_thread::sleep_for(std::chrono::seconds(2));
-                        _pushSwCoreProcKilledEvent(retMsgQueuePtr);
+                        HelperFns::_pushSwCoreProcKilledEvent(retMsgQueuePtr);
                     }
                 );
                 pushKillEvtThread.detach();
@@ -176,7 +223,7 @@ namespace AikariPLS::Init
 
         LOG_INFO("Ensuring MQTT TLS cert...");
         std::filesystem::path aikariDir;
-        auto result = _initMqttCert(msgQueueHandlerPtr);
+        auto result = HelperFns::_initMqttCert(msgQueueHandlerPtr);
         try
         {
             if (!std::get<bool>(result))

@@ -4,18 +4,17 @@ IndentWidth: 4
 UseTab: Never
 
 IncludeCategories:
-  - Regex: 'pch.h'
-    Priority: -1000
   - Regex: "^<.*>"
     Priority: 2
   - Regex: '^".*"'
     Priority: 3
 
-SortIncludes: true
+SortIncludes: CaseSensitive
 
 PointerAlignment: Left
 
 ColumnLimit: 80
+ReflowComments: IndentOnly
 
 NamespaceIndentation: All
 

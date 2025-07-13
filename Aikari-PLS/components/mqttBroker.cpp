@@ -5,6 +5,10 @@
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <WinSock2.h>
 
+#include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
+#include "mqttLifecycle.h"
+#include "utils/mqttPacketUtils.h"
+
 #pragma comment(lib, "ws2_32")
 
 namespace AikariPLS::Components::MQTTBroker
@@ -27,11 +31,14 @@ namespace AikariPLS::Components::MQTTBroker
                 this->connection->recv(istreamData);
             }
         };
-        this->threadPool =
+        this->recvThreadPool =
             std::make_unique<AikariShared::infrastructure::MessageQueue::
                                  PoolQueue<std::stringstream>>(
-                this->threadCount, this->handleRecv
+                this->recvThreadCount, this->handleRecv
             );
+        this->initSendThreadPool();
+        this->sendQueueWorker =
+            std::make_unique<std::jthread>(&Broker::startSendQueueWorker, this);
     };
 
     Broker::~Broker()
@@ -47,10 +54,30 @@ namespace AikariPLS::Components::MQTTBroker
         CUSTOM_LOG_DEBUG("Cleaning up MQTT Broker server context...");
         this->cleaned = true;
         this->shouldExit = true;
+
+        auto& mqttSharedQueues =
+            AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
+        auto* sendQueuePtr =
+            mqttSharedQueues.getPtr(&AikariPLS::Types::lifecycle::MQTT::
+                                        PLSMQTTMsgQueues::clientToBrokerQueue);
+
+        sendQueuePtr->push(
+            {
+                .type =
+                    Types::mqttMsgQueue::PACKET_OPERATION_TYPE::CTRL_THREAD_END,
+            }
+        );
+
         if (this->serverLoop->joinable() && !ignoreThreadJoin)
         {
             this->serverLoop->join();
         }
+        if (this->sendQueueWorker->joinable() && !ignoreThreadJoin)
+        {
+            this->sendQueueWorker->join();
+        }
+
+        std::lock_guard<std::mutex> lock(this->sslCtxLock);
         mbedtls_net_free(&this->netCtx.listenFd);
         mbedtls_net_free(&this->netCtx.clientFd);
         mbedtls_x509_crt_free(&this->mbedCtx.srvCert);
@@ -210,11 +237,99 @@ namespace AikariPLS::Components::MQTTBroker
         }
     }
 
+    void Broker::startSendQueueWorker()
+    {
+        try
+        {
+            auto& mqttSharedQueues =
+                AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
+            auto* sendQueuePtr = mqttSharedQueues.getPtr(
+                &AikariPLS::Types::lifecycle::MQTT::PLSMQTTMsgQueues::
+                    clientToBrokerQueue
+            );
+
+            while (!this->shouldExit)
+            {
+                auto task = sendQueuePtr->pop();
+
+                if (task.type == AikariPLS::Types::mqttMsgQueue::
+                                     PACKET_OPERATION_TYPE::CTRL_THREAD_END)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "Exiting Fake Client -> Fake Broker msg queue "
+                        "listening thread..."
+                    );
+                    return;
+                }
+
+                this->sendThreadPool->insertTask(std::move(task));
+            }
+        }
+        catch (const std::exception& err)
+        {
+            CUSTOM_LOG_ERROR(
+                "Critical error occurred in Fake Client -> Fake Broker -> Real "
+                "Client msg queue worker, error: {}",
+                err.what()
+            );
+        }
+    }
+
+    void Broker::initSendThreadPool()
+    {
+        this->sendThreadPool.reset();
+        this->sendThreadPool = std::make_unique<
+            AikariShared::infrastructure::MessageQueue::PoolQueue<
+                AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>(
+            this->sendThreadCount,
+            [this](AikariPLS::Types::mqttMsgQueue::FlaggedPacket packet)
+            {
+                if (this->netCtx.curClientFd != nullptr)
+                {
+                    switch (packet.type)
+                    {
+                        case AikariPLS::Types::mqttMsgQueue::
+                            PACKET_OPERATION_TYPE::PKT_TRANSPARENT:
+                        case AikariPLS::Types::mqttMsgQueue::
+                            PACKET_OPERATION_TYPE::PKT_MODIFIED:
+                        {
+                            // TODO: error handling (same as mqttClient.cpp)
+                            std::function<async_mqtt::packet_id_type()>
+                                genNewPacketId = [this]()
+                            {
+                                return this->connection
+                                    ->acquire_unique_packet_id()
+                                    .value_or(0);
+                            };
+                            auto newPacket = AikariPLS::Utils::MQTTPacketUtils::
+                                reconstructPacketWithPktId(
+                                    packet.packet.value(), genNewPacketId
+                                );
+
+                            this->connection->send(std::move(newPacket));
+                        }
+                        break;
+
+                        case AikariPLS::Types::mqttMsgQueue::
+                            PACKET_OPERATION_TYPE::PKT_DROP:
+                        default:
+                        {
+                            // drop, do nothing
+                        }
+                        break;
+                    }
+                }
+            }
+        );
+    }
+
     void Broker::resetCurConnection()
     {
+        this->sslCtxLock.lock();
         mbedtls_ssl_close_notify(&this->sslCtx);
         mbedtls_net_free(&this->netCtx.clientFd);
         mbedtls_ssl_session_reset(&this->sslCtx);
+        this->sslCtxLock.unlock();
         this->connection.reset();
     };
 
@@ -251,7 +366,7 @@ namespace AikariPLS::Components::MQTTBroker
 
     void Broker::listenLoop()
     {
-        mbedtls_net_context* curClientFd = nullptr;
+        this->netCtx.curClientFd = nullptr;
 
         CUSTOM_LOG_DEBUG("Waiting for client connection...");
 
@@ -268,9 +383,9 @@ namespace AikariPLS::Components::MQTTBroker
             timeVal.tv_sec = 1;
             timeVal.tv_usec = 0;
 
-            if (curClientFd != nullptr)
+            if (this->netCtx.curClientFd != nullptr)
             {
-                FD_SET(curClientFd->fd, &readFds);
+                FD_SET(this->netCtx.curClientFd->fd, &readFds);
             }
 
             int taskTempRet;
@@ -289,7 +404,7 @@ namespace AikariPLS::Components::MQTTBroker
                 {
                     CUSTOM_LOG_DEBUG("New activity on listenFd detected.");
                     // Incoming connection available
-                    if (curClientFd != nullptr)
+                    if (this->netCtx.curClientFd != nullptr)
                     {
                         mbedtls_net_context tempCtx;
                         mbedtls_net_init(&tempCtx);
@@ -309,6 +424,8 @@ namespace AikariPLS::Components::MQTTBroker
                     else
                     {
                         CUSTOM_LOG_DEBUG("Handshaking with new client...");
+
+                        std::unique_lock<std::mutex> lock(this->sslCtxLock);
                         // so cur no client, new client connecting
                         taskTempRet = mbedtls_net_accept(
                             &this->netCtx.listenFd,
@@ -328,6 +445,7 @@ namespace AikariPLS::Components::MQTTBroker
                                 "{}",
                                 taskTempRet
                             );
+                            lock.unlock();
                             this->resetCurConnection();
                             break;  // jump out from this do-while scope
                         }
@@ -363,20 +481,21 @@ namespace AikariPLS::Components::MQTTBroker
 
                         if (handshakeResult == false)
                         {
-                            continue;
+                            break;
                         }
 
                         CUSTOM_LOG_DEBUG("SSL handshake completed.");
 
-                        curClientFd = &this->netCtx.clientFd;
+                        lock.unlock();
+
+                        this->netCtx.curClientFd = &this->netCtx.clientFd;
 
                         this->connection =
                             std::make_unique<AikariPLS::Components::MQTTBroker::
                                                  Class::MQTTBrokerConnection>(
-                                [this,
-                                 curClientFd](async_mqtt::packet_variant packet)
+                                [this](async_mqtt::packet_variant packet)
                                 {
-                                    if (curClientFd == nullptr)
+                                    if (this->netCtx.curClientFd == nullptr)
                                     {
                                         return;
                                     }
@@ -393,6 +512,10 @@ namespace AikariPLS::Components::MQTTBroker
                                             ) + pktBuf.size()
                                         );
                                     }
+
+                                    std::lock_guard<std::mutex> lock(
+                                        this->sslCtxLock
+                                    );
                                     mbedtls_ssl_write(
                                         &this->sslCtx,
                                         pendingBuf.data(),
@@ -401,6 +524,9 @@ namespace AikariPLS::Components::MQTTBroker
                                 },
                                 [this]()
                                 {
+                                    std::lock_guard<std::mutex> lock(
+                                        this->sslCtxLock
+                                    );
                                     this->resetCurConnection();
                                 },
                                 [this](async_mqtt::error_code errCode)
@@ -413,13 +539,16 @@ namespace AikariPLS::Components::MQTTBroker
 
             do
             {
-                if (curClientFd != nullptr &&
+                if (this->netCtx.curClientFd != nullptr &&
                     FD_ISSET(this->netCtx.clientFd.fd, &readFds))
                 {
                     unsigned char clientMsgBuffer[4096] = {};
+
+                    this->sslCtxLock.lock();
                     taskTempRet = mbedtls_ssl_read(
                         &sslCtx, clientMsgBuffer, sizeof(clientMsgBuffer) - 1
                     );
+                    this->sslCtxLock.unlock();
 
                     if (taskTempRet > 0)
                     {
@@ -442,7 +571,7 @@ namespace AikariPLS::Components::MQTTBroker
                         */
                         std::stringstream strStream(strReadData);
 
-                        this->threadPool->insertTask(std::move(strStream));
+                        this->recvThreadPool->insertTask(std::move(strStream));
                     }
                     else if (taskTempRet == MBEDTLS_ERR_SSL_WANT_READ ||
                              taskTempRet == MBEDTLS_ERR_SSL_WANT_WRITE)
@@ -474,14 +603,16 @@ namespace AikariPLS::Components::MQTTBroker
                         CUSTOM_LOG_DEBUG("Client disconnected, cleaning up...");
                         this->resetCurConnection();
 
-                        curClientFd = nullptr;
+                        this->netCtx.curClientFd = nullptr;
                     }
                 }
             } while (false);
         }
 
+        this->sslCtxLock.lock();
         mbedtls_ssl_close_notify(&this->sslCtx);
         mbedtls_ssl_session_reset(&this->sslCtx);
+        this->sslCtxLock.unlock();
         CUSTOM_LOG_INFO("Broker stopped.");
     }
 }  // namespace AikariPLS::Components::MQTTBroker

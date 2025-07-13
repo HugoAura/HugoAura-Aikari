@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <Aikari-Launcher-Public/constants/lifecycle.h>
+#include <Aikari-PLS-Private/types/components/mqtt.h>
 #include <memory>
 #include <minwindef.h>
 
@@ -35,6 +37,18 @@ namespace AikariPLS::Components
 
 namespace AikariPLS::Types::lifecycle
 {
+    struct PLSSharedStates
+    {
+        AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
+            runtimeMode;
+
+        static PLSSharedStates createDefault()
+        {
+            return { .runtimeMode = AikariLauncherPublic::Constants::Lifecycle::
+                         APPLICATION_RUNTIME_MODES::NORMAL };
+        };
+    };
+
     struct PLSSharedIns
     {
         std::unique_ptr<

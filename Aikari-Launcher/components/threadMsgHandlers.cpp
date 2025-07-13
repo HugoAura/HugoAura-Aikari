@@ -1,15 +1,17 @@
 ﻿#include "threadMsgHandlers.h"
 
+#include <Aikari-Launcher-Public/constants/itcCtrl/base.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/filesystem.h>
 #include <Aikari-Launcher-Public/constants/itcCtrl/network.h>
 #include <Aikari-Shared/types/itc/shared.h>
 #include <Aikari-Shared/utils/string.h>
+#include <exception>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
 #include "../lifecycle.h"
+#include "../routes/itc/baseRoute.h"
 #include "../routes/itc/filesystemRoute.h"
 #include "../routes/itc/networkRoute.h"
 #include "wsServer.h"
@@ -37,6 +39,12 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
         {
             result = AikariLauncherRoutes::InterThread::FileSystem::
                 handleFsCtrlMessage(retMsg, route);
+        }
+        else if (rootRoute == itcConstants::Base::_PREFIX)
+        {
+            result = AikariLauncherRoutes::InterThread::Base::handleBaseCtrlMsg(
+                retMsg, route
+            );
         }
         else
         {

@@ -1,11 +1,15 @@
 #pragma once
 
+#include <Aikari-Shared/infrastructure/queue/PoolQueue.hpp>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/net_sockets.h>
 #include <mbedtls/ssl.h>
+#include <mutex>
 #include <string>
 #include <thread>
+
+#include "mqttClientHandler.h"
 
 /*
  * MQTT Client will be initialized in MQTTBrokerHandler.cpp, when CONNECT pkt is
@@ -13,7 +17,8 @@
  */
 namespace AikariPLS::Components::MQTTClient
 {
-    constexpr const char* pers = "Across the galaxy, we see the twilight";
+    constexpr const char* pers =
+        "Across every possibility, we see the infinity";
 
     struct ClientLaunchArg
     {
@@ -53,19 +58,46 @@ namespace AikariPLS::Components::MQTTClient
 
         bool refreshHostRealIP();
 
+        void startSendQueueWorker();
+
        private:
         bool cleaned = false;
 
         std::atomic<bool> shouldExit = false;
+        std::mutex sslCtxLock;
 
         mbedtls_ssl_context sslCtx;
         NetContexts netCtxs;
         OtherMBedTLSInstances mbedCtx;
 
+        std::unique_ptr<
+            AikariPLS::Components::MQTTClient::Class::MQTTClientConnection>
+            connection;
+        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+            std::stringstream>>
+            recvThreadPool;
+        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+            AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>
+            sendThreadPool;
+
+        void initSendThreadPool();
+
+        size_t recvThreadCount = 4;
+        size_t sendThreadCount = 4;
+
+        uint8_t retryTimes = 0;
+        const uint8_t maxRetry = 3;
+
+        std::unique_ptr<std::jthread> sendQueueWorker;
+
         ClientLaunchArg launchArg;
         std::string hostRealIP;
 
         std::unique_ptr<std::jthread> clientLoop;
+
+        std::function<void(std::stringstream)> handleRecv;
+
+        bool isConnectionActive = false;
 
         void resetConnection();
 

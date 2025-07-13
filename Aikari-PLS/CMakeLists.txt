@@ -13,8 +13,14 @@
     components/mqttBrokerHandler.cpp
     components/mqttClient.h
     components/mqttClient.cpp
+    components/mqttClientHandler.h
+    components/mqttClientHandler.cpp
+    components/mqttLifecycle.h
+    components/mqttLifecycle.cpp
     infrastructure/threadMsgHandler.h
     infrastructure/threadMsgHandler.cpp
+    utils/mqttPacketUtils.h
+    utils/mqttPacketUtils.cpp
     utils/windowsApi.cpp
     utils/windowsApi.h
 )

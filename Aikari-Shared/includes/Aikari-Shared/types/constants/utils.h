@@ -1,3 +1,5 @@
+#pragma once
+
 namespace AikariShared::constants::utils
 {
     namespace network

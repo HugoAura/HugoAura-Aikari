@@ -6,6 +6,10 @@
 namespace AikariPLS::Lifecycle
 {
     typedef AikariShared::base::AikariStatesManagerTemplate<
+        AikariPLS::Types::lifecycle::PLSSharedStates>
+        PLSSharedStates;
+
+    typedef AikariShared::base::AikariStatesManagerTemplate<
         AikariPLS::Types::lifecycle::PLSSharedIns>
         PLSSharedInsManager;
 

@@ -1,29 +1,29 @@
-﻿#pragma once
+#pragma once
 
+#include <Aikari-PLS-Private/types/components/mqtt.h>
 #include <async_mqtt/protocol/connection.hpp>
-#include <chrono>
-#include <optional>
 
-namespace AikariPLS::Components::MQTTBroker::Class
+namespace AikariPLS::Components::MQTTClient::Class
 {
-    using BrokerConnection = async_mqtt::connection<async_mqtt::role::server>;
+    using ClientConnection = async_mqtt::connection<async_mqtt::role::client>;
 
     namespace Constants
     {
-        constexpr const char* ascendOper = "<↑ REPLY>";
-        constexpr const char* recvOper = "<↓ ENTER>";
+        constexpr const char* ascendOper = "<↑ ASCEND>";
+        constexpr const char* recvOper = "<↓ INCOME>";
         constexpr const char* dataHr = "----- 📦 DATA -----";
         constexpr const char* propHr = "----- ✍️ PROPS -----";
-
     }  // namespace Constants
 
-    class MQTTBrokerConnection : public BrokerConnection
+    class MQTTClientConnection : public ClientConnection
     {
        public:
-        MQTTBrokerConnection(
-            std::function<void(async_mqtt::packet_variant packet)> onSendLambda,
+        MQTTClientConnection(
+            std::function<void(async_mqtt::packet_variant packet)>
+                onAscendLambda,
             std::function<void()> onCloseLambda,
-            std::function<void(async_mqtt::error_code errCode)> onErrLambda
+            std::function<void(async_mqtt::error_code errCode)> onErrorLambda,
+            std::function<void()> onConnAckSuccessLambda
         );
 
        protected:
@@ -47,17 +47,19 @@ namespace AikariPLS::Components::MQTTBroker::Class
         ) override final;
 
        private:
-        std::function<void(async_mqtt::packet_variant packet)> onSendLambda_;
+        std::function<void(async_mqtt::packet_variant packet)> onAscendLambda_;
         std::function<void()> onCloseLambda_;
         std::function<void(async_mqtt::error_code errCode)> onErrorLambda_;
+        std::function<void()> onConnAckSuccessLambda_;
+
+        std::vector<async_mqtt::packet_variant> pktTempStore;
 
         async_mqtt::packet_id_type getPacketId();
 
         void logSendPacket(const async_mqtt::packet_variant& packet);
 
-        std::string clientId = "UNKNOWN";
+        bool isConnected = false;
 
         bool isDebugEnv = false;
-        bool isSharedInfoInitialized = false;
     };
-}  // namespace AikariPLS::Components::MQTTBroker::Class
+}  // namespace AikariPLS::Components::MQTTClient::Class
