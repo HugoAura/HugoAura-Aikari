@@ -14,7 +14,6 @@ SortIncludes: CaseSensitive
 PointerAlignment: Left
 
 ColumnLimit: 80
-ReflowComments: IndentOnly
 
 NamespaceIndentation: All
 

@@ -3,15 +3,16 @@
 #define CUSTOM_LOG_HEADER "[MQTT Client]"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 
 #include "../lifecycle.h"
-#include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "mqttLifecycle.h"
 
 namespace AikariPLS::Components::MQTTClient::Class
 {
     MQTTClientConnection::MQTTClientConnection(
-        std::function<void(async_mqtt::packet_variant packet)> onAscendLambda,
+        std::function<void(const async_mqtt::packet_variant& packet)>
+            onAscendLambda,
         std::function<void()> onCloseLambda,
         std::function<void(async_mqtt::error_code errCode)> onErrorLambda,
         std::function<void()> onConnAckSuccessLambda
@@ -34,18 +35,34 @@ namespace AikariPLS::Components::MQTTClient::Class
                       APPLICATION_RUNTIME_MODES::DEBUG);
     };
 
+    void MQTTClientConnection::checkTimerTimeout()
+    {
+        auto curTime = std::chrono::steady_clock::now();
+        if (curTime > this->nextPingReqEtc &&
+            this->nextPingReqEtc != std::chrono::steady_clock::time_point())
+        {
+            this->notify_timer_fired(async_mqtt::timer_kind::pingreq_send);
+            this->nextPingReqEtc = {};
+        }
+    }
+
     void MQTTClientConnection::on_send(
         async_mqtt::packet_variant packet,
         std::optional<async_mqtt::packet_id_type>
             release_packet_id_if_send_error
     )
     {
-        bool isConnectPacket =
-            (packet.get_if<async_mqtt::v3_1_1::connect_packet>() != nullptr);
-        if (isConnectPacket)
+        if (auto connectPkt =
+                packet.get_if<async_mqtt::v3_1_1::connect_packet>();
+            connectPkt != nullptr)
         {
-            this->logSendPacket(packet);
-            this->onAscendLambda_(std::move(packet));
+            this->logSendPacket(*connectPkt);
+            this->onAscendLambda_(packet);
+            std::chrono::seconds sendInterval(connectPkt->keep_alive() / 3 * 2);
+            CUSTOM_LOG_DEBUG("PINGREQ send interval will be {}", sendInterval);
+            this->keepAliveDuration = sendInterval;
+            this->set_pingreq_send_interval(sendInterval);
+            this->set_pingresp_recv_timeout(std::chrono::milliseconds(0));
             return;
         }
 
@@ -60,11 +77,11 @@ namespace AikariPLS::Components::MQTTClient::Class
             for (auto pendingPkt : this->pktTempStore)
             {
                 this->logSendPacket(packet);
-                this->onAscendLambda_(std::move(pendingPkt));
+                this->onAscendLambda_(pendingPkt);
             }
         }
         this->logSendPacket(packet);
-        this->onAscendLambda_(std::move(packet));
+        this->onAscendLambda_(packet);
     };
 
     void MQTTClientConnection::on_receive(async_mqtt::packet_variant packet)
@@ -190,6 +207,29 @@ namespace AikariPLS::Components::MQTTClient::Class
                     clientToBrokerQueue->push(std::move(publishPkt));
                 },
                 /// --- ↑ PUBLISH ↑ --- ///
+                /// --- ↓ PUBACK ↓ --- ///
+                [&](async_mqtt::v3_1_1::puback_packet const& pkt)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "{} Received PUBACK packet, packetId: {}",
+                        Constants::recvOper,
+                        pkt.packet_id()
+                    );
+                },
+                /// --- ↑ PUBACK ↑ --- ///
+                /// --- ↓ PINGRESP ↓ --- ///
+                [&](async_mqtt::v3_1_1::pingresp_packet const& pkt)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "{} Received PINGRESP packet.", Constants::recvOper
+                    );
+                    this->on_timer_op(
+                        async_mqtt::timer_op::reset,
+                        async_mqtt::timer_kind::pingreq_send,
+                        this->keepAliveDuration
+                    );
+                },
+                /// --- ↑ PINGRESP ↑ --- ///
                 /// --- × DISCONNECT × --- ///
                 /// in MQTT v3_1_1, broker wont send DISCONN pkt to client ///
                 /// so no need to handle ///
@@ -201,7 +241,8 @@ namespace AikariPLS::Components::MQTTClient::Class
 
     void MQTTClientConnection::on_close()
     {
-        this->onCloseLambda_();
+        CUSTOM_LOG_ERROR("CALLED!!!");
+        // this->onCloseLambda_();
     }
 
     void MQTTClientConnection::on_error(async_mqtt::error_code errCode)
@@ -212,7 +253,7 @@ namespace AikariPLS::Components::MQTTClient::Class
             errCode.message()
         );
 
-        this->onErrorLambda_(std::move(errCode));
+        this->onErrorLambda_(errCode);
     }
 
     void MQTTClientConnection::on_packet_id_release(
@@ -230,6 +271,40 @@ namespace AikariPLS::Components::MQTTClient::Class
         std::optional<std::chrono::milliseconds> ms
     )
     {
+#ifdef _DEBUG
+        CUSTOM_LOG_TRACE(
+            "Timer action triggerred, op {}, type {}, ms {}",
+            static_cast<int>(op),
+            static_cast<int>(kind),
+            ms.value_or(std::chrono::milliseconds::zero())
+        );
+#endif
+        switch (kind)
+        {
+            case (async_mqtt::timer_kind::pingreq_send):
+            {
+                switch (op)
+                {
+                    case async_mqtt::timer_op::reset:
+                    {
+                        this->nextPingReqEtc =
+                            std::chrono::steady_clock::now() +
+                            ms.value_or(std::chrono::seconds(0));
+                        break;
+                    }
+                    case async_mqtt::timer_op::cancel:
+                    {
+                        this->nextPingReqEtc = {};
+                    }
+                }
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
     }
 
     async_mqtt::packet_id_type MQTTClientConnection::getPacketId()
@@ -250,7 +325,7 @@ namespace AikariPLS::Components::MQTTClient::Class
 
     void MQTTClientConnection::logSendPacket(
         const async_mqtt::packet_variant& packet
-    )
+    ) const
     {
         if (!isDebugEnv)
             return;
@@ -295,6 +370,13 @@ namespace AikariPLS::Components::MQTTClient::Class
                 {
                     CUSTOM_LOG_DEBUG(
                         "{} Sending DISCONNECT packet", Constants::ascendOper
+                    );
+                },
+
+                [&](async_mqtt::v3_1_1::pingreq_packet const& pkt)
+                {
+                    CUSTOM_LOG_DEBUG(
+                        "{} Sending PINGREQ packet", Constants::ascendOper
                     );
                 },
                 [](auto const&)

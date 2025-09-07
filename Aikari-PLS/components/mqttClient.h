@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Aikari-Shared/infrastructure/queue/PoolQueue.hpp>
+#include <atomic>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/net_sockets.h>
@@ -64,6 +65,7 @@ namespace AikariPLS::Components::MQTTClient
         bool cleaned = false;
 
         std::atomic<bool> shouldExit = false;
+        std::atomic<bool> pendingExit = false;
         std::mutex sslCtxLock;
 
         mbedtls_ssl_context sslCtx;
@@ -74,15 +76,11 @@ namespace AikariPLS::Components::MQTTClient
             AikariPLS::Components::MQTTClient::Class::MQTTClientConnection>
             connection;
         std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
-            std::stringstream>>
-            recvThreadPool;
-        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
             AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>
             sendThreadPool;
 
         void initSendThreadPool();
 
-        size_t recvThreadCount = 4;
         size_t sendThreadCount = 4;
 
         uint8_t retryTimes = 0;
@@ -94,8 +92,6 @@ namespace AikariPLS::Components::MQTTClient
         std::string hostRealIP;
 
         std::unique_ptr<std::jthread> clientLoop;
-
-        std::function<void(std::stringstream)> handleRecv;
 
         bool isConnectionActive = false;
 

@@ -74,15 +74,11 @@ namespace AikariPLS::Components::MQTTBroker
             AikariPLS::Components::MQTTBroker::Class::MQTTBrokerConnection>
             connection;
         std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
-            std::stringstream>>
-            recvThreadPool;
-        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
             AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>
             sendThreadPool;
 
         void initSendThreadPool();
 
-        size_t recvThreadCount = 4;
         size_t sendThreadCount = 4;
 
         std::unique_ptr<std::jthread> sendQueueWorker;
@@ -93,8 +89,6 @@ namespace AikariPLS::Components::MQTTBroker
         std::string keyPath;
 
         std::unique_ptr<std::jthread> serverLoop;
-
-        std::function<void(std::stringstream)> handleRecv;
 
         void resetCurConnection();
 

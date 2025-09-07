@@ -2,6 +2,7 @@
 
 #include <Aikari-PLS-Private/types/components/mqtt.h>
 #include <async_mqtt/protocol/connection.hpp>
+#include <chrono>
 
 namespace AikariPLS::Components::MQTTClient::Class
 {
@@ -19,12 +20,14 @@ namespace AikariPLS::Components::MQTTClient::Class
     {
        public:
         MQTTClientConnection(
-            std::function<void(async_mqtt::packet_variant packet)>
+            std::function<void(const async_mqtt::packet_variant& packet)>
                 onAscendLambda,
             std::function<void()> onCloseLambda,
             std::function<void(async_mqtt::error_code errCode)> onErrorLambda,
             std::function<void()> onConnAckSuccessLambda
         );
+
+        void checkTimerTimeout();
 
        protected:
         void on_send(
@@ -47,7 +50,8 @@ namespace AikariPLS::Components::MQTTClient::Class
         ) override final;
 
        private:
-        std::function<void(async_mqtt::packet_variant packet)> onAscendLambda_;
+        std::function<void(const async_mqtt::packet_variant& packet)>
+            onAscendLambda_;
         std::function<void()> onCloseLambda_;
         std::function<void(async_mqtt::error_code errCode)> onErrorLambda_;
         std::function<void()> onConnAckSuccessLambda_;
@@ -56,10 +60,12 @@ namespace AikariPLS::Components::MQTTClient::Class
 
         async_mqtt::packet_id_type getPacketId();
 
-        void logSendPacket(const async_mqtt::packet_variant& packet);
+        void logSendPacket(const async_mqtt::packet_variant& packet) const;
+
+        std::chrono::time_point<std::chrono::steady_clock> nextPingReqEtc;
+        std::chrono::seconds keepAliveDuration;
 
         bool isConnected = false;
-
         bool isDebugEnv = false;
     };
 }  // namespace AikariPLS::Components::MQTTClient::Class

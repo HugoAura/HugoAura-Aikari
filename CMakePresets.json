@@ -33,7 +33,7 @@
         "value": "x64",
         "strategy": "set"
       },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      "environment": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
       "name": "base-arm64-debug",
@@ -42,7 +42,7 @@
         "value": "arm64",
         "strategy": "set"
       },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      "environment": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
       "name": "base-x64-release",
@@ -51,7 +51,7 @@
         "value": "x64",
         "strategy": "set"
       },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "environment": { "CMAKE_BUILD_TYPE": "Release" }
     },
     {
       "name": "base-arm64-release",
@@ -60,7 +60,7 @@
         "value": "arm64",
         "strategy": "set"
       },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "environment": { "CMAKE_BUILD_TYPE": "Release" }
     },
     {
       "name": "vs-x64-debug",
@@ -86,13 +86,13 @@
       "name": "ninja-debug",
       "displayName": "Debug - Ninja",
       "inherits": ["base-config-ninja"],
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      "environment": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
       "name": "ninja-release",
       "displayName": "Release - Ninja",
       "inherits": ["base-config-ninja"],
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "environment": { "CMAKE_BUILD_TYPE": "Release" }
     }
   ],
   "buildPresets": [

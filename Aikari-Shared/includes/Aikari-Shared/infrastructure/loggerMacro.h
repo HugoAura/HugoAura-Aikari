@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <format>
 #include <spdlog/spdlog.h>
 
 #define DEFAULT_LOGGER (spdlog::get("defaultLogger"))

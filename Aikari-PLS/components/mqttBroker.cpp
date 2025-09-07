@@ -24,18 +24,6 @@ namespace AikariPLS::Components::MQTTBroker
             &Broker::startTlsServerLoop, this, arg
         );
 
-        this->handleRecv = [this](std::stringstream istreamData)
-        {
-            if (this->connection != nullptr)
-            {
-                this->connection->recv(istreamData);
-            }
-        };
-        this->recvThreadPool =
-            std::make_unique<AikariShared::infrastructure::MessageQueue::
-                                 PoolQueue<std::stringstream>>(
-                this->recvThreadCount, this->handleRecv
-            );
         this->initSendThreadPool();
         this->sendQueueWorker =
             std::make_unique<std::jthread>(&Broker::startSendQueueWorker, this);
@@ -571,7 +559,10 @@ namespace AikariPLS::Components::MQTTBroker
                         */
                         std::stringstream strStream(strReadData);
 
-                        this->recvThreadPool->insertTask(std::move(strStream));
+                        if (this->connection != nullptr)
+                        {
+                            this->connection->recv(strStream);
+                        }
                     }
                     else if (taskTempRet == MBEDTLS_ERR_SSL_WANT_READ ||
                              taskTempRet == MBEDTLS_ERR_SSL_WANT_WRITE)
