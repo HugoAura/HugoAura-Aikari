@@ -79,7 +79,7 @@ namespace AikariPLS::Components::MQTTBroker
 
         void initSendThreadPool();
 
-        size_t sendThreadCount = 4;
+        const size_t sendThreadCount = 4;
 
         std::unique_ptr<std::jthread> sendQueueWorker;
 

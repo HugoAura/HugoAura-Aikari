@@ -1,14 +1,99 @@
 #include "mqttPacketUtils.h"
 
+#include <Aikari-Shared/utils/string.h>
 #include <unordered_map>
 
 #include "../components/mqttLifecycle.h"
 
 namespace AikariPLS::Utils::MQTTPacketUtils
 {
+    AikariPLS::Types::mqttMsgQueue::PacketTopicProps getPacketProps(
+        const std::string& topic
+    )
+    {
+        const auto splitResult = AikariShared::utils::string::split(topic, '/');
+        // clang-format off
+        // ["", "sys", "<productKey>", "<deviceId>", "<action>", "<side>", "<?id>"]
+        // clang-format on
+        if (splitResult.size() <= 4)
+        {
+            throw std::invalid_argument("Invalid topic: " + topic);
+        }
+        const std::string& action = splitResult.at(4);
+        AikariPLS::Types::mqttMsgQueue::PacketTopicProps result;
+        result.productKey = splitResult.at(2);
+        result.deviceId = splitResult.at(3);
+        result.side = splitResult.at(5) == "response"
+                          ? AikariPLS::Types::mqttMsgQueue::PACKET_SIDE::REP
+                          : AikariPLS::Types::mqttMsgQueue::PACKET_SIDE::REQ;
+        if (action == "rpc")
+        {
+            result.endpointType =
+                AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::RPC;
+            result.msgId = splitResult.at(6);
+        }
+        else if (action == "thing")
+        {
+            result.endpointType =
+                AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::POST;
+        }
+        else
+        {
+            result.endpointType =
+                AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::GET;
+            result.msgId = splitResult.at(6);
+        }
+        return result;
+    }
+
+    std::string mergeTopic(
+        AikariPLS::Types::mqttMsgQueue::PacketTopicProps& props
+    )
+    {
+        const std::string sharedHead =
+            std::format("/sys/{}/{}", props.productKey, props.deviceId);
+        switch (props.endpointType)
+        {
+            case AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::GET:
+            {
+                return std::format(
+                    "{}/up/{}/{}",
+                    sharedHead,
+                    props.side == Types::mqttMsgQueue::PACKET_SIDE::REQ
+                        ? "request"
+                        : "response",
+                    props.msgId
+                );
+            }
+            case AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::POST:
+            {
+                return std::format("{}/thing/post", sharedHead);
+            }
+            case AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::RPC:
+            {
+                return std::format(
+                    "{}/rpc/{}/{}",
+                    sharedHead,
+                    props.side == Types::mqttMsgQueue::PACKET_SIDE::REQ
+                        ? "request"
+                        : "response",
+                    props.msgId
+                );
+            }
+            default:
+            {
+                throw std::invalid_argument(
+                    "Invalid packet prop endpointType: " +
+                    static_cast<int>(props.endpointType)
+                );
+            }
+        }
+    }
+
     async_mqtt::packet_variant reconstructPacketWithPktId(
         async_mqtt::packet_variant& oldPacket,
-        std::function<async_mqtt::packet_id_type()>& buildNewPacketIdFn
+        const std::function<async_mqtt::packet_id_type()>& buildNewPacketIdFn,
+        std::optional<std::string>& topicNameForPublish
     )
     {
         auto& sharedMsgQueues =
@@ -58,14 +143,13 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                     auto newPacketId = buildNewPacketIdFn();
 
                     result = async_mqtt::v3_1_1::publish_packet(
-                        newPacketId, pkt.topic(), pkt.payload(), pkt.opts()
+                        newPacketId,
+                        topicNameForPublish.value_or(pkt.topic()),
+                        pkt.payload(),
+                        pkt.opts()
                     );
                 },
-                [&](async_mqtt::v3_1_1::puback_packet const& pkt)
-                {
-                    result =
-                        pkt;  // Auto PUBACK is ON, so usually this won't be triggered
-                },
+                // Auto PUBACK is ON, so type !== PUBACK
                 [&](auto const&)
                 {
                     result = oldPacket;

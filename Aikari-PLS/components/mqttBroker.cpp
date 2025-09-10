@@ -299,7 +299,7 @@ namespace AikariPLS::Components::MQTTBroker
                         break;
 
                         case AikariPLS::Types::mqttMsgQueue::
-                            PACKET_OPERATION_TYPE::PKT_DROP:
+                            PACKET_OPERATION_TYPE::PKT_VIRTUAL:
                         default:
                         {
                             // drop, do nothing

@@ -10,6 +10,7 @@
 
 #include "../../Aikari-Launcher/lifecycle.h"
 #include "../lifecycle.h"
+#include "../utils/mqttPacketUtils.h"
 #include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "mqttClient.h"
 #include "mqttLifecycle.h"
@@ -156,49 +157,50 @@ namespace AikariPLS::Components::MQTTBroker::Class
                     );
 #endif
 
-                    // Init shared client info: productKey
+                    // Init shared client info: productKey && deviceId
                     if (!this->isSharedInfoInitialized)
                     // ↑ this variable is used for preventing exec getVal on
                     // SharedRealClientInfo every time onRecv (mutex perf cost)
                     {
                         auto& sharedClientInfo = AikariPLS::Lifecycle::MQTT::
                             PLSMQTTSharedRealClientInfo::getInstance();
-                        auto isInitialized = sharedClientInfo.getVal(
-                            &AikariPLS::Types::lifecycle::MQTT::
-                                PLSMQTTRealClientInfo::isInitialized
-                        );
 
-                        if (!isInitialized)
+                        if (auto isInitialized = sharedClientInfo.getVal(
+                                &AikariPLS::Types::lifecycle::MQTT::
+                                    PLSMQTTRealClientInfo::isInitialized
+                            );
+                            !isInitialized)
                         {
                             std::string sampleTopic = subOpts[0].all_topic();
-                            if (sampleTopic.find("/sys") != std::string::npos)
+                            try
                             {
-                                auto splitResult =
-                                    AikariShared::utils::string::split(
-                                        sampleTopic, '/'
-                                    );
-
-                                if (splitResult.size() > 1)
-                                {
-                                    sharedClientInfo.setVal(
-                                        &AikariPLS::Types::lifecycle::MQTT::
-                                            PLSMQTTRealClientInfo::productKey,
-                                        splitResult.at(1)
-                                    );
-
-                                    sharedClientInfo.setVal(
-                                        &AikariPLS::Types::lifecycle::MQTT::
-                                            PLSMQTTRealClientInfo::
-                                                isInitialized,
-                                        true
-                                    );
-
-                                    CUSTOM_LOG_DEBUG(
-                                        "Updated productKey info: {}",
-                                        splitResult.at(1)
-                                    );
-                                    this->isSharedInfoInitialized = true;
-                                }
+                                auto resolveResult =
+                                    AikariPLS::Utils::MQTTPacketUtils::
+                                        getPacketProps(sampleTopic);
+                                sharedClientInfo.setVal(
+                                    &AikariPLS::Types::lifecycle::MQTT::
+                                        PLSMQTTRealClientInfo::productKey,
+                                    resolveResult.productKey
+                                );
+                                sharedClientInfo.setVal(
+                                    &AikariPLS::Types::lifecycle::MQTT::
+                                        PLSMQTTRealClientInfo::deviceId,
+                                    resolveResult.deviceId
+                                );
+                                sharedClientInfo.setVal(
+                                    &AikariPLS::Types::lifecycle::MQTT::
+                                        PLSMQTTRealClientInfo::isInitialized,
+                                    true
+                                );
+                                this->isSharedInfoInitialized = true;
+                            }
+                            catch (const std::exception& e)
+                            {
+                                CUSTOM_LOG_WARN(
+                                    "Failed to update shared client info, "
+                                    "error: {}",
+                                    e.what()
+                                );
                             }
                         }
                     }

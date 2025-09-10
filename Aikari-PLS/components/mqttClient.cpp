@@ -304,57 +304,63 @@ namespace AikariPLS::Components::MQTTClient
             {
                 if (this->isConnectionActive)
                 {
-                    switch (packet.type)
+                    std::function<async_mqtt::packet_id_type()> genNewPacketId =
+                        [this]()
                     {
-                        case AikariPLS::Types::mqttMsgQueue::
-                            PACKET_OPERATION_TYPE::PKT_TRANSPARENT:
-                        case AikariPLS::Types::mqttMsgQueue::
-                            PACKET_OPERATION_TYPE::PKT_MODIFIED:
+                        auto packetId =
+                            this->connection->acquire_unique_packet_id();
+                        if (packetId == std::nullopt)
                         {
-                            // TODO: error handling (maybe)
-                            std::function<async_mqtt::packet_id_type()>
-                                genNewPacketId = [this]()
-                            {
-                                auto packetId =
-                                    this->connection->acquire_unique_packet_id(
-                                    );
-                                if (packetId == std::nullopt)
-                                {
-                                    throw std::runtime_error(
-                                        "PacketID acquire failed."
-                                    );
-                                }
-                                return packetId.value();
-                            };
-                            try
-                            {
-                                auto newPacket = AikariPLS::Utils::
-                                    MQTTPacketUtils::reconstructPacketWithPktId(
-                                        packet.packet.value(), genNewPacketId
-                                    );
-                                this->connection->send(std::move(newPacket));
-                            }
-                            catch (const std::runtime_error& err)
-                            {
-                                this->sendThreadPool->insertTask(
-                                    std::move(packet)
+                            throw std::runtime_error(
+                                "PacketID acquire failed."
+                            );
+                        }
+                        return packetId.value();
+                    };
+                    try
+                    {
+                        std::optional<std::string> newTopicName = std::nullopt;
+                        if (packet.props.endpointType ==
+                            AikariPLS::Types::mqttMsgQueue::
+                                PACKET_ENDPOINT_TYPE::GET)
+                        {
+                            std::string originalMsgId =
+                                packet.props.msgId.value();
+                            auto thisMsgId = std::to_string(
+                                this->connection->endpointGetMsgIdCounter
+                                    .fetch_add(1, std::memory_order_relaxed)
+                            );
+                            packet.props.msgId = thisMsgId;
+                            this->connection->endpointGetIdsMap.emplace(
+                                thisMsgId, originalMsgId
+                            );
+                            newTopicName =
+                                AikariPLS::Utils::MQTTPacketUtils::mergeTopic(
+                                    packet.props
                                 );
+                        }
+                        auto newPacket = AikariPLS::Utils::MQTTPacketUtils::
+                            reconstructPacketWithPktId(
+                                packet.packet.value(),
+                                genNewPacketId,
+                                newTopicName
+                            );
+                        if (packet.type ==
+                            AikariPLS::Types::mqttMsgQueue::
+                                PACKET_OPERATION_TYPE::PKT_VIRTUAL)
+                        {
+                        }
+                        this->connection->send(std::move(newPacket));
+                    }
+                    catch (const std::runtime_error& err)
+                    {
+                        this->sendThreadPool->insertTask(std::move(packet));
 #ifdef _DEBUG
-                                CUSTOM_LOG_WARN(
-                                    "Packet ID acquire failure occurred, "
-                                    "deferring packet send"
-                                );
+                        CUSTOM_LOG_WARN(
+                            "Packet ID acquire failure occurred, "
+                            "deferring packet send"
+                        );
 #endif
-                            }
-                        }
-                        break;
-
-                        case AikariPLS::Types::mqttMsgQueue::
-                            PACKET_OPERATION_TYPE::PKT_DROP:
-                        default:
-                        {
-                        }
-                        break;
                     }
                 }
             }

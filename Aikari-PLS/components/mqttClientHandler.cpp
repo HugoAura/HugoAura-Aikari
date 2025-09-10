@@ -6,6 +6,7 @@
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 
 #include "../lifecycle.h"
+#include "../utils/mqttPacketUtils.h"
 #include "mqttLifecycle.h"
 
 namespace AikariPLS::Components::MQTTClient::Class
@@ -129,8 +130,8 @@ namespace AikariPLS::Components::MQTTClient::Class
 
                     AikariPLS::Types::mqttMsgQueue::FlaggedPacket
                         connackTransparentPassPkt = {
-                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
-                                PKT_TRANSPARENT,
+                            .type = AikariPLS::Types::mqttMsgQueue::
+                                PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
                             .packet = pkt
                         };
 
@@ -148,8 +149,8 @@ namespace AikariPLS::Components::MQTTClient::Class
 
                     AikariPLS::Types::mqttMsgQueue::FlaggedPacket
                         subackTransparentPassPkt = {
-                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
-                                PKT_TRANSPARENT,
+                            .type = AikariPLS::Types::mqttMsgQueue::
+                                PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
                             .packet = pkt
                         };
 
@@ -167,8 +168,8 @@ namespace AikariPLS::Components::MQTTClient::Class
 
                     AikariPLS::Types::mqttMsgQueue::FlaggedPacket
                         unsubackTransparentPassPkt = {
-                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
-                                PKT_TRANSPARENT,
+                            .type = AikariPLS::Types::mqttMsgQueue::
+                                PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
                             .packet = pkt
                         };
 
@@ -196,12 +197,35 @@ namespace AikariPLS::Components::MQTTClient::Class
                         pkt.packet_id()
                     );
 
+                    auto packetProps =
+                        AikariPLS::Utils::MQTTPacketUtils::getPacketProps(
+                            pkt.topic()
+                        );
+
+                    if (packetProps.endpointType ==
+                            AikariPLS::Types::mqttMsgQueue::
+                                PACKET_ENDPOINT_TYPE::RPC &&
+                        endpointRpcIgnoredIds.erase(packetProps.msgId.value()
+                        ) != 0)
+                    {
+                        return;
+                    }
+                    if (packetProps.endpointType ==
+                            AikariPLS::Types::mqttMsgQueue::
+                                PACKET_ENDPOINT_TYPE::GET &&
+                        endpointGetIgnoredIds.erase(packetProps.msgId.value()
+                        ) != 0)
+                    {
+                        return;
+                    }
+
                     // TODO: Run hooks
 
                     AikariPLS::Types::mqttMsgQueue::FlaggedPacket publishPkt = {
-                        .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
-                            PKT_TRANSPARENT,
-                        .packet = pkt
+                        .type = AikariPLS::Types::mqttMsgQueue::
+                            PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
+                        .packet = pkt,
+                        .props = packetProps
                     };
 
                     clientToBrokerQueue->push(std::move(publishPkt));
@@ -241,8 +265,7 @@ namespace AikariPLS::Components::MQTTClient::Class
 
     void MQTTClientConnection::on_close()
     {
-        CUSTOM_LOG_ERROR("CALLED!!!");
-        // this->onCloseLambda_();
+        this->onCloseLambda_();
     }
 
     void MQTTClientConnection::on_error(async_mqtt::error_code errCode)

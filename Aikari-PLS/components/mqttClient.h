@@ -81,7 +81,7 @@ namespace AikariPLS::Components::MQTTClient
 
         void initSendThreadPool();
 
-        size_t sendThreadCount = 4;
+        const size_t sendThreadCount = 4;
 
         uint8_t retryTimes = 0;
         const uint8_t maxRetry = 3;

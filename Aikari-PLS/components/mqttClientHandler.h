@@ -2,7 +2,10 @@
 
 #include <Aikari-PLS-Private/types/components/mqtt.h>
 #include <async_mqtt/protocol/connection.hpp>
+#include <atomic>
 #include <chrono>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace AikariPLS::Components::MQTTClient::Class
 {
@@ -16,6 +19,12 @@ namespace AikariPLS::Components::MQTTClient::Class
         constexpr const char* propHr = "----- ✍️ PROPS -----";
     }  // namespace Constants
 
+    namespace Types
+    {
+        typedef std::string OriginalID;
+        typedef std::string ReplacedID;
+    }  // namespace Types
+
     class MQTTClientConnection : public ClientConnection
     {
        public:
@@ -28,6 +37,14 @@ namespace AikariPLS::Components::MQTTClient::Class
         );
 
         void checkTimerTimeout();
+
+        std::unordered_set<std::string> endpointGetIgnoredIds;
+        std::unordered_set<std::string> endpointRpcIgnoredIds;
+
+        std::unordered_map<Types::ReplacedID, Types::OriginalID>
+            endpointGetIdsMap;
+
+        std::atomic<int> endpointGetMsgIdCounter = 1;
 
        protected:
         void on_send(
