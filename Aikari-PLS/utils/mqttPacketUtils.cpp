@@ -62,7 +62,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                     props.side == Types::mqttMsgQueue::PACKET_SIDE::REQ
                         ? "request"
                         : "response",
-                    props.msgId
+                    props.msgId.value()
                 );
             }
             case AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::POST:
@@ -77,7 +77,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                     props.side == Types::mqttMsgQueue::PACKET_SIDE::REQ
                         ? "request"
                         : "response",
-                    props.msgId
+                    props.msgId.value()
                 );
             }
             default:
@@ -90,10 +90,11 @@ namespace AikariPLS::Utils::MQTTPacketUtils
         }
     }
 
-    async_mqtt::packet_variant reconstructPacketWithPktId(
+    async_mqtt::packet_variant reconstructPacket(
         async_mqtt::packet_variant& oldPacket,
         const std::function<async_mqtt::packet_id_type()>& buildNewPacketIdFn,
-        std::optional<std::string>& topicNameForPublish
+        std::optional<std::string> topicNameForPublish,
+        std::optional<std::string> newPayload
     )
     {
         auto& sharedMsgQueues =
@@ -145,7 +146,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                     result = async_mqtt::v3_1_1::publish_packet(
                         newPacketId,
                         topicNameForPublish.value_or(pkt.topic()),
-                        pkt.payload(),
+                        newPayload.value_or(pkt.payload()),
                         pkt.opts()
                     );
                 },

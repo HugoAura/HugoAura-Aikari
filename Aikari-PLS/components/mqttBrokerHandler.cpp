@@ -287,6 +287,11 @@ namespace AikariPLS::Components::MQTTBroker::Class
                         this->clientId
                     );
 
+                    auto packetProps =
+                        AikariPLS::Utils::MQTTPacketUtils::getPacketProps(
+                            pkt.topic()
+                        );
+
                     // No need for ack, auto reply is ON
 
                     // TODO: Run hooks
@@ -294,7 +299,8 @@ namespace AikariPLS::Components::MQTTBroker::Class
                     AikariPLS::Types::mqttMsgQueue::FlaggedPacket publishPkt = {
                         .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
                             PKT_TRANSPARENT,
-                        .packet = pkt
+                        .packet = pkt,
+                        .props = std::move(packetProps)
                     };
 
                     brokerToClientQueue->push(std::move(publishPkt));

@@ -75,7 +75,7 @@ namespace AikariPLS::Components::MQTTClient::Class
 
         if (isConnected && !this->pktTempStore.empty())
         {
-            for (auto pendingPkt : this->pktTempStore)
+            for (const auto& pendingPkt : this->pktTempStore)
             {
                 this->logSendPacket(packet);
                 this->onAscendLambda_(pendingPkt);
@@ -202,6 +202,8 @@ namespace AikariPLS::Components::MQTTClient::Class
                             pkt.topic()
                         );
 
+                    // if rep belongs to a VIRTUAL ascend pkt, then ignore it,
+                    // not pushing it to fake broker
                     if (packetProps.endpointType ==
                             AikariPLS::Types::mqttMsgQueue::
                                 PACKET_ENDPOINT_TYPE::RPC &&
@@ -221,10 +223,33 @@ namespace AikariPLS::Components::MQTTClient::Class
 
                     // TODO: Run hooks
 
+                    std::optional<std::string> newTopicName;
+                    if (auto msgId = packetProps.msgId.value_or("-");
+                        packetProps.endpointType ==
+                            AikariPLS::Types::mqttMsgQueue::
+                                PACKET_ENDPOINT_TYPE::GET &&
+                        this->endpointGetIdsMap.contains(msgId))
+                    {
+                        auto newProps = packetProps;
+                        newProps.msgId = this->endpointGetIdsMap[msgId];
+                        this->endpointGetIdsMap.erase(msgId);
+                        newTopicName =
+                            AikariPLS::Utils::MQTTPacketUtils::mergeTopic(
+                                newProps
+                            );
+                    }
+
+                    auto newPkt = async_mqtt::v3_1_1::publish_packet(
+                        pkt.packet_id(),
+                        newTopicName.value_or(pkt.topic()),
+                        pkt.payload(),  // TODO: Change to hooked payload
+                        pkt.opts()
+                    );
+
                     AikariPLS::Types::mqttMsgQueue::FlaggedPacket publishPkt = {
                         .type = AikariPLS::Types::mqttMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
-                        .packet = pkt,
+                        .packet = newPkt,
                         .props = packetProps
                     };
 
@@ -294,6 +319,7 @@ namespace AikariPLS::Components::MQTTClient::Class
         std::optional<std::chrono::milliseconds> ms
     )
     {
+        /*
 #ifdef _DEBUG
         CUSTOM_LOG_TRACE(
             "Timer action triggerred, op {}, type {}, ms {}",
@@ -302,6 +328,7 @@ namespace AikariPLS::Components::MQTTClient::Class
             ms.value_or(std::chrono::milliseconds::zero())
         );
 #endif
+        */
         switch (kind)
         {
             case (async_mqtt::timer_kind::pingreq_send):

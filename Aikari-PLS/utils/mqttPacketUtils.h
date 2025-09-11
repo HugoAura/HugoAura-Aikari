@@ -37,9 +37,10 @@ namespace AikariPLS::Utils::MQTTPacketUtils
     // pkts, we need to reconstruct every packet
 
     // clang-format on
-    async_mqtt::packet_variant reconstructPacketWithPktId(
+    async_mqtt::packet_variant reconstructPacket(
         async_mqtt::packet_variant& oldPacket,
         const std::function<async_mqtt::packet_id_type()>& buildNewPacketIdFn,
-        std::optional<std::string>& topicNameForPublish
+        std::optional<std::string> topicNameForPublish,
+        std::optional<std::string> newPayload
     );
 }  // namespace AikariPLS::Utils::MQTTPacketUtils

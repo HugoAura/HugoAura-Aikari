@@ -274,6 +274,12 @@ namespace AikariPLS::Components::MQTTBroker
             {
                 if (this->netCtx.curClientFd != nullptr)
                 {
+                    std::function<async_mqtt::packet_id_type()> genNewPacketId =
+                        [this]()
+                    {
+                        return this->connection->acquire_unique_packet_id()
+                            .value_or(0);
+                    };
                     switch (packet.type)
                     {
                         case AikariPLS::Types::mqttMsgQueue::
@@ -282,29 +288,26 @@ namespace AikariPLS::Components::MQTTBroker
                             PACKET_OPERATION_TYPE::PKT_MODIFIED:
                         {
                             // TODO: error handling (same as mqttClient.cpp)
-                            std::function<async_mqtt::packet_id_type()>
-                                genNewPacketId = [this]()
-                            {
-                                return this->connection
-                                    ->acquire_unique_packet_id()
-                                    .value_or(0);
-                            };
                             auto newPacket = AikariPLS::Utils::MQTTPacketUtils::
-                                reconstructPacketWithPktId(
-                                    packet.packet.value(), genNewPacketId
+                                reconstructPacket(
+                                    packet.packet.value(),
+                                    genNewPacketId,
+                                    std::nullopt,
+                                    std::nullopt
                                 );
 
                             this->connection->send(std::move(newPacket));
+                            break;
                         }
-                        break;
-
                         case AikariPLS::Types::mqttMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_VIRTUAL:
+                        {
+                        }
                         default:
                         {
                             // drop, do nothing
+                            break;
                         }
-                        break;
                     }
                 }
             }
