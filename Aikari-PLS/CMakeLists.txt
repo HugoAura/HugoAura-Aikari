@@ -1,28 +1,30 @@
 ﻿project_add_library(Aikari-PLS SHARED
-    dllmain.cpp
-    entrypoint.cpp
-    init.h
-    init.cpp
-    lifecycle.h
-    lifecycle.cpp
-    resource.h
-    Aikari-PLS.rc
-    components/mqttBroker.h
-    components/mqttBroker.cpp
-    components/mqttBrokerHandler.h
-    components/mqttBrokerHandler.cpp
-    components/mqttClient.h
-    components/mqttClient.cpp
-    components/mqttClientHandler.h
-    components/mqttClientHandler.cpp
-    components/mqttLifecycle.h
-    components/mqttLifecycle.cpp
-    infrastructure/threadMsgHandler.h
-    infrastructure/threadMsgHandler.cpp
-    utils/mqttPacketUtils.h
-    utils/mqttPacketUtils.cpp
-    utils/windowsApi.cpp
-    utils/windowsApi.h
+        dllmain.cpp
+        entrypoint.cpp
+        init.h
+        init.cpp
+        lifecycle.h
+        lifecycle.cpp
+        resource.h
+        Aikari-PLS.rc
+        components/mqtt/mqttBroker.h
+        components/mqtt/mqttBroker.cpp
+        components/mqtt/mqttBrokerHandler.h
+        components/mqtt/mqttBrokerHandler.cpp
+        components/mqtt/mqttClient.h
+        components/mqtt/mqttClient.cpp
+        components/mqtt/mqttClientHandler.h
+        components/mqtt/mqttClientHandler.cpp
+        components/mqtt/mqttLifecycle.h
+        components/mqtt/mqttLifecycle.cpp
+        components/ruleSystem/luaManager.h
+        components/ruleSystem/luaManager.cpp
+        infrastructure/threadMsgHandler.h
+        infrastructure/threadMsgHandler.cpp
+        utils/mqttPacketUtils.h
+        utils/mqttPacketUtils.cpp
+        utils/windowsApi.cpp
+        utils/windowsApi.h
 )
 
 # --- Packages --- #
@@ -47,39 +49,48 @@ target_link_libraries(Aikari-PLS PRIVATE cpr::cpr)
 find_package(async_mqtt_iface CONFIG REQUIRED)
 target_link_libraries(Aikari-PLS PRIVATE async_mqtt_iface::async_mqtt_iface)
 
+# sol2
+find_path(SOL2_INCLUDE_DIRS "sol/abort.hpp")
+target_include_directories(Aikari-PLS PRIVATE ${SOL2_INCLUDE_DIRS})
+
+# lua
+find_package(Lua REQUIRED)
+target_include_directories(Aikari-PLS PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(Aikari-PLS PRIVATE ${LUA_LIBRARIES})
+
 target_precompile_headers(Aikari-PLS
-  PRIVATE
-    <string>
-    <vector>
-    <memory>
-    <spdlog/spdlog.h>
-    <nlohmann/json.hpp>
+        PRIVATE
+        <string>
+        <vector>
+        <memory>
+        <spdlog/spdlog.h>
+        <nlohmann/json.hpp>
 )
 
 # --- Defs --- #
 target_compile_definitions(Aikari-PLS
-  PRIVATE
-    AIKARIPLS_EXPORTS
+        PRIVATE
+        AIKARIPLS_EXPORTS
 )
 
 # --- Link --- #
 target_link_libraries(Aikari-PLS
-  PUBLIC
-    Aikari-Shared
+        PUBLIC
+        Aikari-Shared
 )
 
 # --- Include --- #
 target_include_directories(Aikari-PLS
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_include_directories(Aikari-PLS
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Aikari-Launcher/includes
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Aikari-Launcher/includes
 )
 
 target_include_directories(Aikari-PLS
-  PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/includes
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/includes
 )

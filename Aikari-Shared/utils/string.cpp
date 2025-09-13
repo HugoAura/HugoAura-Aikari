@@ -1,4 +1,4 @@
-﻿#include <Aikari-Shared/utils/string.h>
+﻿#include <Aikari-Shared/utils/string.h>  // self
 #include <format>
 #include <sstream>
 #include <stdexcept>
@@ -116,11 +116,14 @@ namespace AikariShared::utils::string
             ExpandEnvironmentStringsW(src.c_str(), NULL, 0);
         if (expandSizeRequirement == 0)
         {
-            throw std::runtime_error(std::format(
-                "Failed to calculate env str expand size requirement, error: "
-                "{}",
-                parseDWORDResult(GetLastError())
-            ));
+            throw std::runtime_error(
+                std::format(
+                    "Failed to calculate env str expand size requirement, "
+                    "error: "
+                    "{}",
+                    parseDWORDResult(GetLastError())
+                )
+            );
         }
 
         std::vector<wchar_t> expandedBuf(expandSizeRequirement);
@@ -129,10 +132,12 @@ namespace AikariShared::utils::string
         );
         if (result == 0)
         {
-            throw std::runtime_error(std::format(
-                "Failed to expand env str, error: {}",
-                parseDWORDResult(GetLastError())
-            ));
+            throw std::runtime_error(
+                std::format(
+                    "Failed to expand env str, error: {}",
+                    parseDWORDResult(GetLastError())
+                )
+            );
         }
 
         return std::wstring(expandedBuf.data());

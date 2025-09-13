@@ -5,8 +5,8 @@
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/types/itc/shared.h>
 
-#include "components/mqttBroker.h"
-#include "components/mqttClient.h"
+#include "components/mqtt/mqttBroker.h"
+#include "components/mqtt/mqttClient.h"
 #include "infrastructure/threadMsgHandler.h"
 #include "init.h"
 #include "lifecycle.h"

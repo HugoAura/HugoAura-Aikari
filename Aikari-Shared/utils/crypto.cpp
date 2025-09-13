@@ -1,4 +1,4 @@
-﻿#include <Aikari-Shared/utils/crypto.h>
+﻿#include <Aikari-Shared/utils/crypto.h>  // self
 #include <format>
 #include <iomanip>
 #include <random>
@@ -11,9 +11,11 @@ namespace AikariShared::utils::cryptoUtils
     {
         if (length == 0 || length % 2 != 0)
         {
-            throw std::invalid_argument(std::format(
-                "Invalid arg for genRandomHexSecure: length={}", length
-            ));
+            throw std::invalid_argument(
+                std::format(
+                    "Invalid arg for genRandomHexSecure: length={}", length
+                )
+            );
         }
 
         size_t byteSize = length / 2;

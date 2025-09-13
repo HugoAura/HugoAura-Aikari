@@ -15,7 +15,7 @@
 #include <infrastructure/threadMsgHandler.h>
 #include <optional>
 
-#include "components/mqttBroker.h"
+#include "components/mqtt/mqttBroker.h"
 #include "lifecycle.h"
 
 namespace plsConstants = AikariPLS::Types::constants;
