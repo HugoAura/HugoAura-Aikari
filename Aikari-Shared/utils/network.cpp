@@ -1,6 +1,6 @@
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/types/constants/utils.h>
-#include <Aikari-Shared/utils/network.h>
+#include <Aikari-Shared/utils/network.h>  // self
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 

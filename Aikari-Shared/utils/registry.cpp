@@ -1,4 +1,4 @@
-﻿#include <Aikari-Shared/utils/registry.h>
+﻿#include <Aikari-Shared/utils/registry.h>  // self
 #include <Aikari-Shared/utils/string.h>
 #include <format>
 #include <stdexcept>
@@ -19,10 +19,12 @@ namespace AikariShared::utils::windowsRegistry
             RegOpenKeyExW(rootKey, folderKey.c_str(), 0, KEY_READ, &hKeyIns);
         if (result != ERROR_SUCCESS)
         {
-            throw std::runtime_error(std::format(
-                "Failed to open target reg key, error: {}",
-                winStrUtils::parseDWORDResult(GetLastError())
-            ));
+            throw std::runtime_error(
+                std::format(
+                    "Failed to open target reg key, error: {}",
+                    winStrUtils::parseDWORDResult(GetLastError())
+                )
+            );
         }
 
         DWORD dataType;
@@ -34,10 +36,12 @@ namespace AikariShared::utils::windowsRegistry
         if (result != ERROR_SUCCESS)
         {
             RegCloseKey(hKeyIns);
-            throw std::runtime_error(std::format(
-                "Failed to query target entry, error: {}",
-                winStrUtils::parseDWORDResult(GetLastError())
-            ));
+            throw std::runtime_error(
+                std::format(
+                    "Failed to query target entry, error: {}",
+                    winStrUtils::parseDWORDResult(GetLastError())
+                )
+            );
         }
 
         if (dataType != REG_SZ && dataType != REG_EXPAND_SZ)
@@ -61,10 +65,12 @@ namespace AikariShared::utils::windowsRegistry
         if (result != ERROR_SUCCESS)
         {
             RegCloseKey(hKeyIns);
-            throw std::runtime_error(std::format(
-                "Failed to read value from reg entry, error: {}",
-                winStrUtils::parseDWORDResult(GetLastError())
-            ));
+            throw std::runtime_error(
+                std::format(
+                    "Failed to read value from reg entry, error: {}",
+                    winStrUtils::parseDWORDResult(GetLastError())
+                )
+            );
         }
 
         if (!dataBuffer.empty() && dataBuffer.back() != L'\0')

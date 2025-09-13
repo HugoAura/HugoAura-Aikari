@@ -14,7 +14,8 @@
 
 /*
  * MQTT Client will be initialized in MQTTBrokerHandler.cpp, when CONNECT pkt is
- * triggered Mounted on sharedIns
+ * triggered
+ * Mounted on sharedIns
  */
 namespace AikariPLS::Components::MQTTClient
 {
@@ -48,7 +49,7 @@ namespace AikariPLS::Components::MQTTClient
     class Client
     {
        public:
-        Client(const ClientLaunchArg& arg);
+        explicit Client(const ClientLaunchArg& arg);
 
         ~Client();
 

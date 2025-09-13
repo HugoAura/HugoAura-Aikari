@@ -7,12 +7,12 @@
       "name": "async-mqtt",
       "default-features": false
     },
-    "cxxopts",
-    "ixwebsocket",
-    "libsodium",
-    "mbedtls",
-    "nlohmann-json",
-    "spdlog",
+    {
+      "name": "cpr",
+      "features": [
+        "ssl"
+      ]
+    },
     {
       "name": "curl",
       "features": [
@@ -20,12 +20,14 @@
         "ssl"
       ]
     },
-    {
-      "name": "cpr",
-      "features": [
-        "ssl"
-      ]
-    }
+    "cxxopts",
+    "ixwebsocket",
+    "libsodium",
+    "mbedtls",
+    "nlohmann-json",
+    "sol2",
+    "spdlog",
+    "lua"
   ],
   "overrides": [
     {

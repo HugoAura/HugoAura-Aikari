@@ -1,4 +1,4 @@
-﻿#include "mqttBrokerHandler.h"
+﻿#include "./mqttBrokerHandler.h"
 
 #define CUSTOM_LOG_HEADER "[MQTT Broker]"
 
@@ -8,9 +8,9 @@
 #include <Aikari-Shared/utils/string.h>
 #include <functional>
 
-#include "../../Aikari-Launcher/lifecycle.h"
-#include "../lifecycle.h"
-#include "../utils/mqttPacketUtils.h"
+#include "../../../Aikari-Launcher/lifecycle.h"
+#include "../../lifecycle.h"
+#include "../../utils/mqttPacketUtils.h"
 #include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "mqttClient.h"
 #include "mqttLifecycle.h"

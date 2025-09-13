@@ -1,12 +1,12 @@
-#include "mqttClientHandler.h"
+#include "./mqttClientHandler.h"
 
 #define CUSTOM_LOG_HEADER "[MQTT Client]"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 
-#include "../lifecycle.h"
-#include "../utils/mqttPacketUtils.h"
+#include "../../lifecycle.h"
+#include "../../utils/mqttPacketUtils.h"
 #include "mqttLifecycle.h"
 
 namespace AikariPLS::Components::MQTTClient::Class

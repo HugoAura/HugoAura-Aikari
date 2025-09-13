@@ -1,5 +1,5 @@
 ﻿#include <Aikari-Shared/infrastructure/loggerMacro.h>
-#include <Aikari-Shared/utils/windows.h>
+#include <Aikari-Shared/utils/windows.h>  // self
 #include <TlHelp32.h>
 #include <windows.h>
 
@@ -31,7 +31,8 @@ namespace AikariShared::utils::windows
             );  // 2nd arg no meaning when snapProc
             if (hProcSnapshot == INVALID_HANDLE_VALUE)
             {
-                throw std::runtime_error("Failed to open hProcSnapshot handle."
+                throw std::runtime_error(
+                    "Failed to open hProcSnapshot handle."
                 );
             }
 
@@ -66,10 +67,12 @@ namespace AikariShared::utils::windows
                     if (hProcHandle == NULL)
                     {
                         CloseHandle(hProcSnapshot);
-                        throw std::runtime_error(std::format(
-                            "Failed to open process handle, PID: {}.",
-                            procEntry32.th32ProcessID
-                        ));
+                        throw std::runtime_error(
+                            std::format(
+                                "Failed to open process handle, PID: {}.",
+                                procEntry32.th32ProcessID
+                            )
+                        );
                     }
 
                     result = TerminateProcess(hProcHandle, 0);

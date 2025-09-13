@@ -3,7 +3,7 @@
 #include <Aikari-Shared/utils/string.h>
 #include <unordered_map>
 
-#include "../components/mqttLifecycle.h"
+#include "../components/mqtt/mqttLifecycle.h"
 
 namespace AikariPLS::Utils::MQTTPacketUtils
 {

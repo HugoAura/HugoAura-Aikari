@@ -1,16 +1,16 @@
-#include "mqttClient.h"
+#include "./mqttClient.h"
 
 #define CUSTOM_LOG_HEADER "[MQTT Client]"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/network.h>
 #include <Aikari-Shared/utils/windows.h>
-#include <WinSock2.h>
 #include <exception>
+#include <winsock2.h>
 
-#include "../lifecycle.h"
-#include "../resource.h"
-#include "../utils/mqttPacketUtils.h"
+#include "../../lifecycle.h"
+#include "../../resource.h"
+#include "../../utils/mqttPacketUtils.h"
 #include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "mqttLifecycle.h"
 
@@ -331,7 +331,8 @@ namespace AikariPLS::Components::MQTTClient
                             if (originalMsgId != thisMsgId)  // offset exists
                             {
                                 AikariPLS::Types::mqttMsgQueue::PacketTopicProps
-                                    newTopicProps(packet.props
+                                    newTopicProps(
+                                        packet.props
                                     );  // copy in order to prevent msgId
                                         // disorder when pktId acquire fail
                                 newTopicProps.msgId = thisMsgId;
@@ -377,8 +378,8 @@ namespace AikariPLS::Components::MQTTClient
                                 genNewPacketId = [this]()
                             {
                                 auto packetId =
-                                    this->connection->acquire_unique_packet_id(
-                                    );
+                                    this->connection
+                                        ->acquire_unique_packet_id();
                                 if (packetId == std::nullopt)
                                 {
                                     throw std::runtime_error(
@@ -466,7 +467,8 @@ namespace AikariPLS::Components::MQTTClient
                         this->launchArg.targetPort
                     );
 
-                    std::unique_lock<std::mutex> lock(this->sslCtxLock
+                    std::unique_lock<std::mutex> lock(
+                        this->sslCtxLock
                     );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,
@@ -587,8 +589,9 @@ namespace AikariPLS::Components::MQTTClient
                             this->pendingExit.store(true);
                             // this->isConnectionActive = false;
                         },
-                        [this](async_mqtt::error_code errCode)
+                        [](async_mqtt::error_code errCode)
                         {
+                            // TODO: Error handling (same as broker)
                         },
                         [this]()
                         {
@@ -609,13 +612,10 @@ namespace AikariPLS::Components::MQTTClient
             }
 
             fd_set readFds;
-            struct timeval timeVal;
+            struct timeval timeVal = { .tv_sec = 1, .tv_usec = 0 };
 
             FD_ZERO(&readFds);
             FD_SET(this->netCtxs.serverFd.fd, &readFds);
-
-            timeVal.tv_sec = 1;
-            timeVal.tv_usec = 0;
 
             taskTempRet = select(0, &readFds, nullptr, nullptr, &timeVal);
 
