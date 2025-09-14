@@ -7,6 +7,7 @@
       "name": "async-mqtt",
       "default-features": false
     },
+    "boost-algorithm",
     {
       "name": "cpr",
       "features": [
@@ -25,14 +26,14 @@
     "libsodium",
     "mbedtls",
     "nlohmann-json",
-    "sol2",
     "spdlog",
-    "lua"
+    "quickjs-ng"
   ],
   "overrides": [
     {
       "name": "fmt",
       "version": "11.2.0"
     }
-  ]
+  ],
+  "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149"
 }

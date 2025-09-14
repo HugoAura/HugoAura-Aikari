@@ -1,0 +1,15 @@
+{
+  "rules": {
+    "ssaFeatures": {
+      "securityPolicies": {
+        "freezeManagement": {
+          "freezeDiskInfoPost": {
+            "enabled": false,
+            "freezedDisks": []
+          }
+        }
+      }
+    }
+  },
+  "module": "pls"
+}

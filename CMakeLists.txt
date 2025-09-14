@@ -49,6 +49,8 @@ function(project_add_library target_name)
             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<CONFIG>
             PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
     )
+
+    target_include_directories(${target_name} PRIVATE ${CMAKE_SOURCE_DIR}/External)
 endfunction()
 
 function(project_add_executable target_name)

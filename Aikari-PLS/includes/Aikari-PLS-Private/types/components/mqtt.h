@@ -18,12 +18,14 @@ namespace AikariPLS::Types::mqttMsgQueue
         GET,
         POST,
         RPC,
+        UNKNOWN,
     };
 
     enum class PACKET_SIDE
     {
         REQ,
-        REP
+        REP,
+        UNKNOWN,
     };
 
     struct PacketTopicProps
