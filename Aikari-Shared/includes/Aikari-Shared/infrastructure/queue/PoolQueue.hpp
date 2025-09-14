@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-namespace AikariShared::infrastructure::MessageQueue
+namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename TaskType>
     class PoolQueue
@@ -90,4 +90,4 @@ namespace AikariShared::infrastructure::MessageQueue
             }
         }
     };
-}  // namespace AikariShared::infrastructure::MessageQueue
+}  // namespace AikariShared::Infrastructure::MessageQueue

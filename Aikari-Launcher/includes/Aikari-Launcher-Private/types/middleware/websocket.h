@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace AikariTypes::middleware::websocket
+namespace AikariTypes::Middleware::WebSocket
 {
 
     enum class WEBSOCKET_AUTH_STATUS
@@ -8,4 +8,4 @@ namespace AikariTypes::middleware::websocket
         PASSED,
         DENIED,
     };
-};  // namespace AikariTypes::middleware::websocket
+};  // namespace AikariTypes::Middleware::WebSocket

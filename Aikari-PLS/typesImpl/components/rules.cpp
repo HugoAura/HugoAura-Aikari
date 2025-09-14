@@ -22,22 +22,22 @@ namespace AikariPLS::Types::RuleSystem
             return RuleSystem::RuleType::UNKNOWN;
         }();
         this->endpointType =
-            [&prop]() -> AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE
+            [&prop]() -> AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE
         {
             auto endpointTypeStr = prop.value("endpointType", "UNKNOWN");
             if (endpointTypeStr == "GET")
             {
-                return mqttMsgQueue::PACKET_ENDPOINT_TYPE::GET;
+                return MQTTMsgQueue::PACKET_ENDPOINT_TYPE::GET;
             }
             if (endpointTypeStr == "POST")
             {
-                return mqttMsgQueue::PACKET_ENDPOINT_TYPE::POST;
+                return MQTTMsgQueue::PACKET_ENDPOINT_TYPE::POST;
             }
             if (endpointTypeStr == "RPC")
             {
-                return mqttMsgQueue::PACKET_ENDPOINT_TYPE::RPC;
+                return MQTTMsgQueue::PACKET_ENDPOINT_TYPE::RPC;
             }
-            return mqttMsgQueue::PACKET_ENDPOINT_TYPE::UNKNOWN;
+            return MQTTMsgQueue::PACKET_ENDPOINT_TYPE::UNKNOWN;
         }();
         this->featureType =
             [&prop]() -> std::optional<RuleSystem::RecogFeatureType>
@@ -58,18 +58,18 @@ namespace AikariPLS::Types::RuleSystem
         this->ruleName =
             prop.value<std::optional<std::string>>("ruleName", std::nullopt);
         this->ruleSide =
-            [&prop]() -> AikariPLS::Types::mqttMsgQueue::PACKET_SIDE
+            [&prop]() -> AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE
         {
             auto ruleSideStr = prop.value("ruleSide", "UNKNOWN");
             if (ruleSideStr == "REQ")
             {
-                return mqttMsgQueue::PACKET_SIDE::REQ;
+                return MQTTMsgQueue::PACKET_SIDE::REQ;
             }
             if (ruleSideStr == "REP")
             {
-                return mqttMsgQueue::PACKET_SIDE::REP;
+                return MQTTMsgQueue::PACKET_SIDE::REP;
             }
-            return mqttMsgQueue::PACKET_SIDE::UNKNOWN;
+            return MQTTMsgQueue::PACKET_SIDE::UNKNOWN;
         }();
         this->enabledBy =
             prop.value<std::optional<std::string>>("enabledBy", std::nullopt);

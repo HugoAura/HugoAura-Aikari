@@ -8,11 +8,11 @@
 namespace AikariPLS::Infrastructure::MsgQueue
 {
 
-    class PLSThreadMsgQueueHandler : public AikariShared::infrastructure::
+    class PLSThreadMsgQueueHandler : public AikariShared::Infrastructure::
                                          InterThread::MainToSubMsgHandlerBase
     {
        public:
-        using AikariShared::infrastructure::InterThread::
+        using AikariShared::Infrastructure::InterThread::
             MainToSubMsgHandlerBase::MainToSubMsgHandlerBase;
 
        protected:

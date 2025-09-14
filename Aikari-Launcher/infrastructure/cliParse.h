@@ -10,7 +10,7 @@ namespace cxxopts
 namespace AikariCliUtils
 {
     cxxopts::Options constructCliOptions();
-    AikariTypes::infrastructure::cliParse::CliOptionsRet parseCliOptions(
+    AikariTypes::Infrastructure::CLIParse::CLIOptionsRet parseCliOptions(
         cxxopts::Options& cliOptions, const int& argc, const char* argv[]
     );
 }  // namespace AikariCliUtils

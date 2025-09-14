@@ -6,9 +6,9 @@
 #include <vector>
 #include <windows.h>
 
-namespace winStrUtils = AikariShared::utils::string;
+namespace winStrUtils = AikariShared::Utils::String;
 
-namespace AikariShared::utils::windowsRegistry
+namespace AikariShared::Utils::WindowsRegistry
 {
     std::wstring getRegSzValue(
         HKEY rootKey, const std::wstring& folderKey, const std::wstring& valKey

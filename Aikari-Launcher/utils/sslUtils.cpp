@@ -14,7 +14,7 @@
 #include "../components/config.h"
 #include "lifecycleUtils.h"
 
-namespace AikariUtils::sslUtils
+namespace AikariUtils::SSLUtils
 {
     bool checkCertExists(
         std::filesystem::path &certPath, std::filesystem::path &keyPath
@@ -74,7 +74,8 @@ namespace AikariUtils::sslUtils
             );
             if (tmpRetVar != 0)
             {
-                throw std::runtime_error("Error initializing ctrDrbg with seed."
+                throw std::runtime_error(
+                    "Error initializing ctrDrbg with seed."
                 );
             }
 
@@ -150,7 +151,8 @@ namespace AikariUtils::sslUtils
                 mbedtls_x509write_crt_set_basic_constraints(&crtCtx, 0, -1);
             if (tmpRetVar != 0)
             {
-                throw std::runtime_error("Failed to set crt basic constraints."
+                throw std::runtime_error(
+                    "Failed to set crt basic constraints."
                 );
             }
 
@@ -191,7 +193,8 @@ namespace AikariUtils::sslUtils
                 );
                 if (tmpRetVar != 0)
                 {
-                    throw std::runtime_error("Failed to write key into buffer."
+                    throw std::runtime_error(
+                        "Failed to write key into buffer."
                     );
                 }
 
@@ -310,4 +313,4 @@ namespace AikariUtils::sslUtils
             return result == 0 ? true : false;
         }
     }
-}  // namespace AikariUtils::sslUtils
+}  // namespace AikariUtils::SSLUtils

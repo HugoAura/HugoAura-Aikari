@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace AikariShared::utils::network
+namespace AikariShared::Utils::Network
 {
     namespace DNS
     {
@@ -11,4 +11,4 @@ namespace AikariShared::utils::network
             const std::string& targetDomain
         );
     }
-}  // namespace AikariShared::utils::network
+}  // namespace AikariShared::Utils::Network

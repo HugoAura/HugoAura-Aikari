@@ -2,16 +2,16 @@
 
 // mostly same as IMTSMsgHandlerBase, but some logic & types are different
 
-namespace AikariShared::infrastructure::InterThread
+namespace AikariShared::Infrastructure::InterThread
 {
 
     // ↓ public
 
     SubToMainMsgHandlerBase::SubToMainMsgHandlerBase(
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::SubToMainMessageInstance>*
             srcQueue,
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::MainToSubMessageInstance>*
             reportQueue,
         const std::string subModuleName
@@ -24,11 +24,13 @@ namespace AikariShared::infrastructure::InterThread
             &SubToMainMsgHandlerBase::retMsgWorker, this
         );
         this->threadPool = std::make_unique<
-            AikariShared::infrastructure::MessageQueue::PoolQueue<
+            AikariShared::Infrastructure::MessageQueue::PoolQueue<
                 AikariShared::Types::InterThread::SubToMainMessageInstance>>(
             DEFAULT_THREAD_COUNT,
-            [this](AikariShared::Types::InterThread::SubToMainMessageInstance
-                       content)
+            [this](
+                AikariShared::Types::InterThread::SubToMainMessageInstance
+                    content
+            )
             {
                 this->handleMsg(content);
             }
@@ -174,4 +176,4 @@ namespace AikariShared::infrastructure::InterThread
             );
         }
     };
-};  // namespace AikariShared::infrastructure::InterThread
+};  // namespace AikariShared::Infrastructure::InterThread

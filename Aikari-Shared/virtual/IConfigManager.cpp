@@ -3,7 +3,7 @@
 #include <Aikari-Shared/virtual/IConfigManager.h>
 #include <fstream>
 
-namespace AikariShared::virtualIns
+namespace AikariShared::VirtualIns
 {
     // --- Begin implementations of IConfigManager --- //
 
@@ -37,7 +37,7 @@ namespace AikariShared::virtualIns
         ret.result = "";
 
         auto loadResRet =
-            AikariShared::utils::windows::rc::loadStringResource<char>(
+            AikariShared::Utils::Windows::RC::loadStringResource<char>(
                 this->hInstance_, resId
             );
 
@@ -165,4 +165,4 @@ namespace AikariShared::virtualIns
         }
     };
     // --- End implementations of IConfigManager --- //
-};  // namespace AikariShared::virtualIns
+};  // namespace AikariShared::VirtualIns

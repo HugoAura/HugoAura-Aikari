@@ -18,7 +18,7 @@ namespace AikariLauncherRoutes::InterThread::Base
             auto& lifecycleStates =
                 AikariLifecycle::AikariStatesManager::getInstance();
             const auto runtimeMode =
-                lifecycleStates.getVal(&AikariTypes::global::lifecycle::
+                lifecycleStates.getVal(&AikariTypes::Global::Lifecycle::
                                            GlobalLifecycleStates::runtimeMode);
 
             nlohmann::json result;

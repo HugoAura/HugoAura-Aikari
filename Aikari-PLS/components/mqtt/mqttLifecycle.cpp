@@ -4,7 +4,7 @@
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 
-namespace AikariPLS::Types::lifecycle::MQTT
+namespace AikariPLS::Types::Lifecycle::MQTT
 {
     PLSMQTTMsgQueues::PLSMQTTMsgQueues() = default;
     PLSMQTTMsgQueues PLSMQTTMsgQueues::createDefault()
@@ -28,6 +28,6 @@ namespace AikariPLS::Types::lifecycle::MQTT
     };
 
     PLSMQTTMsgQueues::PLSMQTTMsgQueues(PLSMQTTMsgQueues&&) noexcept = default;
-    PLSMQTTMsgQueues& PLSMQTTMsgQueues::operator=(PLSMQTTMsgQueues&&
-    ) noexcept = default;
-}  // namespace AikariPLS::Types::lifecycle::MQTT
+    PLSMQTTMsgQueues& PLSMQTTMsgQueues::operator=(PLSMQTTMsgQueues&&) noexcept =
+        default;
+}  // namespace AikariPLS::Types::Lifecycle::MQTT

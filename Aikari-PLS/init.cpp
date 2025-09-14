@@ -18,7 +18,7 @@
 #include "components/mqtt/mqttBroker.h"
 #include "lifecycle.h"
 
-namespace plsConstants = AikariPLS::Types::constants;
+namespace plsConstants = AikariPLS::Types::Constants;
 
 namespace itcConstants = AikariShared::Types::InterThread;
 
@@ -33,7 +33,7 @@ namespace AikariPLS::Init
     namespace HelperFns
     {
         static void _pushSwCoreProcKilledEvent(
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 itcConstants::SubToMainMessageInstance>* msgQueue
         )
         {
@@ -41,12 +41,12 @@ namespace AikariPLS::Init
                 .success = true,
                 .code = 0,
                 .data = { { "message",
-                            plsConstants::init::networkInit::
+                            plsConstants::Init::NetworkInit::
                                 SW_CORE_PROC_KILLED_MSG },
                           { "method",
-                            plsConstants::init::networkInit::
+                            plsConstants::Init::NetworkInit::
                                 SW_CORE_PROC_KILLED_PUSH_METHOD } },
-                .eventId = plsConstants::msgQueue::WebSocket::WS_MSG_TYPE_PUSH,
+                .eventId = plsConstants::MsgQueue::WebSocket::WS_MSG_TYPE_PUSH,
                 .wsInfo = { .isBroadcast = true }
             };
 
@@ -66,9 +66,9 @@ namespace AikariPLS::Init
                 .method = AikariLauncherPublic::Constants::InterThread::
                     FileSystem::Base::GET_DIR,
                 .data = { { "dirType", "aikariRoot" } },
-                .fromModule = plsConstants::msgQueue::MODULE_NAME,
+                .fromModule = plsConstants::MsgQueue::MODULE_NAME,
                 .eventId =
-                    AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
+                    AikariShared::Utils::CryptoUtils::genRandomHexInsecure(32)
             };
 
             auto getDirResult = msgQueueHandler->sendCtrlMsgSync(getDirMsg);
@@ -106,13 +106,13 @@ namespace AikariPLS::Init
                 .data = { { "baseDir",
                             (aikariDir / "config" / "certs").string() },
                           { "hostname",
-                            plsConstants::init::networkInit::HOSTNAME },
+                            plsConstants::Init::NetworkInit::HOSTNAME },
                           { "identifier",
-                            plsConstants::init::networkInit::
+                            plsConstants::Init::NetworkInit::
                                 TLS_CERT_IDENTIFIER } },
-                .fromModule = plsConstants::msgQueue::MODULE_NAME,
+                .fromModule = plsConstants::MsgQueue::MODULE_NAME,
                 .eventId =
-                    AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
+                    AikariShared::Utils::CryptoUtils::genRandomHexInsecure(32)
             };
 
             auto initCertResult = msgQueueHandler->sendCtrlMsgSync(initCertMsg);
@@ -145,9 +145,9 @@ namespace AikariPLS::Init
                 .method = AikariLauncherPublic::Constants::InterThread::Base::
                     Props::GET_RUNTIME_MODE,
                 .data = {},
-                .fromModule = plsConstants::msgQueue::MODULE_NAME,
+                .fromModule = plsConstants::MsgQueue::MODULE_NAME,
                 .eventId =
-                    AikariShared::utils::cryptoUtils::genRandomHexInsecure(32)
+                    AikariShared::Utils::CryptoUtils::genRandomHexInsecure(32)
             };
 
             auto getRuntimeModeResult =
@@ -173,28 +173,28 @@ namespace AikariPLS::Init
             AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
 
         auto* msgQueueHandlerPtr = sharedIns.getPtr(
-            &AikariPLS::Types::lifecycle::PLSSharedIns::threadMsgQueueHandler
+            &AikariPLS::Types::Lifecycle::PLSSharedIns::threadMsgQueueHandler
         );
 
         auto& sharedMsgQueues =
             AikariPLS::Lifecycle::PLSSharedQueuesManager::getInstance();
 
         auto* retMsgQueuePtr = sharedMsgQueues.getPtr(
-            &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::retMsgQueue
+            &AikariPLS::Types::Lifecycle::PLSSharedMsgQueues::retMsgQueue
         );
 
         LOG_DEBUG("Pulling Aikari runtime mode...");
         const auto runtimeMode = HelperFns::_getRuntimeMode(msgQueueHandlerPtr);
         LOG_TRACE("Runtime mode: {}", static_cast<int>(runtimeMode));
         sharedStates.setVal(
-            &AikariPLS::Types::lifecycle::PLSSharedStates::runtimeMode,
+            &AikariPLS::Types::Lifecycle::PLSSharedStates::runtimeMode,
             runtimeMode
         );
 
         LOG_INFO("Checking hosts file entry...");
-        AikariShared::utils::windows::network::isSeewoCoreNeedToBeKill
+        AikariShared::Utils::Windows::Network::isSeewoCoreNeedToBeKill
             hostCheckResult =
-                AikariShared::utils::windows::network::ensureHostKeyExists(
+                AikariShared::Utils::Windows::Network::ensureHostKeyExists(
                     hostLine
                 );
         if (hostCheckResult)
@@ -202,7 +202,7 @@ namespace AikariPLS::Init
             LOG_INFO("Hosts file updated, killing SeewoCore process...");
             try
             {
-                AikariShared::utils::windows::process::killProcessByName(
+                AikariShared::Utils::Windows::Process::killProcessByName(
                     swCoreProcName
                 );
 
@@ -244,17 +244,17 @@ namespace AikariPLS::Init
                 (aikariDir / "config" / "certs" /
                  std::format(
                      "{}.crt",
-                     plsConstants::init::networkInit::TLS_CERT_IDENTIFIER
+                     plsConstants::Init::NetworkInit::TLS_CERT_IDENTIFIER
                  ))
                     .string(),
             .keyPath = (aikariDir / "config" / "certs" /
                         std::format(
                             "{}.key",
-                            plsConstants::init::networkInit::TLS_CERT_IDENTIFIER
+                            plsConstants::Init::NetworkInit::TLS_CERT_IDENTIFIER
                         ))
                            .string(),
-            .hostname = plsConstants::init::networkInit::HOSTNAME,
-            .port = plsConstants::init::networkInit::PORT
+            .hostname = plsConstants::Init::NetworkInit::HOSTNAME,
+            .port = plsConstants::Init::NetworkInit::PORT
         };
         {
             auto brokerIns =
@@ -262,7 +262,7 @@ namespace AikariPLS::Init
                     brokerLaunchArg
                 );
             sharedIns.setPtr(
-                &AikariPLS::Types::lifecycle::PLSSharedIns::mqttBroker,
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::mqttBroker,
                 std::move(brokerIns)
             );
         }

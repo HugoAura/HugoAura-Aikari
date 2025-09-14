@@ -13,10 +13,10 @@
 #include "../middleware/wsAuthHandler.h"
 #include "wsMsgHandler.h"
 
-namespace winStringUtils = AikariShared::utils::string;
-namespace messageQueue = AikariShared::infrastructure::MessageQueue;
+namespace winStringUtils = AikariShared::Utils::String;
+namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
 
-namespace wsTypes = AikariTypes::components::websocket;
+namespace wsTypes = AikariTypes::Components::WebSocket;
 
 typedef messageQueue::SinglePointMessageQueue<wsTypes::ClientWSTask>
     InputMsgQueue;
@@ -107,7 +107,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
             std::make_unique<std::jthread>(&MainWSServer::retMsgWorker, this);
 
         this->threadPool = std::make_unique<
-            AikariShared::infrastructure::MessageQueue::PoolQueue<
+            AikariShared::Infrastructure::MessageQueue::PoolQueue<
                 wsTypes::ClientWSTask>>(
             this->threadCount,
             [this](wsTypes::ClientWSTask task)
@@ -157,11 +157,13 @@ namespace AikariLauncherComponents::AikariWebSocketServer
     void MainWSServer::stopWssServer()
     {
         this->isStopped = true;
-        this->inputMsgQueue->push({ .clientId =
-                                        AikariTypes::constants::webSocket::
-                                            WS_WORKER_ACTION_CODES::EXIT });
-        this->retMsgQueue->push({ .clientId = AikariTypes::constants::
-                                      webSocket::WS_WORKER_ACTION_CODES::EXIT }
+        this->inputMsgQueue->push(
+            { .clientId = AikariTypes::Constants::WebSocket::
+                  WS_WORKER_ACTION_CODES::EXIT }
+        );
+        this->retMsgQueue->push(
+            { .clientId = AikariTypes::Constants::WebSocket::
+                  WS_WORKER_ACTION_CODES::EXIT }
         );
         this->inputMsgWorkerThread->join();
         this->retMsgWorkerThread->join();
@@ -171,7 +173,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
 
     // ↓ public
     void MainWSServer::pushRetQueue(
-        AikariTypes::components::websocket::ServerWSTaskRet& ret
+        AikariTypes::Components::WebSocket::ServerWSTaskRet& ret
     )
     {
         this->retMsgQueue->push(std::move(ret));
@@ -188,7 +190,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
             {
                 auto ret = this->retMsgQueue->pop();
                 if (ret.clientId.value_or("BROADCAST") ==
-                    AikariTypes::constants::webSocket::WS_WORKER_ACTION_CODES::
+                    AikariTypes::Constants::WebSocket::WS_WORKER_ACTION_CODES::
                         EXIT)
                 {
                     break;
@@ -252,7 +254,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                         return;
                     }
                     auto clientLocked = client->second.lock();
-                    if (clientLocked != NULL)
+                    if (clientLocked != nullptr)
                     {
                         clientLocked->send(repJson.dump());
                     }
@@ -280,7 +282,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
             while (true)
             {
                 auto task = this->inputMsgQueue->pop();
-                if (task.clientId == AikariTypes::constants::webSocket::
+                if (task.clientId == AikariTypes::Constants::WebSocket::
                                          WS_WORKER_ACTION_CODES::EXIT)
                 {
                     break;
@@ -314,7 +316,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                     msg->openInfo.uri, this->authToken
                 );
 
-            if (authStatus != AikariTypes::middleware::websocket::
+            if (authStatus != AikariTypes::Middleware::WebSocket::
                                   WEBSOCKET_AUTH_STATUS::PASSED)
             {
                 static const nlohmann::json deniedRep = {
@@ -369,10 +371,10 @@ namespace AikariLauncherComponents::AikariWebSocketServer
 #endif
 
             const std::string& clientId = connectionState->getId();
-            nlohmann::json clientMsgJson;
-            AikariTypes::components::websocket::ClientWSMsg clientMsg;
+            AikariTypes::Components::WebSocket::ClientWSMsg clientMsg;
             try
             {
+                nlohmann::json clientMsgJson;
                 clientMsgJson = nlohmann::json::parse(msg->str);
                 clientMsg.module = clientMsgJson.at("module");
                 clientMsg.method = clientMsgJson.at("method");
@@ -399,7 +401,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                 return;
             }
 
-            AikariTypes::components::websocket::ClientWSTask taskIns;
+            AikariTypes::Components::WebSocket::ClientWSTask taskIns;
             taskIns.content = clientMsg;
             taskIns.clientId = clientId;
             this->inputMsgQueue->push(std::move(taskIns));
@@ -411,7 +413,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
     {
         auto& sharedIns = AikariLifecycle::AikariSharedInstances::getInstance();
         AikariRegistry::RegistryManager* registryManagerPtr = sharedIns.getPtr(
-            &AikariTypes::global::lifecycle::SharedInstances::registryManagerIns
+            &AikariTypes::Global::Lifecycle::SharedInstances::registryManagerIns
         );
 
         if (!registryManagerPtr)
@@ -452,12 +454,9 @@ namespace AikariLauncherComponents::AikariWebSocketServer
     // ↓ private
     std::string MainWSServer::genAuthToken()
     {
-        auto& lifecycleMgr =
-            AikariLifecycle::AikariStatesManager::getInstance();
-
         size_t tokenSize = 32;
         std::string authTokenHex =
-            AikariShared::utils::cryptoUtils::genRandomHexSecure(tokenSize);
+            AikariShared::Utils::CryptoUtils::genRandomHexSecure(tokenSize);
 
         return authTokenHex;
     };
@@ -465,9 +464,11 @@ namespace AikariLauncherComponents::AikariWebSocketServer
     // ↓ private
     int MainWSServer::genRandomPort()
     {
-        std::mt19937 generator(static_cast<unsigned int>(
-            std::chrono::high_resolution_clock::now().time_since_epoch().count()
-        ));
+        std::mt19937 generator(
+            static_cast<unsigned int>(std::chrono::high_resolution_clock::now()
+                                          .time_since_epoch()
+                                          .count())
+        );
         std::uniform_int_distribution<int> dist(10000, 65535);
 
         int randomPort = dist(generator);

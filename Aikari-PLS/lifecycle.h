@@ -5,15 +5,15 @@
 
 namespace AikariPLS::Lifecycle
 {
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariPLS::Types::lifecycle::PLSSharedStates>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariPLS::Types::Lifecycle::PLSSharedStates>
         PLSSharedStates;
 
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariPLS::Types::lifecycle::PLSSharedIns>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariPLS::Types::Lifecycle::PLSSharedIns>
         PLSSharedInsManager;
 
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariPLS::Types::lifecycle::PLSSharedMsgQueues>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariPLS::Types::Lifecycle::PLSSharedMsgQueues>
         PLSSharedQueuesManager;
 }  // namespace AikariPLS::Lifecycle

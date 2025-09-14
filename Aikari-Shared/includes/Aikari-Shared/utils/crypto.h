@@ -2,9 +2,9 @@
 
 #include <string>
 
-namespace AikariShared::utils::cryptoUtils
+namespace AikariShared::Utils::CryptoUtils
 {
     std::string genRandomHexSecure(size_t length);
 
     std::string genRandomHexInsecure(size_t length);
-};  // namespace AikariShared::utils::cryptoUtils
+};  // namespace AikariShared::Utils::CryptoUtils

@@ -3,7 +3,7 @@
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Shared/virtual/itc/ISubToMainMsgHandlerBase.h>
 
-namespace AikariShared::infrastructure::MessageQueue
+namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename T>
     class SinglePointMessageQueue;
@@ -16,11 +16,11 @@ namespace AikariShared::Types::InterThread
 
 namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
 {
-    class PLSMsgHandler : public AikariShared::infrastructure::InterThread::
+    class PLSMsgHandler : public AikariShared::Infrastructure::InterThread::
                               SubToMainMsgHandlerBase
     {
        public:
-        using AikariShared::infrastructure::InterThread::
+        using AikariShared::Infrastructure::InterThread::
             SubToMainMsgHandlerBase::SubToMainMsgHandlerBase;
 
        protected:

@@ -55,13 +55,13 @@ namespace AikariPLS::Components::MQTTClient
         auto& mqttSharedQueues =
             AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
         auto* sendQueuePtr =
-            mqttSharedQueues.getPtr(&AikariPLS::Types::lifecycle::MQTT::
+            mqttSharedQueues.getPtr(&AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTMsgQueues::clientToBrokerQueue);
 
         sendQueuePtr->push(
             {
                 .type =
-                    Types::mqttMsgQueue::PACKET_OPERATION_TYPE::CTRL_THREAD_END,
+                    Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::CTRL_THREAD_END,
             }
         );
 
@@ -122,10 +122,10 @@ namespace AikariPLS::Components::MQTTClient
                 auto& sharedIns =
                     AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
                 HINSTANCE hIns = sharedIns.getVal(
-                    &AikariPLS::Types::lifecycle::PLSSharedIns::hModuleIns
+                    &AikariPLS::Types::Lifecycle::PLSSharedIns::hModuleIns
                 );
                 auto getCrtPtrRet =
-                    AikariShared::utils::windows::rc::loadStringResource<char>(
+                    AikariShared::Utils::Windows::RC::loadStringResource<char>(
                         hIns, IDR_SEEWO_BROKER_CERT
                     );
 
@@ -243,7 +243,7 @@ namespace AikariPLS::Components::MQTTClient
     bool Client::refreshHostRealIP()
     {
         auto dnsQueryResult =
-            AikariShared::utils::network::DNS::getDNSARecordResult(
+            AikariShared::Utils::Network::DNS::getDNSARecordResult(
                 this->launchArg.targetHost
             );
         if (dnsQueryResult.empty())
@@ -262,7 +262,7 @@ namespace AikariPLS::Components::MQTTClient
             auto& mqttSharedQueues =
                 AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
             auto* sendQueuePtr = mqttSharedQueues.getPtr(
-                &AikariPLS::Types::lifecycle::MQTT::PLSMQTTMsgQueues::
+                &AikariPLS::Types::Lifecycle::MQTT::PLSMQTTMsgQueues::
                     brokerToClientQueue
             );
 
@@ -270,7 +270,7 @@ namespace AikariPLS::Components::MQTTClient
             {
                 auto task = sendQueuePtr->pop();
 
-                if (task.type == AikariPLS::Types::mqttMsgQueue::
+                if (task.type == AikariPLS::Types::MQTTMsgQueue::
                                      PACKET_OPERATION_TYPE::CTRL_THREAD_END)
                 {
                     CUSTOM_LOG_DEBUG(
@@ -297,10 +297,10 @@ namespace AikariPLS::Components::MQTTClient
     {
         this->sendThreadPool.reset();
         this->sendThreadPool = std::make_unique<
-            AikariShared::infrastructure::MessageQueue::PoolQueue<
-                AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>(
+            AikariShared::Infrastructure::MessageQueue::PoolQueue<
+                AikariPLS::Types::MQTTMsgQueue::FlaggedPacket>>(
             this->sendThreadCount,
-            [this](AikariPLS::Types::mqttMsgQueue::FlaggedPacket packet)
+            [this](AikariPLS::Types::MQTTMsgQueue::FlaggedPacket packet)
             {
                 if (this->isConnectionActive)
                 {
@@ -308,7 +308,7 @@ namespace AikariPLS::Components::MQTTClient
                     {
                         std::optional<std::string> newTopicName = std::nullopt;
                         if (packet.props.endpointType ==
-                                AikariPLS::Types::mqttMsgQueue::
+                                AikariPLS::Types::MQTTMsgQueue::
                                     PACKET_ENDPOINT_TYPE::GET &&
                             packet.packet
                                 ->get_if<async_mqtt::v3_1_1::publish_packet>())
@@ -330,14 +330,13 @@ namespace AikariPLS::Components::MQTTClient
                             );
                             if (originalMsgId != thisMsgId)  // offset exists
                             {
-                                AikariPLS::Types::mqttMsgQueue::PacketTopicProps
-                                    newTopicProps(
-                                        packet.props
+                                AikariPLS::Types::MQTTMsgQueue::PacketTopicProps
+                                    newTopicProps(packet.props
                                     );  // copy in order to prevent msgId
                                         // disorder when pktId acquire fail
                                 newTopicProps.msgId = thisMsgId;
                                 if (packet.type !=
-                                    AikariPLS::Types::mqttMsgQueue::
+                                    AikariPLS::Types::MQTTMsgQueue::
                                         PACKET_OPERATION_TYPE::PKT_VIRTUAL)
                                 {
                                     // ↑ rep for VIRTUAL pkt won't be forwarded
@@ -351,7 +350,7 @@ namespace AikariPLS::Components::MQTTClient
                                     MQTTPacketUtils::mergeTopic(newTopicProps);
                             }
                             if (packet.type ==
-                                AikariPLS::Types::mqttMsgQueue::
+                                AikariPLS::Types::MQTTMsgQueue::
                                     PACKET_OPERATION_TYPE::PKT_VIRTUAL)
                             {
                                 this->connection->endpointGetIgnoredIds.emplace(
@@ -360,10 +359,10 @@ namespace AikariPLS::Components::MQTTClient
                             }
                         }
                         else if (packet.props.endpointType ==
-                                     AikariPLS::Types::mqttMsgQueue::
+                                     AikariPLS::Types::MQTTMsgQueue::
                                          PACKET_ENDPOINT_TYPE::RPC &&
                                  packet.type ==
-                                     AikariPLS::Types::mqttMsgQueue::
+                                     AikariPLS::Types::MQTTMsgQueue::
                                          PACKET_OPERATION_TYPE::PKT_VIRTUAL)
                         {
                             // rpc no need for replace, because every rpcId is
@@ -378,8 +377,8 @@ namespace AikariPLS::Components::MQTTClient
                                 genNewPacketId = [this]()
                             {
                                 auto packetId =
-                                    this->connection
-                                        ->acquire_unique_packet_id();
+                                    this->connection->acquire_unique_packet_id(
+                                    );
                                 if (packetId == std::nullopt)
                                 {
                                     throw std::runtime_error(
@@ -467,8 +466,7 @@ namespace AikariPLS::Components::MQTTClient
                         this->launchArg.targetPort
                     );
 
-                    std::unique_lock<std::mutex> lock(
-                        this->sslCtxLock
+                    std::unique_lock<std::mutex> lock(this->sslCtxLock
                     );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,
@@ -715,7 +713,7 @@ namespace AikariPLS::Components::MQTTClient
                 AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
 
             auto clientInsOldPtr = sharedIns.getPtr(
-                &AikariPLS::Types::lifecycle::PLSSharedIns::mqttClient
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::mqttClient
             );
             if (clientInsOldPtr != nullptr)
             {
@@ -724,7 +722,7 @@ namespace AikariPLS::Components::MQTTClient
 
             auto clientInsPtr = std::make_unique<Client>(arg);
             sharedIns.setPtr(
-                &AikariPLS::Types::lifecycle::PLSSharedIns::mqttClient,
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::mqttClient,
                 std::move(clientInsPtr)
             );
         };
@@ -736,7 +734,7 @@ namespace AikariPLS::Components::MQTTClient
             auto& sharedIns =
                 AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
             auto clientInsPtr = sharedIns.getPtr(
-                &AikariPLS::Types::lifecycle::PLSSharedIns::mqttClient
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::mqttClient
             );
             if (clientInsPtr != nullptr)
             {
@@ -746,7 +744,7 @@ namespace AikariPLS::Components::MQTTClient
                 }
             }
             sharedIns.resetPtr(
-                &AikariPLS::Types::lifecycle::PLSSharedIns::mqttClient
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::mqttClient
             );
         };
     }  // namespace ClientLifecycleController

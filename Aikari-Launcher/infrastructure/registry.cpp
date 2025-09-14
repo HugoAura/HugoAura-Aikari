@@ -33,7 +33,7 @@ namespace AikariRegistry
         else
         {
             std::string parsedErr(
-                AikariShared::utils::string::parseDWORDResult(result)
+                AikariShared::Utils::String::parseDWORDResult(result)
             );
             LOG_CRITICAL(
                 "Unexpected error occurred creating aikari root regKey: " +
@@ -151,7 +151,7 @@ namespace AikariRegistry
             LOG_ERROR(
                 "An error occurred while {}, error code: {}",
                 action,
-                AikariShared::utils::string::parseDWORDResult(errorCode)
+                AikariShared::Utils::String::parseDWORDResult(errorCode)
             );
             return false;
         }

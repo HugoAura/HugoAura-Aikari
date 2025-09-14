@@ -73,8 +73,8 @@ namespace AikariPLS::Components::MQTTBroker
         std::unique_ptr<
             AikariPLS::Components::MQTTBroker::Class::MQTTBrokerConnection>
             connection;
-        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
-            AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>
+        std::unique_ptr<AikariShared::Infrastructure::MessageQueue::PoolQueue<
+            AikariPLS::Types::MQTTMsgQueue::FlaggedPacket>>
             sendThreadPool;
 
         void initSendThreadPool();

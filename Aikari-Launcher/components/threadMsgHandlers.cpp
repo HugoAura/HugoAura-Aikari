@@ -25,7 +25,7 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
     )
     {
         std::vector<std::string> route =
-            AikariShared::utils::string::split(retMsg.method, '.');
+            AikariShared::Utils::String::split(retMsg.method, '.');
         std::string& rootRoute = route.at(0);
 
         AikariShared::Types::InterThread::MainToSubControlReplyMessage result;
@@ -74,17 +74,17 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
     {
         auto& sharedIns = AikariLifecycle::AikariSharedInstances::getInstance();
         auto* wsMgrPtr = sharedIns.getPtr(
-            &AikariTypes::global::lifecycle::SharedInstances::wsServerMgrIns
+            &AikariTypes::Global::Lifecycle::SharedInstances::wsServerMgrIns
         );
 
-        AikariTypes::components::websocket::ServerWSRep repFinData{
+        AikariTypes::Components::WebSocket::ServerWSRep repFinData{
             .code = wsReply.code,
             .eventId = wsReply.eventId,
             .success = wsReply.success,
             .data = wsReply.data,
         };
 
-        AikariTypes::components::websocket::ServerWSTaskRet taskFinRet{
+        AikariTypes::Components::WebSocket::ServerWSTaskRet taskFinRet{
             .result = repFinData,
             .clientId = wsReply.wsInfo.clientId,
             .isBroadcast = wsReply.wsInfo.isBroadcast.value_or(false)

@@ -8,7 +8,7 @@
 #include "infrastructure/fileSystem.h"
 #include "infrastructure/registry.h"
 
-namespace AikariTypes::global::lifecycle
+namespace AikariTypes::Global::Lifecycle
 {
     // --- Begin implementations of
     // AikariTypes::global::lifecycle::SharedInstances
@@ -27,4 +27,4 @@ namespace AikariTypes::global::lifecycle
     // --- End implementations of
     // AikariTypes::global::lifecycle::SharedInstances
 
-}  // namespace AikariTypes::global::lifecycle
+}  // namespace AikariTypes::Global::Lifecycle

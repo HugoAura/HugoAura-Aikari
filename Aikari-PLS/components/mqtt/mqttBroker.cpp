@@ -46,13 +46,13 @@ namespace AikariPLS::Components::MQTTBroker
         auto& mqttSharedQueues =
             AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
         auto* sendQueuePtr =
-            mqttSharedQueues.getPtr(&AikariPLS::Types::lifecycle::MQTT::
+            mqttSharedQueues.getPtr(&AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTMsgQueues::clientToBrokerQueue);
 
         sendQueuePtr->push(
             {
                 .type =
-                    Types::mqttMsgQueue::PACKET_OPERATION_TYPE::CTRL_THREAD_END,
+                    Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::CTRL_THREAD_END,
             }
         );
 
@@ -232,7 +232,7 @@ namespace AikariPLS::Components::MQTTBroker
             auto& mqttSharedQueues =
                 AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
             auto* sendQueuePtr = mqttSharedQueues.getPtr(
-                &AikariPLS::Types::lifecycle::MQTT::PLSMQTTMsgQueues::
+                &AikariPLS::Types::Lifecycle::MQTT::PLSMQTTMsgQueues::
                     clientToBrokerQueue
             );
 
@@ -240,7 +240,7 @@ namespace AikariPLS::Components::MQTTBroker
             {
                 auto task = sendQueuePtr->pop();
 
-                if (task.type == AikariPLS::Types::mqttMsgQueue::
+                if (task.type == AikariPLS::Types::MQTTMsgQueue::
                                      PACKET_OPERATION_TYPE::CTRL_THREAD_END)
                 {
                     CUSTOM_LOG_DEBUG(
@@ -267,10 +267,10 @@ namespace AikariPLS::Components::MQTTBroker
     {
         this->sendThreadPool.reset();
         this->sendThreadPool = std::make_unique<
-            AikariShared::infrastructure::MessageQueue::PoolQueue<
-                AikariPLS::Types::mqttMsgQueue::FlaggedPacket>>(
+            AikariShared::Infrastructure::MessageQueue::PoolQueue<
+                AikariPLS::Types::MQTTMsgQueue::FlaggedPacket>>(
             this->sendThreadCount,
-            [this](AikariPLS::Types::mqttMsgQueue::FlaggedPacket packet)
+            [this](AikariPLS::Types::MQTTMsgQueue::FlaggedPacket packet)
             {
                 if (this->netCtx.curClientFd != nullptr)
                 {
@@ -282,9 +282,9 @@ namespace AikariPLS::Components::MQTTBroker
                     };
                     switch (packet.type)
                     {
-                        case AikariPLS::Types::mqttMsgQueue::
+                        case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_TRANSPARENT:
-                        case AikariPLS::Types::mqttMsgQueue::
+                        case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_MODIFIED:
                         {
                             // TODO: error handling (same as mqttClient.cpp)
@@ -299,7 +299,7 @@ namespace AikariPLS::Components::MQTTBroker
                             this->connection->send(std::move(newPacket));
                             break;
                         }
-                        case AikariPLS::Types::mqttMsgQueue::
+                        case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_VIRTUAL:
                         {
                         }
@@ -498,9 +498,8 @@ namespace AikariPLS::Components::MQTTBroker
                                         pendingBuf.insert(
                                             pendingBuf.end(),
                                             (const unsigned char*)pktBuf.data(),
-                                            (const unsigned char*)
-                                                    pktBuf.data() +
-                                                pktBuf.size()
+                                            (const unsigned char*)pktBuf.data(
+                                            ) + pktBuf.size()
                                         );
                                     }
 

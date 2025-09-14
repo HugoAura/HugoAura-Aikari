@@ -36,7 +36,7 @@ namespace AikariPLS::Components::MQTTBroker::Class
             AikariPLS::Lifecycle::PLSSharedStates::getInstance();
         this->isDebugEnv =
             (sharedStates.getVal(
-                 &AikariPLS::Types::lifecycle::PLSSharedStates::runtimeMode
+                 &AikariPLS::Types::Lifecycle::PLSSharedStates::runtimeMode
              ) == AikariLauncherPublic::Constants::Lifecycle::
                       APPLICATION_RUNTIME_MODES::DEBUG);
     };
@@ -57,7 +57,7 @@ namespace AikariPLS::Components::MQTTBroker::Class
         auto& sharedMqttQueues =
             AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
         auto* brokerToClientQueue =
-            sharedMqttQueues.getPtr(&AikariPLS::Types::lifecycle::MQTT::
+            sharedMqttQueues.getPtr(&AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTMsgQueues::brokerToClientQueue);
 
         packet.visit(
@@ -83,11 +83,11 @@ namespace AikariPLS::Components::MQTTBroker::Class
 
                     AikariPLS::Components::MQTTClient::ClientLaunchArg
                         clientLaunchArg = { .targetHost =
-                                                AikariPLS::Types::constants::
-                                                    init::networkInit::HOSTNAME,
+                                                AikariPLS::Types::Constants::
+                                                    Init::NetworkInit::HOSTNAME,
                                             .targetPort =
-                                                AikariPLS::Types::constants::
-                                                    init::networkInit::PORT,
+                                                AikariPLS::Types::Constants::
+                                                    Init::NetworkInit::PORT,
 
                                             .clientId = this->clientId,
                                             .username = username,
@@ -98,7 +98,7 @@ namespace AikariPLS::Components::MQTTBroker::Class
                     auto& sharedClientInfo = AikariPLS::Lifecycle::MQTT::
                         PLSMQTTSharedRealClientInfo::getInstance();
                     sharedClientInfo.setVal(
-                        &AikariPLS::Types::lifecycle::MQTT::
+                        &AikariPLS::Types::Lifecycle::MQTT::
                             PLSMQTTRealClientInfo::deviceId,
                         this->clientId
                     );
@@ -166,7 +166,7 @@ namespace AikariPLS::Components::MQTTBroker::Class
                             PLSMQTTSharedRealClientInfo::getInstance();
 
                         if (auto isInitialized = sharedClientInfo.getVal(
-                                &AikariPLS::Types::lifecycle::MQTT::
+                                &AikariPLS::Types::Lifecycle::MQTT::
                                     PLSMQTTRealClientInfo::isInitialized
                             );
                             !isInitialized)
@@ -178,17 +178,17 @@ namespace AikariPLS::Components::MQTTBroker::Class
                                     AikariPLS::Utils::MQTTPacketUtils::
                                         getPacketProps(sampleTopic);
                                 sharedClientInfo.setVal(
-                                    &AikariPLS::Types::lifecycle::MQTT::
+                                    &AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTRealClientInfo::productKey,
                                     resolveResult.productKey
                                 );
                                 sharedClientInfo.setVal(
-                                    &AikariPLS::Types::lifecycle::MQTT::
+                                    &AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTRealClientInfo::deviceId,
                                     resolveResult.deviceId
                                 );
                                 sharedClientInfo.setVal(
-                                    &AikariPLS::Types::lifecycle::MQTT::
+                                    &AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTRealClientInfo::isInitialized,
                                     true
                                 );
@@ -205,9 +205,9 @@ namespace AikariPLS::Components::MQTTBroker::Class
                         }
                     }
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
                         subscribeTransparentPassPkt = {
-                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                            .type = Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::
                                 PKT_TRANSPARENT,
                             .packet = pkt
                         };
@@ -253,9 +253,9 @@ namespace AikariPLS::Components::MQTTBroker::Class
                         pkt.packet_id()
                     );
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
                         unsubscribeTransparentPassPkt = {
-                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                            .type = Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::
                                 PKT_TRANSPARENT,
                             .packet = pkt
                         };
@@ -296,8 +296,8 @@ namespace AikariPLS::Components::MQTTBroker::Class
 
                     // TODO: Run hooks
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket publishPkt = {
-                        .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket publishPkt = {
+                        .type = Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::
                             PKT_TRANSPARENT,
                         .packet = pkt,
                         .props = std::move(packetProps)
@@ -316,9 +316,9 @@ namespace AikariPLS::Components::MQTTBroker::Class
                         this->clientId
                     );
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
                         disconnectPkt = {
-                            .type = Types::mqttMsgQueue::PACKET_OPERATION_TYPE::
+                            .type = Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::
                                 PKT_TRANSPARENT,
                             .packet = pkt
                         };
@@ -338,7 +338,7 @@ namespace AikariPLS::Components::MQTTBroker::Class
         auto& sharedClientInfo = AikariPLS::Lifecycle::MQTT::
             PLSMQTTSharedRealClientInfo::getInstance();
         sharedClientInfo.setVal(
-            &AikariPLS::Types::lifecycle::MQTT::PLSMQTTRealClientInfo::
+            &AikariPLS::Types::Lifecycle::MQTT::PLSMQTTRealClientInfo::
                 isInitialized,
             false
         );

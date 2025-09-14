@@ -6,15 +6,15 @@
 
 namespace AikariLifecycle
 {
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariTypes::global::lifecycle::GlobalLifecycleStates>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariTypes::Global::Lifecycle::GlobalLifecycleStates>
         AikariStatesManager;
 
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariTypes::global::lifecycle::SharedInstances>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariTypes::Global::Lifecycle::SharedInstances>
         AikariSharedInstances;
 
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariTypes::global::lifecycle::GlobalSharedHandlersRegistry>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariTypes::Global::Lifecycle::GlobalSharedHandlersRegistry>
         AikariSharedHandlers;
 }  // namespace AikariLifecycle

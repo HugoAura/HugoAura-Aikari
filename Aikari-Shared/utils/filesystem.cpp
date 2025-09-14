@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace AikariShared::utils::filesystem
+namespace AikariShared::Utils::FileSystem
 {
     std::filesystem::path getSelfPathFromHandler(HMODULE hModule)
     {
@@ -56,7 +56,7 @@ namespace AikariShared::utils::filesystem
                         "Diving into directory: {}", perFile.path().string()
                     );
 #endif
-                    filesystem::grepFilesWithExt(
+                    FileSystem::grepFilesWithExt(
                         perFile.path(), extToMatch, resultTarget
                     );
                 }
@@ -82,4 +82,4 @@ namespace AikariShared::utils::filesystem
             );
         }
     };
-}  // namespace AikariShared::utils::filesystem
+}  // namespace AikariShared::Utils::FileSystem

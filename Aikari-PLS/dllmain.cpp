@@ -12,7 +12,7 @@ DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
             auto& sharedInsMgr =
                 AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
             sharedInsMgr.setVal(
-                &AikariPLS::Types::lifecycle::PLSSharedIns::hModuleIns, hModule
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::hModuleIns, hModule
             );
             break;
         }

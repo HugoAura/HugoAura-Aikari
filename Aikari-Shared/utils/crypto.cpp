@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 
-namespace AikariShared::utils::cryptoUtils
+namespace AikariShared::Utils::CryptoUtils
 {
     std::string genRandomHexSecure(size_t length)
     {

@@ -18,12 +18,12 @@ namespace AikariCliUtils
         return cliOptions;
     }
 
-    AikariTypes::infrastructure::cliParse::CliOptionsRet parseCliOptions(
+    AikariTypes::Infrastructure::CLIParse::CLIOptionsRet parseCliOptions(
         cxxopts::Options& cliOptions, const int& argc, const char* argv[]
     )
     {
         auto parseResult = cliOptions.parse(argc, argv);
-        AikariTypes::infrastructure::cliParse::CliOptionsRet retVal;
+        AikariTypes::Infrastructure::CLIParse::CLIOptionsRet retVal;
         try
         {
             retVal.isDebug = parseResult["debug"].as<bool>();

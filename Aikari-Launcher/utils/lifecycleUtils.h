@@ -11,7 +11,7 @@ namespace AikariLifecycle::Utils
     {
         void editConfig(
             std::function<
-                void(std::shared_ptr<AikariTypes::config::AikariConfig> &)>
+                void(std::shared_ptr<AikariTypes::Config::AikariConfig> &)>
                 lambda,
             bool writeConfig = false
         );

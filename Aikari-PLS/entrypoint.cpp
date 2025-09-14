@@ -11,15 +11,15 @@
 #include "init.h"
 #include "lifecycle.h"
 
-namespace LifecycleTypes = AikariPLS::Types::lifecycle;
+namespace LifecycleTypes = AikariPLS::Types::Lifecycle;
 
 namespace AikariPLS::Exports
 {
-    extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
+    extern AIKARIPLS_API AikariPLS::Types::Entrypoint::EntrypointRet main(
         const std::filesystem::path& aikariRootPath,
         const std::filesystem::path& certDirPath,
         std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>>
             inputMessageQueue
     )
@@ -34,16 +34,16 @@ namespace AikariPLS::Exports
         );  // 37 = White text; 45 = Purple background
         LOG_INFO("[MODULE_INIT] Aikari Submodule PLS is launching...");
         auto retMessageQueue = std::make_shared<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::SubToMainMessageInstance>>();
 
         sharedQueuesManager.setVal(
-            &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::inputMsgQueue,
+            &AikariPLS::Types::Lifecycle::PLSSharedMsgQueues::inputMsgQueue,
             inputMessageQueue
         );
 
         sharedQueuesManager.setVal(
-            &AikariPLS::Types::lifecycle::PLSSharedMsgQueues::retMsgQueue,
+            &AikariPLS::Types::Lifecycle::PLSSharedMsgQueues::retMsgQueue,
             retMessageQueue
         );  // not using setPtr for shared_ptr
 
@@ -62,7 +62,7 @@ namespace AikariPLS::Exports
         auto plsInitThread =
             std::make_unique<std::jthread>(AikariPLS::Init::runPlsInit);
 
-        AikariPLS::Types::entrypoint::EntrypointRet launchResult = {
+        AikariPLS::Types::Entrypoint::EntrypointRet launchResult = {
             .success = true,
             .retMessageQueue = std::move(retMessageQueue),
             .plsRuntimeThread = std::move(plsInitThread)

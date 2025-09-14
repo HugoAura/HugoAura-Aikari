@@ -1,6 +1,7 @@
 ﻿#include "winSvc.h"
 
 #include <Aikari-Shared/utils/string.h>
+#include <windows.h>
 
 namespace svcConfig = AikariDefaults::ServiceConfig;
 
@@ -63,7 +64,7 @@ namespace AikariWinSvc
 
         LOG_DEBUG(
             "Service launchParam to be installed: " +
-            AikariShared::utils::string::WstringToString(fullLaunchParam)
+            AikariShared::Utils::String::WstringToString(fullLaunchParam)
         );
 
         SC_HANDLE hSCMgr =
@@ -110,7 +111,7 @@ namespace AikariWinSvc
         {
             auto error = GetLastError();
             std::string resolvedErrMsg(
-                AikariShared::utils::string::parseDWORDResult(error)
+                AikariShared::Utils::String::parseDWORDResult(error)
             );
             LOG_ERROR(
                 "Failed to register Aikari Svc, error: " + resolvedErrMsg
@@ -144,7 +145,7 @@ namespace AikariWinSvc
             else
             {
                 std::string parsedErr(
-                    AikariShared::utils::string::parseDWORDResult(error)
+                    AikariShared::Utils::String::parseDWORDResult(error)
                 );
                 LOG_ERROR(
                     "Failed to open Aikari Svc instance, error: " + parsedErr
@@ -199,7 +200,7 @@ namespace AikariWinSvc
         {
             auto error = GetLastError();
             std::string parsedErr(
-                AikariShared::utils::string::parseDWORDResult(error)
+                AikariShared::Utils::String::parseDWORDResult(error)
             );
             LOG_ERROR(
                 "An error occurred uninstalling svc, error: " + parsedErr

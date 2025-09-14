@@ -4,7 +4,7 @@
 
 #include "../lifecycle.h"
 
-namespace wsTypes = AikariTypes::middleware::websocket;
+namespace wsTypes = AikariTypes::Middleware::WebSocket;
 
 namespace AikariLauncherMiddlewares::WebSocket
 {
@@ -44,8 +44,9 @@ namespace AikariLauncherMiddlewares::WebSocket
         std::string userAuthToken =
             authTokenOpt.has_value() ? std::string(authTokenOpt.value()) : "";
 
+        /*
         auto& lifecycleIns =
-            AikariLifecycle::AikariStatesManager::getInstance();
+            AikariLifecycle::AikariStatesManager::getInstance();*/
 
         if (userAuthToken == authToken)
         {

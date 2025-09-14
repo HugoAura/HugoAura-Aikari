@@ -5,21 +5,21 @@
 #include <memory>
 #include <string>
 
-namespace AikariShared::infrastructure::MessageQueue
+namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename MessageType>
     class SinglePointMessageQueue;
-};  // namespace AikariShared::infrastructure::MessageQueue
+};  // namespace AikariShared::Infrastructure::MessageQueue
 
 namespace AikariLauncherComponents::AikariWebSocketHandler
 {
-    AikariTypes::components::websocket::MODULES getMsgModule(
+    AikariTypes::Components::WebSocket::MODULES getMsgModule(
         std::string moduleStr
     );
 
     void handleTask(
-        AikariTypes::components::websocket::ClientWSTask task,
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariTypes::components::websocket::ServerWSTaskRet>* retMsgQueue
+        AikariTypes::Components::WebSocket::ClientWSTask task,
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariTypes::Components::WebSocket::ServerWSTaskRet>* retMsgQueue
     );
 }  // namespace AikariLauncherComponents::AikariWebSocketHandler

@@ -6,7 +6,7 @@
 #include <vector>
 #include <windows.h>
 
-namespace AikariShared::utils::string
+namespace AikariShared::Utils::String
 {
     std::string WstringToString(const std::wstring& wstr)
     {

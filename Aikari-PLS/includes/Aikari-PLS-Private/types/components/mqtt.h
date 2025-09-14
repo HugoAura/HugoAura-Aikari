@@ -3,7 +3,7 @@
 #include <async_mqtt/protocol/packet/packet_variant.hpp>
 #include <string>
 
-namespace AikariPLS::Types::mqttMsgQueue
+namespace AikariPLS::Types::MQTTMsgQueue
 {
     enum class PACKET_OPERATION_TYPE
     {

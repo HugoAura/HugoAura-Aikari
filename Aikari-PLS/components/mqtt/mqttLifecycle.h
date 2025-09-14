@@ -5,18 +5,18 @@
 #include <string>
 #include <unordered_map>
 
-namespace AikariShared::infrastructure::MessageQueue
+namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename T>
     class SinglePointMessageQueue;
 }
 
-namespace AikariPLS::Types::mqttMsgQueue
+namespace AikariPLS::Types::MQTTMsgQueue
 {
     struct FlaggedPacket;
 }
 
-namespace AikariPLS::Types::lifecycle::MQTT
+namespace AikariPLS::Types::Lifecycle::MQTT
 {
     struct PLSMQTTRealClientInfo
     {
@@ -32,9 +32,9 @@ namespace AikariPLS::Types::lifecycle::MQTT
 
     struct PLSMQTTMsgQueues
     {
-        typedef AikariShared::infrastructure::MessageQueue::
+        typedef AikariShared::Infrastructure::MessageQueue::
             SinglePointMessageQueue<
-                AikariPLS::Types::mqttMsgQueue::FlaggedPacket>
+                AikariPLS::Types::MQTTMsgQueue::FlaggedPacket>
                 FlaggedPacketQueue;
 
         std::unique_ptr<FlaggedPacketQueue> brokerToClientQueue;
@@ -52,15 +52,15 @@ namespace AikariPLS::Types::lifecycle::MQTT
         PLSMQTTMsgQueues(PLSMQTTMsgQueues&&) noexcept;
         PLSMQTTMsgQueues& operator=(PLSMQTTMsgQueues&&) noexcept;
     };
-}  // namespace AikariPLS::Types::lifecycle::MQTT
+}  // namespace AikariPLS::Types::Lifecycle::MQTT
 
 namespace AikariPLS::Lifecycle::MQTT
 {
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariPLS::Types::lifecycle::MQTT::PLSMQTTRealClientInfo>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariPLS::Types::Lifecycle::MQTT::PLSMQTTRealClientInfo>
         PLSMQTTSharedRealClientInfo;
 
-    typedef AikariShared::base::AikariStatesManagerTemplate<
-        AikariPLS::Types::lifecycle::MQTT::PLSMQTTMsgQueues>
+    typedef AikariShared::Base::AikariStatesManagerTemplate<
+        AikariPLS::Types::Lifecycle::MQTT::PLSMQTTMsgQueues>
         PLSMQTTMsgQueues;
 }  // namespace AikariPLS::Lifecycle::MQTT

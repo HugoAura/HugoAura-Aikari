@@ -3,12 +3,11 @@
 #include <Aikari-Launcher-Private/common.h>
 #include <string>
 
-namespace AikariTypes::infrastructure::cliParse
+namespace AikariTypes::Infrastructure::CLIParse
 {
-
-    struct CliOptionsRet
+    struct CLIOptionsRet
     {
         bool isDebug = false;
         std::string serviceCtrl = "";
     };
-}  // namespace AikariTypes::infrastructure::cliParse
+}  // namespace AikariTypes::Infrastructure::CLIParse

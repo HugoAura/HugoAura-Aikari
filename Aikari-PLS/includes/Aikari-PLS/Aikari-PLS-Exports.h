@@ -10,11 +10,11 @@
 
 namespace AikariPLS::Exports
 {
-    extern AIKARIPLS_API AikariPLS::Types::entrypoint::EntrypointRet main(
+    extern AIKARIPLS_API AikariPLS::Types::Entrypoint::EntrypointRet main(
         const std::filesystem::path& aikariRootPath,
         const std::filesystem::path& certDirPath,
         std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>>
             inputMessageQueue
     );

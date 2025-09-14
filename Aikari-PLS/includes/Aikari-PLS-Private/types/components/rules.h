@@ -27,14 +27,14 @@ namespace AikariPLS::Types::RuleSystem
     struct RuleProps
     {
         RuleSystem::RuleType ruleType;
-        AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE endpointType;
+        AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE endpointType;
         std::optional<RuleSystem::RecogFeatureType> featureType;
         std::optional<std::string>
             featureName;  // thing.xxx.xxx for METHOD, paramName for PROPNAME,
                           // nullopt for ASCEND/DESCEND
         std::optional<std::string> ruleName;  // nullopt for REWRITE, string for
                                               // VIRTUAL, should be unique
-        AikariPLS::Types::mqttMsgQueue::PACKET_SIDE ruleSide;
+        AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE ruleSide;
         std::optional<std::string>
             enabledBy;  // settings key to make curRule enable, nullopt == N/A
                         // or always true

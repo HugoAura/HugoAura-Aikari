@@ -7,11 +7,11 @@
 
 namespace AikariPLS::Utils::MQTTPacketUtils
 {
-    AikariPLS::Types::mqttMsgQueue::PacketTopicProps getPacketProps(
+    AikariPLS::Types::MQTTMsgQueue::PacketTopicProps getPacketProps(
         const std::string& topic
     )
     {
-        const auto splitResult = AikariShared::utils::string::split(topic, '/');
+        const auto splitResult = AikariShared::Utils::String::split(topic, '/');
         // clang-format off
         // ["", "sys", "<productKey>", "<deviceId>", "<action>", "<side>", "<?id>"]
         // clang-format on
@@ -20,61 +20,61 @@ namespace AikariPLS::Utils::MQTTPacketUtils
             throw std::invalid_argument("Invalid topic: " + topic);
         }
         const std::string& action = splitResult.at(4);
-        AikariPLS::Types::mqttMsgQueue::PacketTopicProps result;
+        AikariPLS::Types::MQTTMsgQueue::PacketTopicProps result;
         result.productKey = splitResult.at(2);
         result.deviceId = splitResult.at(3);
         result.side = splitResult.at(5) == "response"
-                          ? AikariPLS::Types::mqttMsgQueue::PACKET_SIDE::REP
-                          : AikariPLS::Types::mqttMsgQueue::PACKET_SIDE::REQ;
+                          ? AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REP
+                          : AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REQ;
         if (action == "rpc")
         {
             result.endpointType =
-                AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::RPC;
+                AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::RPC;
             result.msgId = splitResult.at(6);
         }
         else if (action == "thing")
         {
             result.endpointType =
-                AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::POST;
+                AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::POST;
         }
         else
         {
             result.endpointType =
-                AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::GET;
+                AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::GET;
             result.msgId = splitResult.at(6);
         }
         return result;
     }
 
     std::string mergeTopic(
-        AikariPLS::Types::mqttMsgQueue::PacketTopicProps& props
+        AikariPLS::Types::MQTTMsgQueue::PacketTopicProps& props
     )
     {
         const std::string sharedHead =
             std::format("/sys/{}/{}", props.productKey, props.deviceId);
         switch (props.endpointType)
         {
-            case AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::GET:
+            case AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::GET:
             {
                 return std::format(
                     "{}/up/{}/{}",
                     sharedHead,
-                    props.side == Types::mqttMsgQueue::PACKET_SIDE::REQ
+                    props.side == Types::MQTTMsgQueue::PACKET_SIDE::REQ
                         ? "request"
                         : "response",
                     props.msgId.value()
                 );
             }
-            case AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::POST:
+            case AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::POST:
             {
                 return std::format("{}/thing/post", sharedHead);
             }
-            case AikariPLS::Types::mqttMsgQueue::PACKET_ENDPOINT_TYPE::RPC:
+            case AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::RPC:
             {
                 return std::format(
                     "{}/rpc/{}/{}",
                     sharedHead,
-                    props.side == Types::mqttMsgQueue::PACKET_SIDE::REQ
+                    props.side == Types::MQTTMsgQueue::PACKET_SIDE::REQ
                         ? "request"
                         : "response",
                     props.msgId.value()
@@ -100,7 +100,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
         auto& sharedMsgQueues =
             AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
         auto packetIdMap = sharedMsgQueues.getVal(
-            &AikariPLS::Types::lifecycle::MQTT::PLSMQTTMsgQueues::packetIdMap
+            &AikariPLS::Types::Lifecycle::MQTT::PLSMQTTMsgQueues::packetIdMap
         );
 
         async_mqtt::packet_variant result(oldPacket);
@@ -158,7 +158,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
         );
 
         sharedMsgQueues.setVal(
-            &AikariPLS::Types::lifecycle::MQTT::PLSMQTTMsgQueues::packetIdMap,
+            &AikariPLS::Types::Lifecycle::MQTT::PLSMQTTMsgQueues::packetIdMap,
             packetIdMap
         );
 

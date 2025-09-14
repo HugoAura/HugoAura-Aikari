@@ -48,7 +48,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         void waitWssServer();
         void stopWssServer();
         void pushRetQueue(
-            AikariTypes::components::websocket::ServerWSTaskRet& ret
+            AikariTypes::Components::WebSocket::ServerWSTaskRet& ret
         );
 
        private:
@@ -57,19 +57,19 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         int8_t maxStartupRetries = 5;
         std::shared_ptr<WebSocketStates> wsStates;
         std::unique_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariTypes::components::websocket::ServerWSTaskRet>>
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariTypes::Components::WebSocket::ServerWSTaskRet>>
             retMsgQueue;
         std::unique_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariTypes::components::websocket::ClientWSTask>>
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariTypes::Components::WebSocket::ClientWSTask>>
             inputMsgQueue;
 
         std::unique_ptr<std::jthread> retMsgWorkerThread;
         std::unique_ptr<std::jthread> inputMsgWorkerThread;
 
-        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
-            AikariTypes::components::websocket::ClientWSTask>>
+        std::unique_ptr<AikariShared::Infrastructure::MessageQueue::PoolQueue<
+            AikariTypes::Components::WebSocket::ClientWSTask>>
             threadPool;
 
         size_t threadCount = 4;

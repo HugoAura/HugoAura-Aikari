@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <mutex>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <mutex>
 
-namespace AikariShared::base
+namespace AikariShared::Base
 {
     template <typename StoreType>
     class AikariStatesManagerTemplate
@@ -72,4 +72,4 @@ namespace AikariShared::base
         std::mutex _mutex_lock_;
         StoreType _state_;
     };
-}  // namespace AikariShared::base
+}  // namespace AikariShared::Base

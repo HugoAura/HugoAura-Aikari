@@ -6,8 +6,8 @@
 
 #include "../lifecycle.h"
 
-namespace wsTypes = AikariTypes::components::websocket;
-namespace messageQueue = AikariShared::infrastructure::MessageQueue;
+namespace wsTypes = AikariTypes::Components::WebSocket;
+namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
 
 namespace AikariLauncherComponents::AikariWebSocketHandler
 {
@@ -54,14 +54,14 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
             case wsTypes::MODULES::LAUNCHER:
             {
                 // TO DO: Handle msg for launcher
+                break;
             }
-            break;
             case wsTypes::MODULES::PLS:
             {
                 auto& lifecycleStates =
                     AikariLifecycle::AikariStatesManager::getInstance();
                 auto sharedMsgQueues = lifecycleStates.getVal(
-                    &AikariTypes::global::lifecycle::GlobalLifecycleStates::
+                    &AikariTypes::Global::Lifecycle::GlobalLifecycleStates::
                         sharedMsgQueue
                 );
                 if (!sharedMsgQueues.plsInputQueue)
@@ -98,9 +98,10 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                                  .msg = curMsgWsInfo };
 
                 sharedMsgQueues.plsInputQueue->push(std::move(plsInputMsg));
+                break;
             }
-            break;
             case wsTypes::MODULES::UNKNOWN:
+            default:
             {
                 wsTypes::ServerWSTaskRet retVal;
                 wsTypes::ServerWSRep repContent;
@@ -109,8 +110,8 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                 retVal.clientId = task.clientId;
                 retVal.result = repContent;
                 retMsgQueue->push(std::move(retVal));
+                break;
             }
-            break;
         }
     }
 }  // namespace AikariLauncherComponents::AikariWebSocketHandler

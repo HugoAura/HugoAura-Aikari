@@ -11,9 +11,9 @@ namespace AikariLauncherComponents::AikariConfig
 {
 
     class LauncherConfigManager
-        : public AikariShared::virtualIns::IConfigManagerBase<
+        : public AikariShared::VirtualIns::IConfigManagerBase<
               LauncherConfigManager,
-              AikariTypes::config::AikariConfig>
+              AikariTypes::Config::AikariConfig>
     {
        public:
         LauncherConfigManager(

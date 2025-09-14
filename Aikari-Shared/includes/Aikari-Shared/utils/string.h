@@ -3,7 +3,7 @@
 #include <string>
 #include <windows.h>
 
-namespace AikariShared::utils::string
+namespace AikariShared::Utils::String
 {
     std::string WstringToString(const std::wstring& wstr);
     std::wstring StringToWstring(const std::string& str);
@@ -11,4 +11,4 @@ namespace AikariShared::utils::string
     std::string parseDWORDResult(DWORD result);
     std::wstring expandEnvStr(const std::wstring& src);
     std::vector<std::string> split(const std::string& s, char delim);
-}  // namespace AikariShared::utils::string
+}  // namespace AikariShared::Utils::String

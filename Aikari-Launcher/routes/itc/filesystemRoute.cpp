@@ -20,7 +20,7 @@ namespace AikariLauncherRoutes::InterThread::FileSystem
             auto& sharedIns =
                 AikariLifecycle::AikariSharedInstances::getInstance();
             auto* fsMgr = sharedIns.getPtr(
-                &AikariTypes::global::lifecycle::SharedInstances::fsManagerIns
+                &AikariTypes::Global::Lifecycle::SharedInstances::fsManagerIns
             );
             const std::string dirType = param.value("dirType", "");
             nlohmann::json result;

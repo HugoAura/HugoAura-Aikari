@@ -17,8 +17,8 @@
         components/mqtt/mqttClientHandler.cpp
         components/mqtt/mqttLifecycle.h
         components/mqtt/mqttLifecycle.cpp
-        components/ruleSystem/luaManager.h
-        components/ruleSystem/luaManager.cpp
+        components/ruleSystem/rulesManager.h
+        components/ruleSystem/rulesManager.cpp
         infrastructure/threadMsgHandler.h
         infrastructure/threadMsgHandler.cpp
         typesImpl/components/rules.cpp

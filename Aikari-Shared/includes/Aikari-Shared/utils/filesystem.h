@@ -5,7 +5,7 @@
 #include <vector>
 #include <windows.h>
 
-namespace AikariShared::utils::filesystem
+namespace AikariShared::Utils::FileSystem
 {
     std::filesystem::path getSelfPathFromHandler(HMODULE hModule);
 
@@ -14,4 +14,4 @@ namespace AikariShared::utils::filesystem
         const std::string& extToMatch,
         std::vector<std::filesystem::path>* resultTarget
     );
-}  // namespace AikariShared::utils::filesystem
+}  // namespace AikariShared::Utils::FileSystem

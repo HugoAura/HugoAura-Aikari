@@ -1,4 +1,6 @@
-﻿namespace AikariPLS::Types::PrivateConstants::MQTT
+﻿#pragma once
+
+namespace AikariPLS::Types::PrivateConstants::MQTT
 {
     namespace Broker
     {

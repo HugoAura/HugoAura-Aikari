@@ -25,7 +25,7 @@ namespace AikariLauncherRoutes::InterThread::Network
                 auto& sharedIns =
                     AikariLifecycle::AikariSharedInstances::getInstance();
                 auto* fsMgr =
-                    sharedIns.getPtr(&AikariTypes::global::lifecycle::
+                    sharedIns.getPtr(&AikariTypes::Global::Lifecycle::
                                          SharedInstances::fsManagerIns);
                 targetPath = fsMgr->aikariConfigDir / "certs";
             }
@@ -52,7 +52,7 @@ namespace AikariLauncherRoutes::InterThread::Network
 
             try
             {
-                AikariUtils::sslUtils::genEC256TlsCert(
+                AikariUtils::SSLUtils::genEC256TlsCert(
                     targetPath, hostname, identifier
                 );
             }

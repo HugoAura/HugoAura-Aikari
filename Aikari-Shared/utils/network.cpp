@@ -4,7 +4,7 @@
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
-namespace AikariShared::utils::network
+namespace AikariShared::Utils::Network
 {
     namespace DNS
     {
@@ -18,7 +18,7 @@ namespace AikariShared::utils::network
             sslOpts.verify_host = true;
             sslOpts.verify_peer = false;
             cpr::Response response = cpr::Get(
-                cpr::Url{ AikariShared::constants::utils::network::DNS::
+                cpr::Url{ AikariShared::Constants::Utils::Network::DNS::
                               defaultDoHQueryHost },
                 cpr::Parameters{ { "name", targetDomain }, { "type", "A" } },
                 sslOpts

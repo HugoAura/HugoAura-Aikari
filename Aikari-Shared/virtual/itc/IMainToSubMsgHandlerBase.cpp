@@ -2,14 +2,14 @@
 
 namespace itcTypes = AikariShared::Types::InterThread;
 
-namespace AikariShared::infrastructure::InterThread
+namespace AikariShared::Infrastructure::InterThread
 {
     // ↓ public
 
     MainToSubMsgHandlerBase::MainToSubMsgHandlerBase(
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             itcTypes::MainToSubMessageInstance>* srcQueue,
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             itcTypes::SubToMainMessageInstance>* destQueue,
         const std::string subModuleName
     )
@@ -21,7 +21,7 @@ namespace AikariShared::infrastructure::InterThread
             &MainToSubMsgHandlerBase::inputMsgWorker, this
         );
         this->threadPool =
-            std::make_unique<AikariShared::infrastructure::MessageQueue::
+            std::make_unique<AikariShared::Infrastructure::MessageQueue::
                                  PoolQueue<itcTypes::MainToSubMessageInstance>>(
                 DEFAULT_THREAD_COUNT,
                 [this](itcTypes::MainToSubMessageInstance content)
@@ -227,4 +227,4 @@ namespace AikariShared::infrastructure::InterThread
             );
         }
     };
-};  // namespace AikariShared::infrastructure::InterThread
+};  // namespace AikariShared::Infrastructure::InterThread

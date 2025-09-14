@@ -1,13 +1,13 @@
 #pragma once
 
-namespace AikariShared::constants::utils
+namespace AikariShared::Constants::Utils
 {
-    namespace network
+    namespace Network
     {
         namespace DNS
         {
             constexpr const char* defaultDoHQueryHost =
                 "https://dns.alidns.com/resolve";
         }
-    }  // namespace network
-}  // namespace AikariShared::constants::utils
+    }  // namespace Network
+}  // namespace AikariShared::Constants::Utils

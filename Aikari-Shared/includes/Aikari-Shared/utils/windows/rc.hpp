@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-namespace AikariShared::utils::windows::rc
+namespace AikariShared::Utils::Windows::RC
 {
     template <typename ResourceType>
     struct LoadResourceRet

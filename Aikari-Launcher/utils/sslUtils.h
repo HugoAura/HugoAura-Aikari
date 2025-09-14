@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <string>
 
-namespace AikariUtils::sslUtils
+namespace AikariUtils::SSLUtils
 {
     bool checkCertExists(
         std::filesystem::path &certPath, std::filesystem::path &keyPath
@@ -15,4 +15,4 @@ namespace AikariUtils::sslUtils
         std::string &certIdentifier
     );
     bool initWsCert(std::filesystem::path &baseDir, bool force);
-}  // namespace AikariUtils::sslUtils
+}  // namespace AikariUtils::SSLUtils

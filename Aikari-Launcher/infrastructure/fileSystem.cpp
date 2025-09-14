@@ -51,7 +51,7 @@ namespace AikariFileSystem
                 "trying to use default val."
             );
             LOG_ERROR("Error detail: ");
-            LOG_ERROR(AikariShared::utils::string::parseHResult(hResult));
+            LOG_ERROR(AikariShared::Utils::String::parseHResult(hResult));
             finalPath = fs::path("C") / "ProgramData";
         }
 

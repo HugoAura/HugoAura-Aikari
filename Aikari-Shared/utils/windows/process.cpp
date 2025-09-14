@@ -3,9 +3,9 @@
 #include <TlHelp32.h>
 #include <windows.h>
 
-namespace AikariShared::utils::windows
+namespace AikariShared::Utils::Windows
 {
-    namespace process
+    namespace Process
     {
         void killProcessByName(const std::string& procNameASCII)
         {

@@ -31,7 +31,7 @@ namespace AikariPLS::Components::MQTTClient::Class
             AikariPLS::Lifecycle::PLSSharedStates::getInstance();
         this->isDebugEnv =
             (sharedStates.getVal(
-                 &AikariPLS::Types::lifecycle::PLSSharedStates::runtimeMode
+                 &AikariPLS::Types::Lifecycle::PLSSharedStates::runtimeMode
              ) == AikariLauncherPublic::Constants::Lifecycle::
                       APPLICATION_RUNTIME_MODES::DEBUG);
     };
@@ -90,7 +90,7 @@ namespace AikariPLS::Components::MQTTClient::Class
         auto& sharedMqttQueues =
             AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
         auto* clientToBrokerQueue =
-            sharedMqttQueues.getPtr(&AikariPLS::Types::lifecycle::MQTT::
+            sharedMqttQueues.getPtr(&AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTMsgQueues::clientToBrokerQueue);
 
         packet.visit(
@@ -128,9 +128,9 @@ namespace AikariPLS::Components::MQTTClient::Class
                         }
                     }
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
                         connackTransparentPassPkt = {
-                            .type = AikariPLS::Types::mqttMsgQueue::
+                            .type = AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
                             .packet = pkt
                         };
@@ -147,9 +147,9 @@ namespace AikariPLS::Components::MQTTClient::Class
                         "{} Received SUBACK packet.", Constants::recvOper
                     );
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
                         subackTransparentPassPkt = {
-                            .type = AikariPLS::Types::mqttMsgQueue::
+                            .type = AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
                             .packet = pkt
                         };
@@ -166,9 +166,9 @@ namespace AikariPLS::Components::MQTTClient::Class
                         "{} Received UNSUBACK packet.", Constants::recvOper
                     );
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
                         unsubackTransparentPassPkt = {
-                            .type = AikariPLS::Types::mqttMsgQueue::
+                            .type = AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
                             .packet = pkt
                         };
@@ -205,7 +205,7 @@ namespace AikariPLS::Components::MQTTClient::Class
                     // if rep belongs to a VIRTUAL ascend pkt, then ignore it,
                     // not pushing it to fake broker
                     if (packetProps.endpointType ==
-                            AikariPLS::Types::mqttMsgQueue::
+                            AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_ENDPOINT_TYPE::RPC &&
                         endpointRpcIgnoredIds.erase(packetProps.msgId.value()
                         ) != 0)
@@ -213,7 +213,7 @@ namespace AikariPLS::Components::MQTTClient::Class
                         return;
                     }
                     if (packetProps.endpointType ==
-                            AikariPLS::Types::mqttMsgQueue::
+                            AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_ENDPOINT_TYPE::GET &&
                         endpointGetIgnoredIds.erase(packetProps.msgId.value()
                         ) != 0)
@@ -226,7 +226,7 @@ namespace AikariPLS::Components::MQTTClient::Class
                     std::optional<std::string> newTopicName;
                     if (auto msgId = packetProps.msgId.value_or("-");
                         packetProps.endpointType ==
-                            AikariPLS::Types::mqttMsgQueue::
+                            AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_ENDPOINT_TYPE::GET &&
                         this->endpointGetIdsMap.contains(msgId))
                     {
@@ -246,8 +246,8 @@ namespace AikariPLS::Components::MQTTClient::Class
                         pkt.opts()
                     );
 
-                    AikariPLS::Types::mqttMsgQueue::FlaggedPacket publishPkt = {
-                        .type = AikariPLS::Types::mqttMsgQueue::
+                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket publishPkt = {
+                        .type = AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
                         .packet = newPkt,
                         .props = packetProps

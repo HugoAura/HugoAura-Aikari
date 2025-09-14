@@ -12,7 +12,7 @@
 #include <thread>
 #include <vector>
 
-namespace AikariShared::infrastructure::InterThread
+namespace AikariShared::Infrastructure::InterThread
 {
     const int DEFAULT_THREAD_COUNT = 4;
 
@@ -29,10 +29,10 @@ namespace AikariShared::infrastructure::InterThread
     {
        public:
         MainToSubMsgHandlerBase(
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>*
                 srcQueue,
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::SubToMainMessageInstance>*
                 destQueue,
             const std::string subModuleName
@@ -43,7 +43,7 @@ namespace AikariShared::infrastructure::InterThread
         void addCtrlMsgCallbackListener(
             const AikariShared::Types::InterThread::eventId& eventId,
             std::move_only_function<void(AikariShared::Types::InterThread::
-                                   MainToSubControlReplyMessage msg)>
+                                             MainToSubControlReplyMessage msg)>
                 callbackLambda
         );
 
@@ -59,10 +59,10 @@ namespace AikariShared::infrastructure::InterThread
         );
 
        protected:
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::MainToSubMessageInstance>*
             srcQueue;
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::SubToMainMessageInstance>*
             destQueue;
 
@@ -76,7 +76,7 @@ namespace AikariShared::infrastructure::InterThread
             listeners;
 
         std::unique_ptr<std::jthread> srcMsgWorkerThread;
-        std::unique_ptr<AikariShared::infrastructure::MessageQueue::PoolQueue<
+        std::unique_ptr<AikariShared::Infrastructure::MessageQueue::PoolQueue<
             AikariShared::Types::InterThread::MainToSubMessageInstance>>
             threadPool;
 
@@ -84,8 +84,9 @@ namespace AikariShared::infrastructure::InterThread
             const AikariShared::Types::InterThread::MainToSubControlMessage&
                 retMsg
         ) {};
-        virtual void onControlReply(const AikariShared::Types::InterThread::
-                                        MainToSubControlReplyMessage& retMsg
+        virtual void onControlReply(
+            const AikariShared::Types::InterThread::
+                MainToSubControlReplyMessage& retMsg
         ) {};
         virtual void onWebSocketMessage(
             const AikariShared::Types::InterThread::MainToSubWebSocketMessage&
@@ -98,4 +99,4 @@ namespace AikariShared::infrastructure::InterThread
             AikariShared::Types::InterThread::MainToSubMessageInstance& msgIns
         );
     };
-}  // namespace AikariShared::infrastructure::InterThread
+}  // namespace AikariShared::Infrastructure::InterThread

@@ -24,17 +24,17 @@
 #include "resource.h"
 #include "utils/sslUtils.h"
 
-namespace lifecycleTypes = AikariTypes::global::lifecycle;
+namespace lifecycleTypes = AikariTypes::Global::Lifecycle;
 
-namespace entrypointConstants = AikariTypes::constants::entrypoint;
+namespace entrypointConstants = AikariTypes::Constants::Entrypoint;
 
 std::promise<bool> aikariAlivePromise;
 
 static void logVersion()
 {
     LOG_INFO(
-        "⚛️ Version: " + AikariLauncherPublic::version::Version +
-        std::format(" ({})", AikariLauncherPublic::version::VersionCode)
+        "⚛️ Version: " + AikariLauncherPublic::Version::Version +
+        std::format(" ({})", AikariLauncherPublic::Version::VersionCode)
     );
 }
 
@@ -141,7 +141,7 @@ int launchAikari(
     LOG_INFO("Initializing TLS certificates...");
     std::filesystem::path certDir =
         fileSystemManagerIns->aikariConfigDir / "certs";
-    bool wsCertInitResult = AikariUtils::sslUtils::initWsCert(
+    bool wsCertInitResult = AikariUtils::SSLUtils::initWsCert(
         certDir, configManagerPtr->config->tls.regenWsCertNextLaunch
     );
     if (!wsCertInitResult)
@@ -181,12 +181,12 @@ int launchAikari(
     );
 
     auto plsInputMsgQueue = std::make_shared<
-        AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::MainToSubMessageInstance>>();
 
     curSharedMsgQueues.plsInputQueue = plsInputMsgQueue;
 
-    AikariPLS::Types::entrypoint::EntrypointRet plsLaunchResult =
+    AikariPLS::Types::Entrypoint::EntrypointRet plsLaunchResult =
         AikariPLS::Exports::main(
             fileSystemManagerIns->aikariRootDir, certDir, plsInputMsgQueue
         );

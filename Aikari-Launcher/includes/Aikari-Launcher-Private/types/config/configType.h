@@ -3,9 +3,9 @@
 #include <Aikari-Shared/virtual/IConfigPayload.h>
 #include <string>
 
-namespace AikariTypes::config
+namespace AikariTypes::Config
 {
-    struct AikariConfig : public AikariShared::virtualIns::IConfigPayload
+    struct AikariConfig : public AikariShared::VirtualIns::IConfigPayload
     {
         int wsPreferPort;
         struct TLSConfig
@@ -15,4 +15,4 @@ namespace AikariTypes::config
         std::string module = "launcher";
     };
     // to_json or from_json refer to comp/config.cpp
-}  // namespace AikariTypes::config
+}  // namespace AikariTypes::Config

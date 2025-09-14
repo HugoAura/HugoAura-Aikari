@@ -34,13 +34,13 @@ namespace AikariLauncherComponents
     };
 }  // namespace AikariLauncherComponents
 
-namespace AikariShared::infrastructure::MessageQueue
+namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename T>
     class SinglePointMessageQueue;
 }
 
-namespace AikariTypes::global::lifecycle
+namespace AikariTypes::Global::Lifecycle
 {
     struct GlobalSharedHandlersRegistry
     {
@@ -78,12 +78,12 @@ namespace AikariTypes::global::lifecycle
     struct SharedMessageQueues
     {
         std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>>
             plsInputQueue;
 
         std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::SubToMainMessageInstance>>
             plsRetQueue;
     };
@@ -108,4 +108,4 @@ namespace AikariTypes::global::lifecycle
                      .svcIsRunning = false };
         }
     };
-}  // namespace AikariTypes::global::lifecycle
+}  // namespace AikariTypes::Global::Lifecycle

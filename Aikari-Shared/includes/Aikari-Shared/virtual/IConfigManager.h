@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-namespace AikariShared::virtualIns
+namespace AikariShared::VirtualIns
 {
     struct LoadDefaultConfigRet
     {
@@ -87,4 +87,4 @@ namespace AikariShared::virtualIns
             return static_cast<const DerivedRoot*>(this);
         }
     };
-};  // namespace AikariShared::virtualIns
+};  // namespace AikariShared::VirtualIns

@@ -4,7 +4,7 @@
 #include <mutex>
 #include <queue>
 
-namespace AikariShared::infrastructure::MessageQueue
+namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename MessageType>
     class SinglePointMessageQueue
@@ -62,4 +62,4 @@ namespace AikariShared::infrastructure::MessageQueue
         std::condition_variable cv;
         std::queue<MessageType> msgQueue;
     };
-}  // namespace AikariShared::infrastructure::MessageQueue
+}  // namespace AikariShared::Infrastructure::MessageQueue

@@ -4,7 +4,7 @@
 #include "components/mqtt/mqttClient.h"
 #include "infrastructure/threadMsgHandler.h"
 
-namespace AikariPLS::Types::lifecycle
+namespace AikariPLS::Types::Lifecycle
 {
     PLSSharedIns::PLSSharedIns() = default;
     PLSSharedIns PLSSharedIns::createDefault()
@@ -14,4 +14,4 @@ namespace AikariPLS::Types::lifecycle
     PLSSharedIns::~PLSSharedIns() = default;
     PLSSharedIns::PLSSharedIns(PLSSharedIns&&) noexcept = default;
     PLSSharedIns& PLSSharedIns::operator=(PLSSharedIns&&) noexcept = default;
-}  // namespace AikariPLS::Types::lifecycle
+}  // namespace AikariPLS::Types::Lifecycle

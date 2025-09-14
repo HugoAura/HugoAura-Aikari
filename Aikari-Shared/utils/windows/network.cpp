@@ -7,10 +7,10 @@
 #include <iostream>
 #include <windows.h>
 
-namespace registryUtils = AikariShared::utils::windowsRegistry;
-namespace stringUtils = AikariShared::utils::string;
+namespace registryUtils = AikariShared::Utils::WindowsRegistry;
+namespace stringUtils = AikariShared::Utils::String;
 
-namespace AikariShared::utils::windows::network
+namespace AikariShared::Utils::Windows::Network
 {
     // ↓ some constants
     const wchar_t* networkDBRegKeyPath =

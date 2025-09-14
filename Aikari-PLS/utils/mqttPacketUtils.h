@@ -6,12 +6,12 @@
 
 namespace AikariPLS::Utils::MQTTPacketUtils
 {
-    AikariPLS::Types::mqttMsgQueue::PacketTopicProps getPacketProps(
+    AikariPLS::Types::MQTTMsgQueue::PacketTopicProps getPacketProps(
         const std::string& topic
     );
 
     std::string mergeTopic(
-        AikariPLS::Types::mqttMsgQueue::PacketTopicProps& props
+        AikariPLS::Types::MQTTMsgQueue::PacketTopicProps& props
     );
 
     // clang-format off

@@ -5,7 +5,7 @@
 #include <memory>
 #include <minwindef.h>
 
-namespace AikariShared::infrastructure::MessageQueue
+namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename T>
     class SinglePointMessageQueue;
@@ -35,7 +35,7 @@ namespace AikariPLS::Components
     }
 }  // namespace AikariPLS::Components
 
-namespace AikariPLS::Types::lifecycle
+namespace AikariPLS::Types::Lifecycle
 {
     struct PLSSharedStates
     {
@@ -69,12 +69,12 @@ namespace AikariPLS::Types::lifecycle
     struct PLSSharedMsgQueues
     {
         std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>>
             inputMsgQueue;
 
         std::shared_ptr<
-            AikariShared::infrastructure::MessageQueue::SinglePointMessageQueue<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::SubToMainMessageInstance>>
             retMsgQueue;
 
