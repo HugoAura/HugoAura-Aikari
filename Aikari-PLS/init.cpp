@@ -10,12 +10,14 @@
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/types/itc/shared.h>
 #include <Aikari-Shared/utils/crypto.h>
+#include <Aikari-Shared/utils/filesystem.h>
 #include <Aikari-Shared/utils/windows.h>
 #include <chrono>
 #include <infrastructure/threadMsgHandler.h>
 #include <optional>
 
 #include "components/mqtt/mqttBroker.h"
+#include "components/ruleSystem/rulesManager.h"
 #include "lifecycle.h"
 
 namespace plsConstants = AikariPLS::Types::Constants;
@@ -123,7 +125,7 @@ namespace AikariPLS::Init
                     "Failed to init MQTT cert: Error generating cert: {} | "
                     "Diagnose code: {}",
                     initCertResult.data.value("message", "Unknown Error"),
-                    initCertResult.data.value("diagnoseCode", "UNKNONW")
+                    initCertResult.data.value("diagnoseCode", "UNKNOWN")
                 );
                 return false;
             }
@@ -190,6 +192,30 @@ namespace AikariPLS::Init
             &AikariPLS::Types::Lifecycle::PLSSharedStates::runtimeMode,
             runtimeMode
         );
+
+        LOG_INFO("Loading rules...");
+        {
+            LOG_DEBUG("Getting selfDir...");
+            HMODULE selfHModule = sharedIns.getVal(
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::hModuleIns
+            );
+            auto rulePath =
+                AikariShared::Utils::FileSystem::getSelfPathFromHandler(
+                    selfHModule
+                )
+                    .parent_path() /
+                "resources" / "pls" / "rules";
+            nlohmann::json config = {};
+            auto ruleManagerIns =
+                std::make_unique<AikariPLS::Components::Rules::Manager>(
+                    rulePath, config
+                );
+            ruleManagerIns->loadRules();
+            sharedIns.setPtr(
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::ruleMgr,
+                std::move(ruleManagerIns)
+            );
+        }
 
         LOG_INFO("Checking hosts file entry...");
         AikariShared::Utils::Windows::Network::isSeewoCoreNeedToBeKill

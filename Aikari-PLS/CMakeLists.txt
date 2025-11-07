@@ -50,10 +50,18 @@ target_link_libraries(Aikari-PLS PRIVATE cpr::cpr)
 find_package(async_mqtt_iface CONFIG REQUIRED)
 target_link_libraries(Aikari-PLS PRIVATE async_mqtt_iface::async_mqtt_iface)
 
-# quickjs-ng
-find_package(qjs CONFIG REQUIRED)
-target_link_libraries(Aikari-PLS PRIVATE qjs)
+# lua
+find_package(Lua REQUIRED)
+target_include_directories(Aikari-PLS PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(Aikari-PLS PRIVATE ${LUA_LIBRARIES})
 
+# sol2
+find_path(SOL2_INCLUDE_DIRS "sol/abort.hpp")
+
+# lua cjson
+# find_package(cjson CONFIG REQUIRED)
+
+target_include_directories(Aikari-PLS PRIVATE ${SOL2_INCLUDE_DIRS})
 target_precompile_headers(Aikari-PLS
         PRIVATE
         <string>

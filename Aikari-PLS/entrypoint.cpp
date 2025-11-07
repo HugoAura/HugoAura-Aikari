@@ -7,6 +7,7 @@
 
 #include "components/mqtt/mqttBroker.h"
 #include "components/mqtt/mqttClient.h"
+#include "components/mqtt/mqttLifecycle.h"
 #include "infrastructure/threadMsgHandler.h"
 #include "init.h"
 #include "lifecycle.h"

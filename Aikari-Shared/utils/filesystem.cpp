@@ -5,6 +5,7 @@
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <boost/algorithm/string.hpp>
 #include <format>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 
@@ -82,4 +83,18 @@ namespace AikariShared::Utils::FileSystem
             );
         }
     };
+
+    std::string readFile(const std::filesystem::path& path)
+    {
+        const std::ifstream file(path);
+        if (!file.is_open())
+        {
+            throw std::runtime_error("Failed opening file: " + path.string());
+        }
+
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        return buffer.str();
+    }
+
 }  // namespace AikariShared::Utils::FileSystem

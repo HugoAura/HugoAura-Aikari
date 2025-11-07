@@ -2,11 +2,12 @@
 
 namespace AikariPLS::Types::RuleSystem
 {
-    RuleProps::RuleProps(const nlohmann::json& prop)
+    RuleProps::RuleProps(const sol::table& prop)
     {
         this->ruleType = [&prop]() -> RuleSystem::RuleType
         {
-            auto ruleTypeStr = prop.value("ruleType", "UNKNOWN");
+            const std::string ruleTypeStr =
+                prop.get_or<std::string>("ruleType", "UNKNOWN");
             if (ruleTypeStr == "ASCEND")
             {
                 return RuleSystem::RuleType::ASCEND;
@@ -24,7 +25,8 @@ namespace AikariPLS::Types::RuleSystem
         this->endpointType =
             [&prop]() -> AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE
         {
-            auto endpointTypeStr = prop.value("endpointType", "UNKNOWN");
+            const std::string endpointTypeStr =
+                prop.get_or<std::string>("endpointType", "UNKNOWN");
             if (endpointTypeStr == "GET")
             {
                 return MQTTMsgQueue::PACKET_ENDPOINT_TYPE::GET;
@@ -42,7 +44,8 @@ namespace AikariPLS::Types::RuleSystem
         this->featureType =
             [&prop]() -> std::optional<RuleSystem::RecogFeatureType>
         {
-            auto featureTypeStr = prop.value("featureType", "UNKNOWN");
+            const std::string featureTypeStr =
+                prop.get_or<std::string>("featureType", "UNKNOWN");
             if (featureTypeStr == "PROPNAME")
             {
                 return RuleSystem::RecogFeatureType::PROPNAME;
@@ -53,14 +56,16 @@ namespace AikariPLS::Types::RuleSystem
             }
             return std::nullopt;
         }();
-        this->featureName =
-            prop.value<std::optional<std::string>>("featureName", std::nullopt);
+        this->featureName = prop.get_or<std::optional<std::string>>(
+            "featureName", std::nullopt
+        );
         this->ruleName =
-            prop.value<std::optional<std::string>>("ruleName", std::nullopt);
+            prop.get_or<std::optional<std::string>>("ruleName", std::nullopt);
         this->ruleSide =
             [&prop]() -> AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE
         {
-            auto ruleSideStr = prop.value("ruleSide", "UNKNOWN");
+            const std::string ruleSideStr =
+                prop.get_or<std::string>("ruleSide", "UNKNOWN");
             if (ruleSideStr == "REQ")
             {
                 return MQTTMsgQueue::PACKET_SIDE::REQ;
@@ -72,6 +77,8 @@ namespace AikariPLS::Types::RuleSystem
             return MQTTMsgQueue::PACKET_SIDE::UNKNOWN;
         }();
         this->enabledBy =
-            prop.value<std::optional<std::string>>("enabledBy", std::nullopt);
+            prop.get_or<std::optional<std::string>>("enabledBy", std::nullopt);
+        this->configKey =
+            prop.get_or<std::optional<std::string>>("configKey", std::nullopt);
     };
 }  // namespace AikariPLS::Types::RuleSystem

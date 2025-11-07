@@ -5,6 +5,8 @@
 #include <memory>
 #include <minwindef.h>
 
+#include "components/ruleSystem/rulesManager.h"
+
 namespace AikariShared::Infrastructure::MessageQueue
 {
     template <typename T>
@@ -56,6 +58,7 @@ namespace AikariPLS::Types::Lifecycle
             threadMsgQueueHandler;
         std::unique_ptr<AikariPLS::Components::MQTTBroker::Broker> mqttBroker;
         std::unique_ptr<AikariPLS::Components::MQTTClient::Client> mqttClient;
+        std::unique_ptr<AikariPLS::Components::Rules::Manager> ruleMgr;
         HMODULE hModuleIns;
 
         PLSSharedIns();
@@ -83,4 +86,4 @@ namespace AikariPLS::Types::Lifecycle
             return {};
         }
     };
-}  // namespace AikariPLS::Types::lifecycle
+}  // namespace AikariPLS::Types::Lifecycle

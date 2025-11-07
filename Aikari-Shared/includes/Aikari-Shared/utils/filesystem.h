@@ -14,4 +14,6 @@ namespace AikariShared::Utils::FileSystem
         const std::string& extToMatch,
         std::vector<std::filesystem::path>* resultTarget
     );
+
+    std::string readFile(const std::filesystem::path& path);
 }  // namespace AikariShared::Utils::FileSystem

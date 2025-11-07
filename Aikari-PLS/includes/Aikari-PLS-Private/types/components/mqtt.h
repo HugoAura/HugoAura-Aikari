@@ -43,4 +43,12 @@ namespace AikariPLS::Types::MQTTMsgQueue
         std::optional<async_mqtt::packet_variant> packet;
         PacketTopicProps props;
     };
-}  // namespace AikariPLS::Types::mqttMsgQueue
+
+    struct PayloadWithInfo
+    {
+        std::string payload;
+        PACKET_ENDPOINT_TYPE endpointType;
+        PACKET_SIDE side;
+        bool isVirtual = false;
+    };
+}  // namespace AikariPLS::Types::MQTTMsgQueue

@@ -23,8 +23,8 @@ namespace AikariPLS::Types::Lifecycle::MQTT
     PLSMQTTMsgQueues::~PLSMQTTMsgQueues()
     {
         LOG_TRACE("Destroying PLS MQTT message queues...");
-        this->brokerToClientQueue.reset();
-        this->clientToBrokerQueue.reset();
+        this->brokerToClientQueue.reset(nullptr);
+        this->clientToBrokerQueue.reset(nullptr);
     };
 
     PLSMQTTMsgQueues::PLSMQTTMsgQueues(PLSMQTTMsgQueues&&) noexcept = default;

@@ -27,7 +27,9 @@
     "mbedtls",
     "nlohmann-json",
     "spdlog",
-    "quickjs-ng"
+    "lua",
+    "sol2",
+    "lua-cjson"
   ],
   "overrides": [
     {

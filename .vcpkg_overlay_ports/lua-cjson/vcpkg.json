@@ -1,0 +1,18 @@
+{
+  "name": "lua-cjson",
+  "version-string": "2.1.0",
+  "description": "Lua CJSON is a fast JSON encoding/parsing module for Lua",
+  "homepage": "https://github.com/mpx/lua-cjson",
+  "license": "MIT",
+  "dependencies": [
+    "lua",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
