@@ -62,17 +62,14 @@ namespace AikariShared::Utils::FileSystem
                     );
                 }
                 if (!perFile.is_regular_file())
+                {
                     continue;
+                }
                 auto fileExt = perFile.path().extension().string();
                 boost::algorithm::to_lower(fileExt);
                 if (fileExt == extToMatch)
                 {
                     (*resultTarget).emplace_back(perFile.path());
-#ifdef _DEBUG
-                    CUSTOM_LOG_TRACE(
-                        "Found match path: {}", perFile.path().string()
-                    );
-#endif
                 }
             }
         }

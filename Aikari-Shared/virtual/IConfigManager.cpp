@@ -2,6 +2,7 @@
 #include <Aikari-Shared/utils/windows.h>
 #include <Aikari-Shared/virtual/IConfigManager.h>
 #include <fstream>
+#include <stack>
 
 namespace AikariShared::VirtualIns
 {
@@ -12,20 +13,28 @@ namespace AikariShared::VirtualIns
         const nlohmann::json& defaultConfig, nlohmann::json& userConfig
     ) const
     {
-        for (auto& [key, val] : defaultConfig.items())
+        std::stack<std::pair<const nlohmann::json*, nlohmann::json*>> workStack;
+        workStack.push({ &defaultConfig, &userConfig });
+        while (!workStack.empty())
         {
-            if (userConfig.contains(key))
+            auto [defaultThis, userThis] = workStack.top();
+            workStack.pop();
+            for (auto& [key, val] : defaultThis->items())
             {
-                if (userConfig[key].is_object() && val.is_object())
+                if (userThis->contains(key))
                 {
-                    this->deepMergeConfig(val, userConfig[key]);
+                    auto& userVal = (*userThis)[key];
+                    if (userVal.is_object() && val.is_object())
+                    {
+                        workStack.push({ &val, &userVal });
+                    }
                 }
-            }
-            else
-            {
-                userConfig[key] = val;
-            }
-        };
+                else
+                {
+                    (*userThis)[key] = val;
+                }
+            };
+        }
     };
 
     // ↓ virtual public
@@ -56,7 +65,7 @@ namespace AikariShared::VirtualIns
     };
 
     // ↓ virtual public
-    bool IConfigManager::writeConfigRaw(nlohmann::json stringifyConfig)
+    bool IConfigManager::writeConfigRaw(nlohmann::json& stringifyConfig)
     {
         this->configWriteLock.lock();
         const std::filesystem::path configDirPath =
@@ -141,6 +150,9 @@ namespace AikariShared::VirtualIns
 #ifdef _DEBUG
                 LOG_DEBUG("Merged config: " + userConfigJson.dump());
 #endif
+
+                LOG_DEBUG("Writing merged config to disk...");
+                this->writeConfigRaw(userConfigJson);
 
                 this->loadConfig(userConfigJson);
                 configFileStream.close();

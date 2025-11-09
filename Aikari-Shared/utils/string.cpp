@@ -154,4 +154,4 @@ namespace AikariShared::Utils::String
         }
         return elems;
     }
-};  // namespace AikariShared::utils::string
+};  // namespace AikariShared::Utils::String

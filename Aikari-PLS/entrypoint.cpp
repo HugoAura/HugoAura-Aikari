@@ -5,6 +5,7 @@
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/types/itc/shared.h>
 
+#include "components/infrastructure/config.h"
 #include "components/mqtt/mqttBroker.h"
 #include "components/mqtt/mqttClient.h"
 #include "components/mqtt/mqttLifecycle.h"

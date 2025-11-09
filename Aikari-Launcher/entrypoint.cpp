@@ -259,6 +259,7 @@ int launchAikari(
     sharedInstances.resetPtr(&lifecycleTypes::SharedInstances::wsServerMgrIns);
 
     LOG_INFO("👋 Clean up completed, goodbye.");
+    LOG_DEBUG("↓ Auto deconstruction begins.");
     return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
 }
 

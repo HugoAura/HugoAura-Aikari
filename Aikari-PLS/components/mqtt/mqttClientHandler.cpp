@@ -2,12 +2,15 @@
 
 #define CUSTOM_LOG_HEADER "[MQTT Client]"
 
+#include <Aikari-PLS-Private/types/constants/mqtt.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 
 #include "../../lifecycle.h"
 #include "../../utils/mqttPacketUtils.h"
 #include "mqttLifecycle.h"
+
+/* This component handles <messages> between [Fake Client] <-> [Real Broker] */
 
 namespace AikariPLS::Components::MQTTClient::Class
 {
@@ -207,7 +210,8 @@ namespace AikariPLS::Components::MQTTClient::Class
                     if (packetProps.endpointType ==
                             AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_ENDPOINT_TYPE::RPC &&
-                        endpointRpcIgnoredIds.erase(packetProps.msgId.value()
+                        endpointRpcIgnoredIds.erase(
+                            packetProps.msgId.value()
                         ) != 0)
                     {
                         return;
@@ -215,45 +219,108 @@ namespace AikariPLS::Components::MQTTClient::Class
                     if (packetProps.endpointType ==
                             AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_ENDPOINT_TYPE::GET &&
-                        endpointGetIgnoredIds.erase(packetProps.msgId.value()
+                        endpointGetIgnoredIds.erase(
+                            packetProps.msgId.value()
                         ) != 0)
                     {
                         return;
                     }
 
-                    // TODO: Run hooks
-
-                    std::optional<std::string> newTopicName;
-                    if (auto msgId = packetProps.msgId.value_or("-");
-                        packetProps.endpointType ==
-                            AikariPLS::Types::MQTTMsgQueue::
-                                PACKET_ENDPOINT_TYPE::GET &&
-                        this->endpointGetIdsMap.contains(msgId))
-                    {
-                        auto newProps = packetProps;
-                        newProps.msgId = this->endpointGetIdsMap[msgId];
-                        this->endpointGetIdsMap.erase(msgId);
-                        newTopicName =
-                            AikariPLS::Utils::MQTTPacketUtils::mergeTopic(
-                                newProps
-                            );
-                    }
-
-                    auto newPkt = async_mqtt::v3_1_1::publish_packet(
-                        pkt.packet_id(),
-                        newTopicName.value_or(pkt.topic()),
-                        pkt.payload(),  // TODO: Change to hooked payload
-                        pkt.opts()
+                    auto& sharedIns = AikariPLS::Lifecycle::
+                        PLSSharedInsManager::getInstance();
+                    auto* ruleManagerPtr = sharedIns.getPtr(
+                        &AikariPLS::Types::Lifecycle::PLSSharedIns::ruleMgr
                     );
 
-                    AikariPLS::Types::MQTTMsgQueue::FlaggedPacket publishPkt = {
-                        .type = AikariPLS::Types::MQTTMsgQueue::
-                            PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
-                        .packet = newPkt,
-                        .props = packetProps
-                    };
+                    bool transparentPass = true;
 
-                    clientToBrokerQueue->push(std::move(publishPkt));
+                    std::string prevPayload{ pkt.payload() };
+                    auto result = AikariPLS::Utils::MQTTPacketUtils::
+                        processPacketDataWithRule(
+                            prevPayload,
+                            ruleManagerPtr->ruleMapping.broker2client.rewrite,
+                            packetProps.endpointType
+                        );
+                    switch (packetProps.endpointType)
+                    {
+                        case AikariPLS::Types::MQTTMsgQueue::
+                            PACKET_ENDPOINT_TYPE::GET:
+                        {
+                            transparentPass = true;
+                            break;
+                        }
+                        case AikariPLS::Types::MQTTMsgQueue::
+                            PACKET_ENDPOINT_TYPE::RPC:
+                        {
+                            transparentPass = false;
+
+                            AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
+                                modifiedPubSend = {
+                                    .type = AikariPLS::Types::MQTTMsgQueue::
+                                        PACKET_OPERATION_TYPE::PKT_MODIFIED,
+                                    .packet = pkt,
+                                    .props = std::move(packetProps),
+                                    .newPayload = std::move(result.newPayload)
+                                };
+
+                            clientToBrokerQueue->push(
+                                std::move(modifiedPubSend)
+                            );
+                            break;
+                        }
+                        case AikariPLS::Types::MQTTMsgQueue::
+                            PACKET_ENDPOINT_TYPE::POST:
+                        case AikariPLS::Types::MQTTMsgQueue::
+                            PACKET_ENDPOINT_TYPE::UNKNOWN:
+                        {
+                            CUSTOM_LOG_WARN(
+                                "Received unrecognizable packet "
+                                "endpointType {} from real broker, please "
+                                "report this to Aikari "
+                                "GitHub Issues.",
+                                AikariPLS::Types::MQTTMsgQueue::to_string(
+                                    packetProps.endpointType
+                                )
+                            );
+                            break;
+                        }
+                    }
+
+                    if (transparentPass)
+                    {
+                        std::optional<std::string> newTopicName;
+                        if (auto msgId = packetProps.msgId.value_or("-");
+                            packetProps.endpointType ==
+                                AikariPLS::Types::MQTTMsgQueue::
+                                    PACKET_ENDPOINT_TYPE::GET &&
+                            this->endpointGetIdsMap.contains(msgId))
+                        {
+                            auto newProps = packetProps;
+                            newProps.msgId = this->endpointGetIdsMap[msgId];
+                            this->endpointGetIdsMap.erase(msgId);
+                            newTopicName =
+                                AikariPLS::Utils::MQTTPacketUtils::mergeTopic(
+                                    newProps
+                                );
+                        }
+
+                        auto newPkt = async_mqtt::v3_1_1::publish_packet(
+                            pkt.packet_id(),
+                            newTopicName.value_or(pkt.topic()),
+                            pkt.payload(),
+                            pkt.opts()
+                        );
+
+                        AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
+                            publishPkt = {
+                                .type = AikariPLS::Types::MQTTMsgQueue::
+                                    PACKET_OPERATION_TYPE::PKT_TRANSPARENT,
+                                .packet = newPkt,
+                                .props = packetProps
+                            };
+
+                        clientToBrokerQueue->push(std::move(publishPkt));
+                    }
                 },
                 /// --- ↑ PUBLISH ↑ --- ///
                 /// --- ↓ PUBACK ↓ --- ///

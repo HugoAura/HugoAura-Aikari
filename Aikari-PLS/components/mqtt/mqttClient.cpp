@@ -14,6 +14,10 @@
 #include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "mqttLifecycle.h"
 
+/*
+ * This component handles <connection> between [Fake Client] <-> [Real Broker]
+ */
+
 namespace AikariPLS::Components::MQTTClient
 {
     Client::Client(const ClientLaunchArg& arg) : launchArg(arg)
@@ -56,7 +60,7 @@ namespace AikariPLS::Components::MQTTClient
             AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
         auto* sendQueuePtr =
             mqttSharedQueues.getPtr(&AikariPLS::Types::Lifecycle::MQTT::
-                                        PLSMQTTMsgQueues::clientToBrokerQueue);
+                                        PLSMQTTMsgQueues::brokerToClientQueue);
 
         sendQueuePtr->push(
             {
@@ -331,7 +335,8 @@ namespace AikariPLS::Components::MQTTClient
                             if (originalMsgId != thisMsgId)  // offset exists
                             {
                                 AikariPLS::Types::MQTTMsgQueue::PacketTopicProps
-                                    newTopicProps(packet.props
+                                    newTopicProps(
+                                        packet.props
                                     );  // copy in order to prevent msgId
                                         // disorder when pktId acquire fail
                                 newTopicProps.msgId = thisMsgId;
@@ -377,8 +382,8 @@ namespace AikariPLS::Components::MQTTClient
                                 genNewPacketId = [this]()
                             {
                                 auto packetId =
-                                    this->connection->acquire_unique_packet_id(
-                                    );
+                                    this->connection
+                                        ->acquire_unique_packet_id();
                                 if (packetId == std::nullopt)
                                 {
                                     throw std::runtime_error(
@@ -392,7 +397,7 @@ namespace AikariPLS::Components::MQTTClient
                                     packet.packet.value(),
                                     genNewPacketId,
                                     std::move(newTopicName),
-                                    std::nullopt
+                                    std::move(packet.newPayload)
                                 );
                             this->connection->send(std::move(newPacket));
                         }
@@ -466,7 +471,8 @@ namespace AikariPLS::Components::MQTTClient
                         this->launchArg.targetPort
                     );
 
-                    std::unique_lock<std::mutex> lock(this->sslCtxLock
+                    std::unique_lock<std::mutex> lock(
+                        this->sslCtxLock
                     );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,

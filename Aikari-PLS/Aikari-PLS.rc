@@ -7,3 +7,4 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 IDR_SEEWO_BROKER_CERT RCDATA "resources\\certs\\seewo_broker_godaddy_ca.crt"
+IDR_PLS_DEFAULT_CONF RCDATA "resources\\config\\default.json"

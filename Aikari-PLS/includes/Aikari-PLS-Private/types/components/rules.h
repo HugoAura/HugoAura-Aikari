@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <nlohmann/json.hpp>
+#include <sol/function.hpp>
 #include <sol/table.hpp>
 #include <string>
 #include <unordered_map>
@@ -42,8 +43,8 @@ namespace AikariPLS::Types::RuleSystem
                                               // VIRTUAL, should be unique
         AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE ruleSide;
         std::optional<std::string>
-            enabledBy;  // settings key to make curRule enable, nullopt == N/A
-                        // or always true
+            enabledBy;  // settings key to make curRule enable (relative to
+                        // configKey), nullopt == N/A or always true
         std::optional<std::string> configKey;  // full settings obj key
 
         explicit RuleProps(const sol::table& prop);
@@ -107,22 +108,25 @@ namespace AikariPLS::Types::RuleSystem
      */
     // clang-format on
 
-    typedef std::unique_ptr<std::function<std::string(std::string)>> fnPtr;
+    typedef sol::protected_function solFn;
     namespace RuleMapping
     {
         namespace PerRuleProp
         {
             struct Rewrite
             {
-                RuleSystem::fnPtr rewriteFn;
+                RuleSystem::solFn rewriteFn;
                 bool isEnabled = false;
                 std::optional<std::string> enabledBy;
+                std::optional<std::string> configKey;
                 nlohmann::json config;
+
+                void onConfigUpdate(nlohmann::json& newConfig);
             };
 
             struct Virtual
             {
-                RuleSystem::fnPtr genFn;
+                RuleSystem::solFn genFn;
             };
         };  // namespace PerRuleProp
 

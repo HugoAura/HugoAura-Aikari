@@ -1,9 +1,13 @@
 #include "mqttPacketUtils.h"
 
 #include <Aikari-Shared/utils/string.h>
+#include <regex>
+#include <sol/sol.hpp>
 #include <unordered_map>
 
 #include "../components/mqtt/mqttLifecycle.h"
+
+namespace mqttMsgQueueTypes = AikariPLS::Types::MQTTMsgQueue;
 
 namespace AikariPLS::Utils::MQTTPacketUtils
 {
@@ -23,22 +27,30 @@ namespace AikariPLS::Utils::MQTTPacketUtils
         AikariPLS::Types::MQTTMsgQueue::PacketTopicProps result;
         result.productKey = splitResult.at(2);
         result.deviceId = splitResult.at(3);
-        result.side = splitResult.at(5) == "response"
-                          ? AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REP
-                          : AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REQ;
         if (action == "rpc")
         {
+            result.side =
+                splitResult.at(5) == "request"
+                    ? AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REP
+                    : AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REQ;
+            // rpc requests are triggered by server-side, req = REP
             result.endpointType =
                 AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::RPC;
             result.msgId = splitResult.at(6);
         }
         else if (action == "thing")
         {
+            result.side = AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REQ;
             result.endpointType =
                 AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::POST;
         }
         else
         {
+            result.side =
+                splitResult.at(5) == "response"
+                    ? AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REP
+                    : AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE::REQ;
+            // ↑ reversed from rpc
             result.endpointType =
                 AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE::GET;
             result.msgId = splitResult.at(6);
@@ -84,7 +96,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
             {
                 throw std::invalid_argument(
                     "Invalid packet prop endpointType: " +
-                    static_cast<int>(props.endpointType)
+                    Types::MQTTMsgQueue::to_string(props.endpointType)
                 );
             }
         }
@@ -165,4 +177,191 @@ namespace AikariPLS::Utils::MQTTPacketUtils
         return result;
     };
 
+    nlohmann::json _processPropertyData(
+        const nlohmann::json& paramJson,
+        const AikariPLS::Types::RuleSystem::RuleMapping::RewriteFeaturesStore&
+            featureStore
+    )
+    {
+        static const std::string logHeader =
+            "[MQTT Utils] <Packet Processor - Prop>";
+        nlohmann::json newParamPayload = paramJson;
+        for (const auto& el : paramJson.items())
+        {
+            // ↑ iterate all params
+            // ↓ chk if appears in featureStore.prop
+            if (!featureStore.prop.contains(el.key()))
+                continue;
+            for (const auto& perRewriteRule : featureStore.prop.at(el.key()))
+            {
+                if (!perRewriteRule.isEnabled)
+                    continue;
+
+                sol::protected_function_result fnExecResult =
+                    perRewriteRule.rewriteFn(
+                        el.value(), perRewriteRule.config.dump()
+                    );
+                bool isThisRunValid = false;
+                if (fnExecResult.valid())
+                {
+                    sol::object fnExecResultObj = fnExecResult;
+                    if (fnExecResultObj.is<std::string>())
+                    {
+                        newParamPayload[el.key()] =
+                            fnExecResultObj.as<std::string>();
+                        isThisRunValid = true;
+                    }
+                }
+
+                if (!isThisRunValid)
+                {
+                    LOG_ERROR(
+                        "{} "
+                        "Detected error while running Lua "
+                        "function for REWRITE://PROP/{}, "
+                        "please report this to Aikari GitHub "
+                        "Issues",
+                        logHeader,
+                        el.key()
+                    );
+                    continue;
+                }
+            }
+        }
+        return newParamPayload;
+    };
+
+    RewritePacketProcessResult processPacketDataWithRule(
+        const std::string& fullPayloadRaw,
+        const AikariPLS::Types::RuleSystem::RuleMapping::RewriteFeaturesStore&
+            featureStore,
+        const AikariPLS::Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE& endpointType
+    )
+    {
+        static const std::string logHeader = "[MQTT Utils] <Packet Processor>";
+        const std::regex matchMethod(R"~("method"\s*:\s*"([^"]+)")~");
+        std::string_view payloadStrView(fullPayloadRaw);
+
+        std::match_results<std::string_view::const_iterator> match;
+
+        RewritePacketMethodType methodType = RewritePacketMethodType::NORMAL;
+        if (std::regex_search(
+                payloadStrView.cbegin(),
+                payloadStrView.cend(),
+                match,
+                matchMethod
+            ))
+        {
+            std::string methodName{ match[1] };
+            if (methodName ==
+                AikariPLS::Utils::MQTTPacketUtils::propTypeGetMethodName)
+            {
+                methodType = RewritePacketMethodType::PROP_GET;
+                return { .packetMethodType = methodType };
+            }
+            else if (methodName ==
+                     AikariPLS::Utils::MQTTPacketUtils::propTypeSetMethodName)
+            {
+                methodType = RewritePacketMethodType::PROP_SET;
+                nlohmann::json payloadAsJson;
+                try
+                {
+                    payloadAsJson = nlohmann::json::parse(fullPayloadRaw);
+                }
+                catch (...)
+                {
+                    return { .packetMethodType = methodType,
+                             .newPayload = std::nullopt };
+                }
+                nlohmann::json& setPropParams = payloadAsJson["params"];
+                nlohmann::json newPayload = payloadAsJson;
+                newPayload["params"] =
+                    _processPropertyData(setPropParams, featureStore);
+                if (newPayload == payloadAsJson)
+                {
+                    return { .packetMethodType = methodType,
+                             .newPayload = std::nullopt };
+                }
+                else
+                {
+                    return { .packetMethodType = methodType,
+                             .newPayload = newPayload.dump() };
+                }
+            }
+            else  // Method name == any other of property.set / property.get
+            {
+                methodType = RewritePacketMethodType::NORMAL;
+                auto methodMapIterator = featureStore.method.find(endpointType);
+                if (methodMapIterator == featureStore.method.end())
+                    return {
+                        .packetMethodType = methodType,
+                        .newPayload = std::nullopt
+                    };  // if method[GET/POST/RPC] not exists
+
+                const AikariPLS::Types::RuleSystem::RuleMapping::
+                    RewriteFeaturesMap& targetFeaturesMap =
+                        methodMapIterator->second;
+
+                auto featureMapIterator = targetFeaturesMap.find(methodName);
+                if (featureMapIterator == targetFeaturesMap.end())
+                    return { .packetMethodType = methodType,
+                             .newPayload = std::nullopt };
+
+                auto rewriteRulePropVec = featureMapIterator->second;
+                std::string curNewPayload;
+                for (const auto& perRewriteRule : rewriteRulePropVec)
+                {
+                    if (!perRewriteRule.isEnabled)
+                        continue;
+
+                    if (curNewPayload.empty())
+                        curNewPayload = fullPayloadRaw;
+
+                    sol::protected_function_result fnExecResult =
+                        perRewriteRule.rewriteFn(
+                            fullPayloadRaw, perRewriteRule.config
+                        );
+                    bool fnRepValid = false;
+
+                    if (fnExecResult.valid())
+                    {
+                        sol::object fnExecResultObj = fnExecResult;
+                        if (fnExecResultObj.is<std::string>())
+                        {
+                            fnRepValid = true;
+                            curNewPayload = fnExecResultObj.as<std::string>();
+                        }
+                    }
+
+                    if (!fnRepValid)
+                    {
+                        LOG_ERROR(
+                            "{} "
+                            "Detected error while running Lua "
+                            "function for REWRITE://{}/{}, "
+                            "please report this to Aikari GitHub "
+                            "Issues",
+                            logHeader,
+                            AikariPLS::Types::MQTTMsgQueue::to_string(
+                                endpointType
+                            ),
+                            methodName
+                        );
+                    }
+                }
+
+                if (curNewPayload.empty() || curNewPayload == fullPayloadRaw)
+                {
+                    return { .packetMethodType = methodType,
+                             .newPayload = std::nullopt };
+                }
+                else
+                {
+                    return { .packetMethodType = methodType,
+                             .newPayload = curNewPayload };
+                }
+            }
+        }
+        return { .packetMethodType = methodType, .newPayload = std::nullopt };
+    };
 }  // namespace AikariPLS::Utils::MQTTPacketUtils

@@ -6,10 +6,15 @@
 #include <winsock2.h>
 
 #include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
+#include "lifecycle.h"
 #include "mqttLifecycle.h"
 #include "utils/mqttPacketUtils.h"
 
 #pragma comment(lib, "ws2_32")
+
+/*
+ * This component handles <connection> between [Real Client] <-> [Fake Broker]
+ */
 
 namespace AikariPLS::Components::MQTTBroker
 {
@@ -287,13 +292,55 @@ namespace AikariPLS::Components::MQTTBroker
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_MODIFIED:
                         {
+                            if (this->connection->flaggedGetMsgIds.contains(
+                                    packet.props.msgId.value_or("_UNKNOWN_")
+                                ))
+                            {
+                                auto& sharedIns = AikariPLS::Lifecycle::
+                                    PLSSharedInsManager::getInstance();
+                                auto* ruleMgr = sharedIns.getPtr(
+                                    &AikariPLS::Types::Lifecycle::PLSSharedIns::
+                                        ruleMgr
+                                );
+
+                                try
+                                {
+                                    auto result = AikariPLS::Utils::
+                                        MQTTPacketUtils::processPropGetRepPacket(
+                                            packet.newPayload.value_or(
+                                                packet.packet.value()
+                                                    .get<async_mqtt::v3_1_1::
+                                                             publish_packet>()
+                                                    .payload()
+                                            ),
+                                            ruleMgr->ruleMapping.broker2client
+                                                .rewrite
+                                        );
+                                    if (result.has_value())
+                                    {
+                                        packet.newPayload = result;
+                                    }
+                                }
+                                catch (const std::bad_variant_access& err)
+                                {
+                                    CUSTOM_LOG_ERROR(
+                                        "Variant access error: matched msgId "
+                                        "GET rep is not a PUBLISH packet??? "
+                                        "This should never happen. Please "
+                                        "report this error to Aikari GitHub "
+                                        "Issues. Error: {}",
+                                        err.what()
+                                    );
+                                }
+                            }
+
                             // TODO: error handling (same as mqttClient.cpp)
                             auto newPacket = AikariPLS::Utils::MQTTPacketUtils::
                                 reconstructPacket(
                                     packet.packet.value(),
                                     genNewPacketId,
                                     std::nullopt,
-                                    std::nullopt
+                                    std::move(packet.newPayload)
                                 );
 
                             this->connection->send(std::move(newPacket));
@@ -302,6 +349,18 @@ namespace AikariPLS::Components::MQTTBroker
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_VIRTUAL:
                         {
+                            async_mqtt::v3_1_1::publish_packet virtualPacket(
+                                genNewPacketId(),
+                                AikariPLS::Utils::MQTTPacketUtils::mergeTopic(
+                                    packet.props
+                                ),
+                                packet.newPayload.value(),
+                                async_mqtt::qos::at_least_once
+                            );
+
+                            this->connection->send(
+                                std::move(packet.packet.value())
+                            );
                         }
                         default:
                         {
@@ -498,8 +557,9 @@ namespace AikariPLS::Components::MQTTBroker
                                         pendingBuf.insert(
                                             pendingBuf.end(),
                                             (const unsigned char*)pktBuf.data(),
-                                            (const unsigned char*)pktBuf.data(
-                                            ) + pktBuf.size()
+                                            (const unsigned char*)
+                                                    pktBuf.data() +
+                                                pktBuf.size()
                                         );
                                     }
 

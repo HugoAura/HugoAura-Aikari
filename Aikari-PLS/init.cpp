@@ -16,9 +16,11 @@
 #include <infrastructure/threadMsgHandler.h>
 #include <optional>
 
+#include "components/infrastructure/config.h"
 #include "components/mqtt/mqttBroker.h"
 #include "components/ruleSystem/rulesManager.h"
 #include "lifecycle.h"
+#include "resource.h"
 
 namespace plsConstants = AikariPLS::Types::Constants;
 
@@ -59,7 +61,7 @@ namespace AikariPLS::Init
             msgQueue->push(msgIns);
         };
 
-        static std::variant<std::filesystem::path, bool> _initMqttCert(
+        static std::optional<std::filesystem::path> _getAikariDir(
             AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler*
                 msgQueueHandler
         )
@@ -78,18 +80,30 @@ namespace AikariPLS::Init
             if (!getDirResult.data.value("success", false))
             {
                 LOG_ERROR(
-                    "Failed to init MQTT cert: Failed to get default directory "
-                    "info. Diagnose code: {}",
+                    "Failed to get Aikari DIR: TPC failure"
+                    ". Diagnose code: {}",
                     getDirResult.data.value("diagnoseCode", "UNKNOWN")
                 );
-                return false;
+                return std::nullopt;
             }
 
             std::filesystem::path aikariDir(
                 static_cast<std::string>(getDirResult.data.at("path"))
             );
+
+            return aikariDir;
+        };
+
+        static bool _initMqttCert(
+            AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler*
+                msgQueueHandler,
+            const std::filesystem::path& aikariDir
+        )
+        {
 #ifdef _DEBUG
-            LOG_TRACE("Init MQTT cert: Got AikariDir: {}", aikariDir.string());
+            LOG_TRACE(
+                "Init MQTT cert: Input Aikari DIR: {}", aikariDir.string()
+            );
 #endif
 
             if (std::filesystem::exists(
@@ -99,7 +113,7 @@ namespace AikariPLS::Init
                 LOG_INFO(
                     "MQTT TLS cert already generated, skipping regeneration..."
                 );
-                return aikariDir;
+                return true;
             }
 
             itcConstants::SubToMainControlMessage initCertMsg = {
@@ -131,9 +145,7 @@ namespace AikariPLS::Init
             }
 
             LOG_INFO("Successfully generated MQTT TLS cert.");
-
-            LOG_DEBUG("Return {}", aikariDir.string());
-            return aikariDir;
+            return true;
         };
 
         static AikariLauncherPublic::Constants::Lifecycle::
@@ -193,22 +205,68 @@ namespace AikariPLS::Init
             runtimeMode
         );
 
+        LOG_DEBUG("Getting Aikari DIR...");
+        std::filesystem::path aikariRootDir;
+        {
+            const auto getDirResult =
+                HelperFns::_getAikariDir(msgQueueHandlerPtr);
+            if (getDirResult == std::nullopt)
+            {
+                LOG_CRITICAL("Failed to get Aikari root DIR, exiting PLS...");
+                return false;
+            }
+            else
+            {
+                aikariRootDir = getDirResult.value();
+            }
+        }
+
+        HMODULE selfHModule = sharedIns.getVal(
+            &AikariPLS::Types::Lifecycle::PLSSharedIns::hModuleIns
+        );
+
+        // ↓ Init Config Manager
+        {
+            auto configManagerIns = std::make_unique<
+                AikariPLS::Components::Config::PLSConfigManager>(
+                "pls",
+                aikariRootDir / "config" / "config-pls.json",
+                IDR_PLS_DEFAULT_CONF,
+                selfHModule
+            );
+            sharedIns.setPtr(
+                &AikariPLS::Types::Lifecycle::PLSSharedIns::configMgr,
+                std::move(configManagerIns)
+            );
+        }
+        auto* configManagerPtr = sharedIns.getPtr(
+            &AikariPLS::Types::Lifecycle::PLSSharedIns::configMgr
+        );
+        bool initConfigResult = configManagerPtr->initConfig();
+        if (!initConfigResult)
+        {
+            LOG_CRITICAL(
+                "Failed to initialize config file for module PLS, exiting "
+                "PLS..."
+            );
+            return false;
+        }
+        // ↑ Init Config Manager
+
+        // ↓ Init Rule Scripts
         LOG_INFO("Loading rules...");
         {
-            LOG_DEBUG("Getting selfDir...");
-            HMODULE selfHModule = sharedIns.getVal(
-                &AikariPLS::Types::Lifecycle::PLSSharedIns::hModuleIns
-            );
+            LOG_DEBUG("Getting self (DLL's) DIR...");
             auto rulePath =
                 AikariShared::Utils::FileSystem::getSelfPathFromHandler(
                     selfHModule
                 )
                     .parent_path() /
                 "resources" / "pls" / "rules";
-            nlohmann::json config = {};
+            nlohmann::json& ruleConfig = configManagerPtr->config->rules;
             auto ruleManagerIns =
                 std::make_unique<AikariPLS::Components::Rules::Manager>(
-                    rulePath, config
+                    rulePath, ruleConfig
                 );
             ruleManagerIns->loadRules();
             sharedIns.setPtr(
@@ -216,7 +274,9 @@ namespace AikariPLS::Init
                 std::move(ruleManagerIns)
             );
         }
+        // ↑ Init Rule Scripts
 
+        // ↓ Init Hosts
         LOG_INFO("Checking hosts file entry...");
         AikariShared::Utils::Windows::Network::isSeewoCoreNeedToBeKill
             hostCheckResult =
@@ -246,43 +306,42 @@ namespace AikariPLS::Init
                 LOG_ERROR("Failed to kill SeewoCore, error: {}", err.what());
             }
         }
+        // ↑ Init Hosts
 
+        // ↓ Init MQTT TLS Env
         LOG_INFO("Ensuring MQTT TLS cert...");
-        std::filesystem::path aikariDir;
-        auto result = HelperFns::_initMqttCert(msgQueueHandlerPtr);
-        try
+        auto result =
+            HelperFns::_initMqttCert(msgQueueHandlerPtr, aikariRootDir);
+        if (!result)
         {
-            if (!std::get<bool>(result))
-            {
-                LOG_CRITICAL("Failed to init MQTT cert, exiting PLS...");
-                return false;
-            }
+            LOG_CRITICAL("Failed to init MQTT cert, exiting PLS...");
+            return false;
         }
-        catch (...)
-        {
-            aikariDir = std::get<std::filesystem::path>(result);
-        }
+        // ↑ Init MQTT TLS Env
 
+        // ↓ Init MQTT Broker
         LOG_INFO("Starting MQTT Broker server...");
-        LOG_DEBUG(aikariDir.string());
-        AikariPLS::Components::MQTTBroker::BrokerLaunchArg brokerLaunchArg = {
-            .certPath =
-                (aikariDir / "config" / "certs" /
-                 std::format(
-                     "{}.crt",
-                     plsConstants::Init::NetworkInit::TLS_CERT_IDENTIFIER
-                 ))
-                    .string(),
-            .keyPath = (aikariDir / "config" / "certs" /
-                        std::format(
-                            "{}.key",
-                            plsConstants::Init::NetworkInit::TLS_CERT_IDENTIFIER
-                        ))
-                           .string(),
-            .hostname = plsConstants::Init::NetworkInit::HOSTNAME,
-            .port = plsConstants::Init::NetworkInit::PORT
-        };
+        LOG_DEBUG(aikariRootDir.string());
         {
+            AikariPLS::Components::MQTTBroker::BrokerLaunchArg
+                brokerLaunchArg = {
+                    .certPath = (aikariRootDir / "config" / "certs" /
+                                 std::format(
+                                     "{}.crt",
+                                     plsConstants::Init::NetworkInit::
+                                         TLS_CERT_IDENTIFIER
+                                 ))
+                                    .string(),
+                    .keyPath = (aikariRootDir / "config" / "certs" /
+                                std::format(
+                                    "{}.key",
+                                    plsConstants::Init::NetworkInit::
+                                        TLS_CERT_IDENTIFIER
+                                ))
+                                   .string(),
+                    .hostname = plsConstants::Init::NetworkInit::HOSTNAME,
+                    .port = plsConstants::Init::NetworkInit::PORT
+                };
             auto brokerIns =
                 std::make_unique<AikariPLS::Components::MQTTBroker::Broker>(
                     brokerLaunchArg
@@ -292,6 +351,7 @@ namespace AikariPLS::Init
                 std::move(brokerIns)
             );
         }
+        // ↑ Init MQTT Broker
 
         return true;
     }

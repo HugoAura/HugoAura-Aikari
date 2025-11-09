@@ -7,6 +7,8 @@
         lifecycle.cpp
         resource.h
         Aikari-PLS.rc
+        components/infrastructure/config.h
+        components/infrastructure/config.cpp
         components/mqtt/mqttBroker.h
         components/mqtt/mqttBroker.cpp
         components/mqtt/mqttBrokerHandler.h
@@ -21,6 +23,7 @@
         components/ruleSystem/rulesManager.cpp
         infrastructure/threadMsgHandler.h
         infrastructure/threadMsgHandler.cpp
+        typesImpl/components/mqtt.cpp
         typesImpl/components/rules.cpp
         utils/mqttPacketUtils.h
         utils/mqttPacketUtils.cpp
@@ -57,11 +60,12 @@ target_link_libraries(Aikari-PLS PRIVATE ${LUA_LIBRARIES})
 
 # sol2
 find_path(SOL2_INCLUDE_DIRS "sol/abort.hpp")
+target_include_directories(Aikari-PLS PRIVATE ${SOL2_INCLUDE_DIRS})
 
 # lua cjson
-# find_package(cjson CONFIG REQUIRED)
+find_package(cjson CONFIG REQUIRED)
+target_link_libraries(Aikari-PLS PRIVATE cjson::cjson)
 
-target_include_directories(Aikari-PLS PRIVATE ${SOL2_INCLUDE_DIRS})
 target_precompile_headers(Aikari-PLS
         PRIVATE
         <string>
@@ -97,4 +101,14 @@ target_include_directories(Aikari-PLS
 target_include_directories(Aikari-PLS
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/includes
+)
+
+# --- Post Build CMDs --- #
+add_custom_command(
+        TARGET Aikari-PLS
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:cjson::cjson>
+        ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
+        COMMENT "Copying lua-cjson DLL to output directory"
 )

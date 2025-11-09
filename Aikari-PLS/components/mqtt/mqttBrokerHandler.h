@@ -3,6 +3,12 @@
 #include <async_mqtt/protocol/connection.hpp>
 #include <chrono>
 #include <optional>
+#include <unordered_set>
+
+namespace AikariPLS::Components::MQTTBroker
+{
+    class Broker;
+}
 
 namespace AikariPLS::Components::MQTTBroker::Class
 {
@@ -25,6 +31,8 @@ namespace AikariPLS::Components::MQTTBroker::Class
             std::function<void()> onCloseLambda,
             std::function<void(async_mqtt::error_code errCode)> onErrLambda
         );
+
+        friend class AikariPLS::Components::MQTTBroker::Broker;
 
        protected:
         void on_send(
@@ -53,9 +61,15 @@ namespace AikariPLS::Components::MQTTBroker::Class
 
         async_mqtt::packet_id_type getPacketId();
 
-        void logSendPacket(const async_mqtt::packet_variant& packet);
+        void logSendPacket(const async_mqtt::packet_variant& packet) const;
 
         std::string clientId = "UNKNOWN";
+
+        std::unordered_set<std::string>
+            flaggedGetMsgIds; /* GET rep with these msgIds will be run with
+                                 rewriteFn, currently only for
+                                 thing.property.get */
+        std::unordered_set<std::string> ignoredRpcMsgIds;
 
         bool isDebugEnv = false;
         bool isSharedInfoInitialized = false;

@@ -125,7 +125,7 @@ namespace AikariShared::Utils::Windows::Network
                 return result;
             }
 
-            hostsFileWrite << "\n" + hostLine;
+            hostsFileWrite << "\n\n" + hostLine;
 
             hostsFileWrite.close();
 

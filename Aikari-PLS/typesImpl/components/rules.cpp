@@ -1,4 +1,5 @@
 #include <Aikari-PLS-Private/types/components/rules.h>
+#include <Aikari-Shared/utils/string.h>
 
 namespace AikariPLS::Types::RuleSystem
 {
@@ -81,4 +82,43 @@ namespace AikariPLS::Types::RuleSystem
         this->configKey =
             prop.get_or<std::optional<std::string>>("configKey", std::nullopt);
     };
+
+    namespace RuleMapping::PerRuleProp
+    {
+        void Rewrite::onConfigUpdate(nlohmann::json& newConfig)
+        {
+            this->config = newConfig;
+            if (this->enabledBy.value_or("").empty())
+            {
+                // ↑ handle nullopt || enabledBy exactly === ""
+                this->isEnabled = true;
+            }
+            else
+            {
+                auto enabledByLevels = AikariShared::Utils::String::split(
+                    this->enabledBy.value(), '.'
+                );
+                nlohmann::json* curConfigAt = &newConfig;
+                bool isInvalidEnabledBy = false;
+                for (auto iterator = enabledByLevels.begin();
+                     iterator != enabledByLevels.end() - 1;
+                     ++iterator)
+                {
+                    if (curConfigAt->contains(*iterator))
+                    {
+                        curConfigAt = &(*curConfigAt)[*iterator];
+                    }
+                    else
+                    {
+                        isInvalidEnabledBy = true;
+                        break;
+                    }
+                }
+                this->isEnabled =
+                    isInvalidEnabledBy
+                        ? false
+                        : curConfigAt->value(enabledByLevels.back(), false);
+            }
+        }
+    }  // namespace RuleMapping::PerRuleProp
 }  // namespace AikariPLS::Types::RuleSystem

@@ -9,7 +9,6 @@
 
 namespace AikariLauncherComponents::AikariConfig
 {
-
     class LauncherConfigManager
         : public AikariShared::VirtualIns::IConfigManagerBase<
               LauncherConfigManager,
@@ -23,7 +22,10 @@ namespace AikariLauncherComponents::AikariConfig
             HINSTANCE hInstance
         )
             : IConfigManagerBase(
-                  module, configPath, defaultConfigResId, hInstance
+                  std::move(module),
+                  std::move(configPath),
+                  defaultConfigResId,
+                  hInstance
               ) {};
 
         void loadConfigImpl(nlohmann::json& configData) override;

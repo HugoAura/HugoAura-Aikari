@@ -5,6 +5,7 @@
 #include <memory>
 #include <minwindef.h>
 
+#include "components/infrastructure/config.h"
 #include "components/ruleSystem/rulesManager.h"
 
 namespace AikariShared::Infrastructure::MessageQueue
@@ -53,6 +54,8 @@ namespace AikariPLS::Types::Lifecycle
 
     struct PLSSharedIns
     {
+        std::unique_ptr<AikariPLS::Components::Config::PLSConfigManager>
+            configMgr;
         std::unique_ptr<
             AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler>
             threadMsgQueueHandler;

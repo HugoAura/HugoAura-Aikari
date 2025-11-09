@@ -6,6 +6,7 @@ vcpkg_from_github(
         HEAD_REF master
         PATCHES
         CMakeLists.patch
+        cjsonConfig.patch
 )
 
 set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
@@ -24,6 +25,12 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
+vcpkg_cmake_config_fixup(
+    PACKAGE_NAME cjson
+    CONFIG_PATH share/cjson
+)
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 
 file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)

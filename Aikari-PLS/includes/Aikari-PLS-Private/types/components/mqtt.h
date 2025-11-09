@@ -21,12 +21,16 @@ namespace AikariPLS::Types::MQTTMsgQueue
         UNKNOWN,
     };
 
+    std::string to_string(PACKET_ENDPOINT_TYPE endpointType);
+
     enum class PACKET_SIDE
     {
         REQ,
         REP,
         UNKNOWN,
     };
+
+    std::string to_string(PACKET_SIDE pktSide);
 
     struct PacketTopicProps
     {
@@ -40,15 +44,10 @@ namespace AikariPLS::Types::MQTTMsgQueue
     struct FlaggedPacket
     {
         PACKET_OPERATION_TYPE type = PACKET_OPERATION_TYPE::PKT_TRANSPARENT;
-        std::optional<async_mqtt::packet_variant> packet;
+        std::optional<async_mqtt::packet_variant>
+            packet;  // for virtual packet, this arg is nullopt, newPayload =
+                     // payload
         PacketTopicProps props;
-    };
-
-    struct PayloadWithInfo
-    {
-        std::string payload;
-        PACKET_ENDPOINT_TYPE endpointType;
-        PACKET_SIDE side;
-        bool isVirtual = false;
+        std::optional<std::string> newPayload;
     };
 }  // namespace AikariPLS::Types::MQTTMsgQueue

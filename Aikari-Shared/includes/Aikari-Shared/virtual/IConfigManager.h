@@ -15,6 +15,8 @@ namespace AikariShared::VirtualIns
         std::optional<std::string> errorDetail;
     };
 
+    // This one is not for production usage, see IConfigManagerBase below
+    // instead.
     class IConfigManager
     {
        public:
@@ -24,11 +26,13 @@ namespace AikariShared::VirtualIns
         std::mutex configEditLock;
         std::mutex configWriteLock;
 
-        virtual void loadConfig(nlohmann::json& configData) = 0;
-        virtual void loadConfigImpl(nlohmann::json& configData) = 0;
-        virtual nlohmann::json getStringifyConfig() = 0;
-        virtual nlohmann::json getStringifyConfigImpl() = 0;
-        virtual bool writeConfigRaw(nlohmann::json stringifyConfig);
+        // clang-format off
+        virtual void loadConfig(nlohmann::json& configData) = 0; // × Placeholder for IConfigManagerBase
+        virtual void loadConfigImpl(nlohmann::json& configData) = 0; // [!] Actual impl
+        virtual nlohmann::json getStringifyConfig() = 0; // × Placeholder for IConfigManagerBase
+        virtual nlohmann::json getStringifyConfigImpl() = 0; // [!] Actual impl
+        // clang-format on
+        virtual bool writeConfigRaw(nlohmann::json& stringifyConfig);
         virtual bool writeConfig() = 0;
         virtual LoadDefaultConfigRet loadDefaultConfig();
         virtual bool initConfig();
@@ -73,7 +77,8 @@ namespace AikariShared::VirtualIns
 
         bool writeConfig() override
         {
-            return this->writeConfigRaw(this->getStringifyConfig());
+            auto stringifyConfig = this->getStringifyConfig();
+            return this->writeConfigRaw(stringifyConfig);
         };
 
        protected:
