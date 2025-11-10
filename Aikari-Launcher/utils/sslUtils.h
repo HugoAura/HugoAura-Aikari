@@ -7,7 +7,8 @@
 namespace AikariUtils::SSLUtils
 {
     bool checkCertExists(
-        std::filesystem::path &certPath, std::filesystem::path &keyPath
+        const std::filesystem::path &certPath,
+        const std::filesystem::path &keyPath
     );
     int genEC256TlsCert(
         std::filesystem::path &baseDir,

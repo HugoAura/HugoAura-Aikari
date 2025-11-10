@@ -1,5 +1,6 @@
 #include "mqttPacketUtils.h"
 
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/string.h>
 #include <regex>
 #include <sol/sol.hpp>
@@ -111,7 +112,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
     {
         auto& sharedMsgQueues =
             AikariPLS::Lifecycle::MQTT::PLSMQTTMsgQueues::getInstance();
-        auto packetIdMap = sharedMsgQueues.getVal(
+        auto& packetIdMap = sharedMsgQueues.getVal(
             &AikariPLS::Types::Lifecycle::MQTT::PLSMQTTMsgQueues::packetIdMap
         );
 
@@ -199,16 +200,15 @@ namespace AikariPLS::Utils::MQTTPacketUtils
 
                 sol::protected_function_result fnExecResult =
                     perRewriteRule.rewriteFn(
-                        el.value(), perRewriteRule.config.dump()
-                    );
+                        newParamPayload, perRewriteRule.config.dump()
+                    );  // provide full payload["params"]
                 bool isThisRunValid = false;
                 if (fnExecResult.valid())
                 {
                     sol::object fnExecResultObj = fnExecResult;
                     if (fnExecResultObj.is<std::string>())
                     {
-                        newParamPayload[el.key()] =
-                            fnExecResultObj.as<std::string>();
+                        newParamPayload = fnExecResultObj.as<std::string>();
                         isThisRunValid = true;
                     }
                 }
@@ -270,6 +270,12 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                 }
                 catch (...)
                 {
+                    LOG_WARN(
+                        "{} Failed to parse prop set payload as JSON, "
+                        "payload:\n{}",
+                        logHeader,
+                        fullPayloadRaw
+                    );
                     return { .packetMethodType = methodType,
                              .newPayload = std::nullopt };
                 }
@@ -363,5 +369,39 @@ namespace AikariPLS::Utils::MQTTPacketUtils
             }
         }
         return { .packetMethodType = methodType, .newPayload = std::nullopt };
+    };
+
+    std::optional<std::string> processPropGetRepPacket(
+        const std::string& fullPayloadRaw,
+        const AikariPLS::Types::RuleSystem::RuleMapping::RewriteFeaturesStore&
+            featureStore
+    )
+    {
+        static const std::string logHeader = "[MQTT Utils] <GET PROP REP>";
+        nlohmann::json payloadAsJson;
+        try
+        {
+            payloadAsJson = nlohmann::json::parse(fullPayloadRaw);
+        }
+        catch (...)
+        {
+            LOG_ERROR(
+                "{} Failed to parse payload as JSON, payload:\n",
+                logHeader,
+                fullPayloadRaw
+            );
+            return std::nullopt;
+        }
+        nlohmann::json newPayload = payloadAsJson;
+        newPayload["data"] =
+            _processPropertyData(payloadAsJson["data"], featureStore);
+        if (newPayload == payloadAsJson)
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return newPayload.dump();
+        }
     };
 }  // namespace AikariPLS::Utils::MQTTPacketUtils

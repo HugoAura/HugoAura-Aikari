@@ -58,7 +58,11 @@ namespace AikariPLS::Types::RuleSystem
             "rewrite": {
                 "method": {
                     "GET": {
-                        "FEATURE_NAME_HERE (e.g. `thing.service.postClientWebrtcCandidate`)":
+                        "..." // rewriteFn will be run on GET REP pkt from RB
+                        // [!] This feature is still WIP, see mqttBrokerHandler:339
+                    },
+                    "POST": {
+                        "FEATURE_NAME_HERE (e.g. `thing.event.postWebrtcCameraList.post`)":
                             [
                                 {
                                     "rewriteFn": <ptr to function>,
@@ -74,17 +78,12 @@ namespace AikariPLS::Types::RuleSystem
                                 },
                             ]
                     },
-                    "POST": {
-                        "..."
-                    },
                     "RPC": {
-                        "..."
+                        <C2B Won't have any [RPC as REP] rules>
                     }
                 },
                 "prop": {
-                    "PROP_NAME_HERE (e.g. `windowBlockStatus`)": [  // match thing.property.get
-                        "..."
-                    ]
+                    <C2B Won't have any PROP rules>
                 }
             },
             "virtualGen": { // eqeq ascend
@@ -95,10 +94,14 @@ namespace AikariPLS::Types::RuleSystem
         },
         "broker2client": {
             "rewrite: {
-                // ... same
-                "prop": {  // match thing.property.set
-                // ... same
-                }
+                "method": {
+                    // ... same, but no GET / POST, only RPC for [RPC as REQ]
+                },
+                "prop": {  // match thing.property.set / get
+                    "PROP_NAME_HERE (e.g. `windowBlockStatus`)": [
+                        "..."
+                    ]
+                },
             },
             "virtualGen": { // eqeq descend
                 // ... same

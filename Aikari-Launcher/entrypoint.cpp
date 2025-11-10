@@ -176,7 +176,7 @@ int launchAikari(
         return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
     }
 
-    auto curSharedMsgQueues = lifecycleStates.getVal(
+    auto& curSharedMsgQueues = lifecycleStates.getVal(
         &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue
     );
 
@@ -234,7 +234,7 @@ int launchAikari(
         AikariPLS::Exports::onExit();
 
         auto& threadsMgr = AikariLifecycle::AikariSharedHandlers::getInstance();
-        if (auto plsQueueHandler = threadsMgr.getVal(
+        if (auto& plsQueueHandler = threadsMgr.getVal(
                 &lifecycleTypes::GlobalSharedHandlersRegistry::
                     plsIncomingMsgQueueHandler
             ))

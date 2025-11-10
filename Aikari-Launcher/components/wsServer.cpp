@@ -167,7 +167,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         );
         this->inputMsgWorkerThread->join();
         this->retMsgWorkerThread->join();
-        this->threadPool->~PoolQueue();
+        this->threadPool.reset();
         this->wsStates->wsSrvIns->stop();
     }
 

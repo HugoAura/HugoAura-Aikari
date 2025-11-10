@@ -60,7 +60,7 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
             {
                 auto& lifecycleStates =
                     AikariLifecycle::AikariStatesManager::getInstance();
-                auto sharedMsgQueues = lifecycleStates.getVal(
+                auto& sharedMsgQueues = lifecycleStates.getVal(
                     &AikariTypes::Global::Lifecycle::GlobalLifecycleStates::
                         sharedMsgQueue
                 );

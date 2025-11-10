@@ -104,7 +104,7 @@ namespace AikariPLS::Components::MQTTBroker
                 &this->mbedCtx.ctrDrbg,
                 mbedtls_entropy_func,
                 &this->mbedCtx.entropyCtx,
-                (const unsigned char*)pers,
+                reinterpret_cast<const unsigned char*>(pers),
                 strlen(pers)
             );
 
@@ -292,10 +292,18 @@ namespace AikariPLS::Components::MQTTBroker
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_MODIFIED:
                         {
-                            if (this->connection->flaggedGetMsgIds.contains(
-                                    packet.props.msgId.value_or("_UNKNOWN_")
+                            if (const std::string msgId =
+                                    packet.props.msgId.value_or("_UNKNOWN_");
+                                this->connection->flaggedGetPropMsgIds.contains(
+                                    msgId
                                 ))
                             {
+                                // -- Type B2C REAL GET PROP REP -- //
+                                // Strategy: Run hooks & Pass
+
+                                this->connection->flaggedGetPropMsgIds.erase(
+                                    msgId
+                                );
                                 auto& sharedIns = AikariPLS::Lifecycle::
                                     PLSSharedInsManager::getInstance();
                                 auto* ruleMgr = sharedIns.getPtr(
@@ -305,17 +313,21 @@ namespace AikariPLS::Components::MQTTBroker
 
                                 try
                                 {
-                                    auto result = AikariPLS::Utils::
-                                        MQTTPacketUtils::processPropGetRepPacket(
-                                            packet.newPayload.value_or(
-                                                packet.packet.value()
-                                                    .get<async_mqtt::v3_1_1::
-                                                             publish_packet>()
-                                                    .payload()
-                                            ),
-                                            ruleMgr->ruleMapping.broker2client
-                                                .rewrite
-                                        );
+                                    auto result =
+                                        AikariPLS::Utils::MQTTPacketUtils::
+                                            processPropGetRepPacket(
+                                                packet.newPayload.value_or(
+                                                    packet.packet.value()
+                                                        .get<
+                                                            async_mqtt::v3_1_1::
+                                                                publish_packet>(
+                                                        )
+                                                        .payload()
+                                                ),
+                                                ruleMgr->ruleMapping
+                                                    .broker2client.rewrite
+                                                // ↑ refer to rules.h:86
+                                            );
                                     if (result.has_value())
                                     {
                                         packet.newPayload = result;
@@ -349,6 +361,20 @@ namespace AikariPLS::Components::MQTTBroker
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_VIRTUAL:
                         {
+                            if (packet.props.endpointType ==
+                                AikariPLS::Types::MQTTMsgQueue::
+                                    PACKET_ENDPOINT_TYPE::RPC)
+                            {
+                                // clang-format off
+                                // -- Type B2C [VIRTUAL RPC REQ] <> REAL CLIENT REP -- //
+                                // Strategy: Flag RPC ID & Pass
+                                // clang-format on
+                                this->connection->ignoredVirtualRpcMsgIds
+                                    .insert(
+                                        packet.props.msgId.value_or("&UNKNOWN&")
+                                    );
+                            }
+
                             async_mqtt::v3_1_1::publish_packet virtualPacket(
                                 genNewPacketId(),
                                 AikariPLS::Utils::MQTTPacketUtils::mergeTopic(
@@ -358,9 +384,7 @@ namespace AikariPLS::Components::MQTTBroker
                                 async_mqtt::qos::at_least_once
                             );
 
-                            this->connection->send(
-                                std::move(packet.packet.value())
-                            );
+                            this->connection->send(std::move(virtualPacket));
                         }
                         default:
                         {
@@ -556,10 +580,12 @@ namespace AikariPLS::Components::MQTTBroker
                                     {
                                         pendingBuf.insert(
                                             pendingBuf.end(),
-                                            (const unsigned char*)pktBuf.data(),
-                                            (const unsigned char*)
-                                                    pktBuf.data() +
-                                                pktBuf.size()
+                                            static_cast<const unsigned char*>(
+                                                pktBuf.data()
+                                            ),
+                                            static_cast<const unsigned char*>(
+                                                pktBuf.data()
+                                            ) + pktBuf.size()
                                         );
                                     }
 

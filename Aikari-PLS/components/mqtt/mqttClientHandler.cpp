@@ -2,7 +2,6 @@
 
 #define CUSTOM_LOG_HEADER "[MQTT Client]"
 
-#include <Aikari-PLS-Private/types/constants/mqtt.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 
@@ -210,69 +209,80 @@ namespace AikariPLS::Components::MQTTClient::Class
                     if (packetProps.endpointType ==
                             AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_ENDPOINT_TYPE::RPC &&
-                        endpointRpcIgnoredIds.erase(
-                            packetProps.msgId.value()
+                        endpointRpcIgnoredIds.erase(packetProps.msgId.value()
                         ) != 0)
                     {
+                        // -- Type B2C [REAL RPC REP] <> VIRTUAL RPC REQ -- //
+                        // Strategy: Silently drop
+                        // [?] This case won't usually happen
+
+                        /* TODO: Post effect of [rRPCrP for vRPCrQ] recv (e.g.
+                         * send to ws) */
                         return;
                     }
                     if (packetProps.endpointType ==
                             AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_ENDPOINT_TYPE::GET &&
-                        endpointGetIgnoredIds.erase(
-                            packetProps.msgId.value()
+                        endpointGetIgnoredIds.erase(packetProps.msgId.value()
                         ) != 0)
                     {
+                        // -- Type B2C [REAL GET REP] <> VIRTUAL GET REQ -- //
+                        // Strategy: Silently drop
+                        // TODO: Post effect of [rGETrP for vGETrQ] recv (same
+                        // as above)
                         return;
                     }
 
-                    auto& sharedIns = AikariPLS::Lifecycle::
-                        PLSSharedInsManager::getInstance();
+                    auto& sharedIns =
+                        AikariPLS::Lifecycle::PLSSharedInsManager::getInstance(
+                        );
                     auto* ruleManagerPtr = sharedIns.getPtr(
                         &AikariPLS::Types::Lifecycle::PLSSharedIns::ruleMgr
                     );
 
                     bool transparentPass = true;
 
-                    std::string prevPayload{ pkt.payload() };
-                    auto result = AikariPLS::Utils::MQTTPacketUtils::
-                        processPacketDataWithRule(
-                            prevPayload,
-                            ruleManagerPtr->ruleMapping.broker2client.rewrite,
-                            packetProps.endpointType
-                        );
                     switch (packetProps.endpointType)
                     {
                         case AikariPLS::Types::MQTTMsgQueue::
-                            PACKET_ENDPOINT_TYPE::GET:
-                        {
-                            transparentPass = true;
-                            break;
-                        }
-                        case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_ENDPOINT_TYPE::RPC:
                         {
-                            transparentPass = false;
+                            std::string prevPayload{ pkt.payload() };
+                            auto result = AikariPLS::Utils::MQTTPacketUtils::
+                                processPacketDataWithRule(
+                                    prevPayload,
+                                    ruleManagerPtr->ruleMapping.broker2client
+                                        .rewrite,
+                                    packetProps.endpointType
+                                );
+                            if (result.newPayload.has_value())
+                            {
+                                transparentPass = false;
 
-                            AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
-                                modifiedPubSend = {
-                                    .type = AikariPLS::Types::MQTTMsgQueue::
-                                        PACKET_OPERATION_TYPE::PKT_MODIFIED,
-                                    .packet = pkt,
-                                    .props = std::move(packetProps),
-                                    .newPayload = std::move(result.newPayload)
-                                };
+                                AikariPLS::Types::MQTTMsgQueue::FlaggedPacket
+                                    modifiedPubSend = {
+                                        .type = AikariPLS::Types::MQTTMsgQueue::
+                                            PACKET_OPERATION_TYPE::PKT_MODIFIED,
+                                        .packet = pkt,
+                                        .props = std::move(packetProps),
+                                        .newPayload =
+                                            std::move(result.newPayload)
+                                    };
 
-                            clientToBrokerQueue->push(
-                                std::move(modifiedPubSend)
-                            );
+                                clientToBrokerQueue->push(
+                                    std::move(modifiedPubSend)
+                                );
+                            }
+                            else
+                            {
+                                transparentPass = true;
+                            }
                             break;
                         }
-                        case AikariPLS::Types::MQTTMsgQueue::
-                            PACKET_ENDPOINT_TYPE::POST:
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_ENDPOINT_TYPE::UNKNOWN:
                         {
+                            transparentPass = true;
                             CUSTOM_LOG_WARN(
                                 "Received unrecognizable packet "
                                 "endpointType {} from real broker, please "
@@ -284,17 +294,24 @@ namespace AikariPLS::Components::MQTTClient::Class
                             );
                             break;
                         }
+                        default:
+                        {
+                            transparentPass = true;
+                            break;
+                        }
                     }
 
                     if (transparentPass)
                     {
                         std::optional<std::string> newTopicName;
-                        if (auto msgId = packetProps.msgId.value_or("-");
+                        if (auto msgId =
+                                packetProps.msgId.value_or("-UNKNOWN-");
                             packetProps.endpointType ==
                                 AikariPLS::Types::MQTTMsgQueue::
                                     PACKET_ENDPOINT_TYPE::GET &&
                             this->endpointGetIdsMap.contains(msgId))
                         {
+                            // Rewrite msgId in topicName if pkt is GET
                             auto newProps = packetProps;
                             newProps.msgId = this->endpointGetIdsMap[msgId];
                             this->endpointGetIdsMap.erase(msgId);

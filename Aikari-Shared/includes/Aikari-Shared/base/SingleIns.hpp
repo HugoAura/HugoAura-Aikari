@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <mutex>
 
 namespace AikariShared::Base
@@ -29,7 +28,14 @@ namespace AikariShared::Base
         }
 
         template <typename T>
-        T getVal(T StoreType::* key)
+        T getExactVal(T StoreType::* key)
+        {
+            std::lock_guard<std::mutex> lock(this->_mutex_lock_);
+            return this->_state_.*key;
+        }
+
+        template <typename T>
+        T& getVal(T StoreType::* key)
         {
             std::lock_guard<std::mutex> lock(this->_mutex_lock_);
             return this->_state_.*key;

@@ -7,6 +7,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
+namespace AikariPLS::Components::MQTTClient
+{
+    class Client;
+}
+
 namespace AikariPLS::Components::MQTTClient::Class
 {
     using ClientConnection = async_mqtt::connection<async_mqtt::role::client>;
@@ -38,13 +43,7 @@ namespace AikariPLS::Components::MQTTClient::Class
 
         void checkTimerTimeout();
 
-        std::unordered_set<std::string> endpointGetIgnoredIds;
-        std::unordered_set<std::string> endpointRpcIgnoredIds;
-
-        std::unordered_map<Types::ReplacedID, Types::OriginalID>
-            endpointGetIdsMap;
-
-        std::atomic<int> endpointGetMsgIdCounter = 1;
+        friend class AikariPLS::Components::MQTTClient::Client;
 
        protected:
         void on_send(
@@ -81,6 +80,14 @@ namespace AikariPLS::Components::MQTTClient::Class
 
         std::chrono::time_point<std::chrono::steady_clock> nextPingReqEtc;
         std::chrono::seconds keepAliveDuration;
+
+        std::unordered_set<std::string> endpointGetIgnoredIds;
+        std::unordered_set<std::string> endpointRpcIgnoredIds;
+
+        std::unordered_map<Types::ReplacedID, Types::OriginalID>
+            endpointGetIdsMap;
+
+        std::atomic<int> endpointGetMsgIdCounter = 1;
 
         bool isConnected = false;
         bool isDebugEnv = false;

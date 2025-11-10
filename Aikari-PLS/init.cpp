@@ -221,7 +221,7 @@ namespace AikariPLS::Init
             }
         }
 
-        HMODULE selfHModule = sharedIns.getVal(
+        HMODULE selfHModule = sharedIns.getExactVal(
             &AikariPLS::Types::Lifecycle::PLSSharedIns::hModuleIns
         );
 

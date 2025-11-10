@@ -19,7 +19,9 @@ namespace AikariShared::Utils::String
         );
         if (sizeNeeded == 0)
         {
-            return "WideCharToMultiByte failed to calculate size";
+            throw std::runtime_error(
+                "WideCharToMultiByte failed to calculate size"
+            );
         }
         std::string strTo(sizeNeeded, 0);
         int result = WideCharToMultiByte(
@@ -35,7 +37,9 @@ namespace AikariShared::Utils::String
 
         if (result == 0)
         {
-            return "WideCharToMultiByte failed to convert string";
+            throw std::runtime_error(
+                "WideCharToMultiByte failed to convert string"
+            );
         }
         return strTo;
     }
@@ -51,7 +55,9 @@ namespace AikariShared::Utils::String
         );
         if (sizeNeeded == 0)
         {
-            return L"MultiByteToWideChar failed to calculate size";
+            throw std::runtime_error(
+                "MultiByteToWideChar failed to calculate size"
+            );
         }
         std::wstring wstrTo(sizeNeeded, 0);
         int result = MultiByteToWideChar(
@@ -60,7 +66,9 @@ namespace AikariShared::Utils::String
 
         if (result == 0)
         {
-            return L"MultiByteToWideChar failed to convert string";
+            throw std::runtime_error(
+                "MultiByteToWideChar failed to convert string"
+            );
         }
         return wstrTo;
     }
@@ -99,7 +107,7 @@ namespace AikariShared::Utils::String
         );
         if (size == 0)
         {
-            return "Failed to exec FormatMessageW";
+            throw std::runtime_error("Failed to exec FormatMessageW");
         }
 
         std::wstring messageW(msgBuffer, size);

@@ -7,7 +7,6 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/error.h>
 #include <mbedtls/oid.h>
-#include <mbedtls/pem.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/x509_crt.h>
 
@@ -17,7 +16,8 @@
 namespace AikariUtils::SSLUtils
 {
     bool checkCertExists(
-        std::filesystem::path &certPath, std::filesystem::path &keyPath
+        const std::filesystem::path &certPath,
+        const std::filesystem::path &keyPath
     )
     {
         auto isCertExists = std::filesystem::exists(certPath);
@@ -50,8 +50,6 @@ namespace AikariUtils::SSLUtils
         mbedtls_x509write_crt_init(&crtCtx);
         mbedtls_mpi_init(&serial);
 
-        std::filesystem::create_directories(baseDir);
-
         auto cleanUp = [&keyContainer, &entropy, &ctrDrbg, &crtCtx, &serial]()
         {
             mbedtls_x509write_crt_free(&crtCtx);
@@ -61,15 +59,16 @@ namespace AikariUtils::SSLUtils
             mbedtls_mpi_free(&serial);
         };
 
-        int tmpRetVar = 0;
         try
         {
+            int tmpRetVar = 0;
+            std::filesystem::create_directories(baseDir);
             const char *pers = "AikariX";
             tmpRetVar = mbedtls_ctr_drbg_seed(
                 &ctrDrbg,
                 mbedtls_entropy_func,
                 &entropy,
-                (const unsigned char *)pers,
+                reinterpret_cast<const unsigned char *>(pers),
                 strlen(pers)
             );
             if (tmpRetVar != 0)
@@ -166,11 +165,12 @@ namespace AikariUtils::SSLUtils
                 throw std::runtime_error("Failed to set key usage.");
             }
 
-            mbedtls_x509_san_list sanList;
-            memset(&sanList, 0, sizeof(sanList));
+            mbedtls_x509_san_list sanList = {};
             sanList.node.type = MBEDTLS_X509_SAN_DNS_NAME;
             sanList.node.san.unstructured_name.p =
-                (unsigned char *)certHost.c_str();
+                reinterpret_cast<unsigned char *>(
+                    const_cast<char *>(certHost.c_str())
+                );
             sanList.node.san.unstructured_name.len = strlen(certHost.c_str());
 
             tmpRetVar = mbedtls_x509write_crt_set_subject_alternative_name(
@@ -309,8 +309,8 @@ namespace AikariUtils::SSLUtils
                 },
                 true
             );
-
-            return result == 0 ? true : false;
         }
+
+        return result == 0 ? true : false;
     }
 }  // namespace AikariUtils::SSLUtils

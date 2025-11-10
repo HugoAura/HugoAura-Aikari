@@ -66,10 +66,10 @@ namespace AikariPLS::Components::MQTTBroker::Class
         std::string clientId = "UNKNOWN";
 
         std::unordered_set<std::string>
-            flaggedGetMsgIds; /* GET rep with these msgIds will be run with
+            flaggedGetPropMsgIds; /* GET rep with these msgIds will be run with
                                  rewriteFn, currently only for
                                  thing.property.get */
-        std::unordered_set<std::string> ignoredRpcMsgIds;
+        std::unordered_set<std::string> ignoredVirtualRpcMsgIds;
 
         bool isDebugEnv = false;
         bool isSharedInfoInitialized = false;

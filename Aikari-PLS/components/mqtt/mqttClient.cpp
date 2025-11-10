@@ -125,7 +125,7 @@ namespace AikariPLS::Components::MQTTClient
             {
                 auto& sharedIns =
                     AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
-                HINSTANCE hIns = sharedIns.getVal(
+                const HINSTANCE hIns = sharedIns.getExactVal(
                     &AikariPLS::Types::Lifecycle::PLSSharedIns::hModuleIns
                 );
                 auto getCrtPtrRet =
@@ -310,107 +310,168 @@ namespace AikariPLS::Components::MQTTClient
                 {
                     try
                     {
+                        std::function<async_mqtt::packet_id_type()>
+                            genNewPacketId = [this]()
+                        {
+                            auto packetId =
+                                this->connection->acquire_unique_packet_id();
+                            if (packetId == std::nullopt)
+                            {
+                                throw std::runtime_error(
+                                    "Packet ID acquire failed."
+                                );
+                            }
+                            return packetId.value();
+                        };
+
                         std::optional<std::string> newTopicName = std::nullopt;
-                        if (packet.props.endpointType ==
-                                AikariPLS::Types::MQTTMsgQueue::
-                                    PACKET_ENDPOINT_TYPE::GET &&
-                            packet.packet
+                        std::optional<std::string> newGetMessageId =
+                            std::nullopt;
+                        if (packet.packet
                                 ->get_if<async_mqtt::v3_1_1::publish_packet>())
                         {
-                            // clang-format off
-                            // if pending pkt is a GET publish pkt, then
-                            // topicName replace is required (/up/request/1 <-THIS)
-                            // clang-format on
-                            std::string originalMsgId =
-                                packet.props.msgId.value_or("1");
-                            auto thisMsgId = std::to_string(
-                                this->connection->endpointGetMsgIdCounter
-                                    .fetch_add(1, std::memory_order_relaxed)
-                            );
-                            CUSTOM_LOG_TRACE(
-                                "This packet msgId info: ori: {} | repl: {}",
-                                originalMsgId,
-                                thisMsgId
-                            );
-                            if (originalMsgId != thisMsgId)  // offset exists
-                            {
-                                AikariPLS::Types::MQTTMsgQueue::PacketTopicProps
-                                    newTopicProps(
-                                        packet.props
-                                    );  // copy in order to prevent msgId
-                                        // disorder when pktId acquire fail
-                                newTopicProps.msgId = thisMsgId;
-                                if (packet.type !=
-                                    AikariPLS::Types::MQTTMsgQueue::
-                                        PACKET_OPERATION_TYPE::PKT_VIRTUAL)
-                                {
-                                    // ↑ rep for VIRTUAL pkt won't be forwarded
-                                    // to fake broker, so no need for topicName
-                                    // map
-                                    this->connection->endpointGetIdsMap.emplace(
-                                        thisMsgId, originalMsgId
-                                    );
-                                }
-                                newTopicName = AikariPLS::Utils::
-                                    MQTTPacketUtils::mergeTopic(newTopicProps);
-                            }
-                            if (packet.type ==
+                            if (packet.props.endpointType ==
                                 AikariPLS::Types::MQTTMsgQueue::
-                                    PACKET_OPERATION_TYPE::PKT_VIRTUAL)
+                                    PACKET_ENDPOINT_TYPE::GET)
                             {
-                                this->connection->endpointGetIgnoredIds.emplace(
+                                // clang-format off
+                                // if pending pkt is a GET publish pkt, then
+                                // topicName replace is required (/up/request/1 <-THIS)
+                                // clang-format on
+                                std::string originalMsgId =
+                                    packet.props.msgId.value_or("1");
+                                auto thisMsgId = std::to_string(
+                                    this->connection->endpointGetMsgIdCounter
+                                        .fetch_add(1, std::memory_order_relaxed)
+                                );
+                                CUSTOM_LOG_TRACE(
+                                    "This packet msgId info: ori: {} | "
+                                    "replaced: "
+                                    "{}",
+                                    originalMsgId,
                                     thisMsgId
                                 );
+                                if (originalMsgId !=
+                                    thisMsgId)  // offset exists
+                                {
+                                    AikariPLS::Types::MQTTMsgQueue::
+                                        PacketTopicProps newTopicProps(
+                                            packet.props
+                                        );  // copy in order to prevent
+                                            // msgId disorder when pktId
+                                            // acquire fail
+                                    newTopicProps.msgId = thisMsgId;
+                                    newGetMessageId = thisMsgId;
+                                    if (packet.type !=
+                                        AikariPLS::Types::MQTTMsgQueue::
+                                            PACKET_OPERATION_TYPE::PKT_VIRTUAL)
+                                    {
+                                        // ↑ rep for VIRTUAL pkt won't be
+                                        // forwarded to fake broker, so no
+                                        // need for topicName map
+                                        this->connection->endpointGetIdsMap
+                                            .emplace(thisMsgId, originalMsgId);
+                                    }
+                                    newTopicName =
+                                        AikariPLS::Utils::MQTTPacketUtils::
+                                            mergeTopic(newTopicProps);
+                                }
                             }
                         }
-                        else if (packet.props.endpointType ==
-                                     AikariPLS::Types::MQTTMsgQueue::
-                                         PACKET_ENDPOINT_TYPE::RPC &&
-                                 packet.type ==
-                                     AikariPLS::Types::MQTTMsgQueue::
-                                         PACKET_OPERATION_TYPE::PKT_VIRTUAL)
+
+                        switch (packet.type)
                         {
-                            // rpc no need for replace, because every rpcId is
-                            // unique
-                            this->connection->endpointRpcIgnoredIds.emplace(
-                                packet.props.msgId.value()
-                            );
-                        }
-                        try
-                        {
-                            std::function<async_mqtt::packet_id_type()>
-                                genNewPacketId = [this]()
+                            case AikariPLS::Types::MQTTMsgQueue::
+                                PACKET_OPERATION_TYPE::PKT_TRANSPARENT:
+                            case AikariPLS::Types::MQTTMsgQueue::
+                                PACKET_OPERATION_TYPE::PKT_MODIFIED:
                             {
-                                auto packetId =
-                                    this->connection
-                                        ->acquire_unique_packet_id();
-                                if (packetId == std::nullopt)
+                                try
                                 {
-                                    throw std::runtime_error(
-                                        "PacketID acquire failed."
+                                    auto newPacket = AikariPLS::Utils::
+                                        MQTTPacketUtils::reconstructPacket(
+                                            packet.packet.value(),
+                                            genNewPacketId,
+                                            std::move(newTopicName),
+                                            std::move(packet.newPayload)
+                                        );
+                                    this->connection->send(
+                                        std::move(newPacket)
                                     );
                                 }
-                                return packetId.value();
-                            };
-                            auto newPacket = AikariPLS::Utils::MQTTPacketUtils::
-                                reconstructPacket(
-                                    packet.packet.value(),
-                                    genNewPacketId,
-                                    std::move(newTopicName),
-                                    std::move(packet.newPayload)
-                                );
-                            this->connection->send(std::move(newPacket));
-                        }
-                        catch (const std::exception& err)
-                        {
-                            this->sendThreadPool->insertTask(std::move(packet));
+                                catch (const std::exception& err)
+                                {
+                                    this->sendThreadPool->insertTask(
+                                        std::move(packet)
+                                    );
 #ifdef _DEBUG
-                            CUSTOM_LOG_WARN(
-                                "Packet ID acquire failure occurred, "
-                                "deferring packet send. Error: {}",
-                                err.what()
-                            );
+                                    CUSTOM_LOG_WARN(
+                                        "Packet ID acquire failed, "
+                                        "deferring packet send. Error: {}",
+                                        err.what()
+                                    );
 #endif
+                                }
+                                break;
+                            }
+                            case AikariPLS::Types::MQTTMsgQueue::
+                                PACKET_OPERATION_TYPE::PKT_VIRTUAL:
+                            {
+                                if (packet.props.endpointType ==
+                                    AikariPLS::Types::MQTTMsgQueue::
+                                        PACKET_ENDPOINT_TYPE::RPC)
+                                {
+                                    // rpc no need for replace, because
+                                    // every rpcId is unique
+                                    this->connection->endpointRpcIgnoredIds
+                                        .emplace(packet.props.msgId.value());
+                                }
+                                else if (packet.props.endpointType ==
+                                         AikariPLS::Types::MQTTMsgQueue::
+                                             PACKET_ENDPOINT_TYPE::GET)
+                                {
+                                    this->connection->endpointGetIgnoredIds
+                                        .emplace(newGetMessageId.value());
+                                }
+
+                                try
+                                {
+                                    async_mqtt::v3_1_1::publish_packet
+                                        virtualPacket(
+                                            genNewPacketId(),
+                                            newTopicName.value_or(
+                                                AikariPLS::Utils::
+                                                    MQTTPacketUtils::mergeTopic(
+                                                        packet.props
+                                                    )
+                                            ),
+                                            packet.newPayload.value(),
+                                            async_mqtt::qos::at_least_once
+                                        );
+
+                                    this->connection->send(
+                                        std::move(virtualPacket)
+                                    );
+                                }
+                                catch (const std::exception& err)
+                                {
+                                    this->sendThreadPool->insertTask(
+                                        std::move(packet)
+                                    );
+#ifdef _DEBUG
+                                    CUSTOM_LOG_WARN(
+                                        "Packet ID acquire failed, "
+                                        "deferring packet send. Error: {}",
+                                        err.what()
+                                    );
+#endif
+                                }
+                                break;
+                            }
+                            default:
+                            {
+                                break;
+                            }
                         }
                     }
                     catch (const std::exception& err)
@@ -471,8 +532,7 @@ namespace AikariPLS::Components::MQTTClient
                         this->launchArg.targetPort
                     );
 
-                    std::unique_lock<std::mutex> lock(
-                        this->sslCtxLock
+                    std::unique_lock<std::mutex> lock(this->sslCtxLock
                     );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,
