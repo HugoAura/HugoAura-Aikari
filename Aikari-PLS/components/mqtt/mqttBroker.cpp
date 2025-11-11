@@ -356,8 +356,8 @@ namespace AikariPLS::Components::MQTTBroker
                                 );
 
                             this->connection->send(std::move(newPacket));
-                            break;
                         }
+                        break;
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_OPERATION_TYPE::PKT_VIRTUAL:
                         {
@@ -386,11 +386,12 @@ namespace AikariPLS::Components::MQTTBroker
 
                             this->connection->send(std::move(virtualPacket));
                         }
+                        break;
                         default:
                         {
                             // drop, do nothing
-                            break;
                         }
+                        break;
                     }
                 }
             }

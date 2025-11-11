@@ -277,8 +277,8 @@ namespace AikariPLS::Components::MQTTClient::Class
                             {
                                 transparentPass = true;
                             }
-                            break;
                         }
+                        break;
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_ENDPOINT_TYPE::UNKNOWN:
                         {
@@ -292,13 +292,13 @@ namespace AikariPLS::Components::MQTTClient::Class
                                     packetProps.endpointType
                                 )
                             );
-                            break;
                         }
+                        break;
                         default:
                         {
                             transparentPass = true;
-                            break;
                         }
+                        break;
                     }
 
                     if (transparentPass)
@@ -424,20 +424,19 @@ namespace AikariPLS::Components::MQTTClient::Class
                         this->nextPingReqEtc =
                             std::chrono::steady_clock::now() +
                             ms.value_or(std::chrono::seconds(0));
-                        break;
                     }
+                    break;
                     case async_mqtt::timer_op::cancel:
                     {
                         this->nextPingReqEtc = {};
                     }
+                    break;
                 }
-                break;
             }
+            break;
 
             default:
-            {
                 break;
-            }
         }
     }
 

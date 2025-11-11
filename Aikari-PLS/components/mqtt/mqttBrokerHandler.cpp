@@ -348,9 +348,8 @@ namespace AikariPLS::Components::MQTTBroker::Class
                                         // rewrite.method[GET]
                                         transparentPass = true;
                                         // TODO: Impl C2B GET
-
-                                        break;
                                     }
+                                    break;
                                     case AikariPLS::Types::MQTTMsgQueue::
                                         PACKET_ENDPOINT_TYPE::POST:
                                     {
@@ -372,16 +371,17 @@ namespace AikariPLS::Components::MQTTBroker::Class
                                         brokerToClientQueue->push(
                                             std::move(modifiedPubSend)
                                         );  // send to FAKE CLIENT
-                                        break;
                                     }
+                                    break;
                                     default:
                                     {
                                         transparentPass = true;
-                                        break;
                                     }
+                                    break;
                                 }
                             }
                         }
+                        break;
 
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_ENDPOINT_TYPE::RPC:
@@ -406,8 +406,8 @@ namespace AikariPLS::Components::MQTTBroker::Class
                                 // TODO: Impl c2b rpc reX (Not sure)
                                 transparentPass = true;
                             }
-                            break;
                         }
+                        break;
                         case AikariPLS::Types::MQTTMsgQueue::
                             PACKET_ENDPOINT_TYPE::UNKNOWN:
                         {
@@ -421,8 +421,8 @@ namespace AikariPLS::Components::MQTTBroker::Class
                                     packetProps.endpointType
                                 )
                             );
-                            break;
                         }
+                        break;
                     }
 
                     if (transparentPass)

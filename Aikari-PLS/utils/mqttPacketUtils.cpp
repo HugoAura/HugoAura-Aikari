@@ -245,6 +245,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
         std::match_results<std::string_view::const_iterator> match;
 
         RewritePacketMethodType methodType = RewritePacketMethodType::NORMAL;
+        LOG_TRACE("{} Begin regex search", logHeader);
         if (std::regex_search(
                 payloadStrView.cbegin(),
                 payloadStrView.cend(),
@@ -252,6 +253,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                 matchMethod
             ))
         {
+            LOG_TRACE("{} End regex search, found", logHeader);
             std::string methodName{ match[1] };
             if (methodName ==
                 AikariPLS::Utils::MQTTPacketUtils::propTypeGetMethodName)
@@ -368,6 +370,8 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                 }
             }
         }
+
+        LOG_TRACE("{} End regex search, not found", logHeader);
         return { .packetMethodType = methodType, .newPayload = std::nullopt };
     };
 

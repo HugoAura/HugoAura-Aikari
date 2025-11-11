@@ -16,5 +16,11 @@ ruleProp = {
 -- Impl Area --
 
 function onRecv(packet, config)
-
+    local pktAsTable, err = cjsonUtil.decode(packet)
+    if not pktAsTable then
+        print("Error decoding JSON: " .. err)
+        return packet
+    end
+    pktAsTable.testFlag = true
+    return cjsonUtil.encode(pktAsTable)
 end

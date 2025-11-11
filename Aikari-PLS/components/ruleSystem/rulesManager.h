@@ -33,9 +33,9 @@ namespace AikariPLS::Components::Rules
             const std::optional<nlohmann::json>& data
         );*/
 
-        AikariPLS::Types::RuleSystem::RuleMapping::FullRuleMapping ruleMapping;
-
         std::unique_ptr<sol::state> luaRuntime;
+
+        AikariPLS::Types::RuleSystem::RuleMapping::FullRuleMapping ruleMapping;
 
        private:
         const std::filesystem::path& ruleDir;

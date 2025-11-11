@@ -412,8 +412,8 @@ namespace AikariPLS::Components::MQTTClient
                                     );
 #endif
                                 }
-                                break;
                             }
+                            break;
                             case AikariPLS::Types::MQTTMsgQueue::
                                 PACKET_OPERATION_TYPE::PKT_VIRTUAL:
                             {
@@ -466,12 +466,11 @@ namespace AikariPLS::Components::MQTTClient
                                     );
 #endif
                                 }
-                                break;
                             }
+                            break;
+
                             default:
-                            {
                                 break;
-                            }
                         }
                     }
                     catch (const std::exception& err)
@@ -675,8 +674,18 @@ namespace AikariPLS::Components::MQTTClient
                 }
             }
 
+            bool curHasPendingData = false;
+            if (this->isConnectionActive)
+            {
+                if (mbedtls_ssl_get_bytes_avail(&this->sslCtx) > 0)
+                {
+                    curHasPendingData = true;
+                }
+            }
+
             fd_set readFds;
-            struct timeval timeVal = { .tv_sec = 1, .tv_usec = 0 };
+            struct timeval timeVal = { .tv_sec = curHasPendingData ? 0 : 1,
+                                       .tv_usec = 0 };
 
             FD_ZERO(&readFds);
             FD_SET(this->netCtxs.serverFd.fd, &readFds);
@@ -694,9 +703,10 @@ namespace AikariPLS::Components::MQTTClient
             }
 
             {
-                if (taskTempRet > 0 &&
-                    FD_ISSET(this->netCtxs.serverFd.fd, &readFds) &&
-                    this->isConnectionActive)
+                if (this->isConnectionActive &&
+                    ((taskTempRet > 0 &&
+                      FD_ISSET(this->netCtxs.serverFd.fd, &readFds)) ||
+                     curHasPendingData))
                 {
                     unsigned char buffer[4096] = {};
 
@@ -755,7 +765,8 @@ namespace AikariPLS::Components::MQTTClient
                     // End ssl_read ret switch
                 }  // LEVEL = taskRet > 0 && FDISSET
 
-                if (taskTempRet == 0 && this->isConnectionActive)
+                if (taskTempRet == 0 && this->isConnectionActive &&
+                    !curHasPendingData)
                 {
                     this->connection->checkTimerTimeout();
                 }

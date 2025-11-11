@@ -1,5 +1,6 @@
 ﻿#include "wsAuthHandler.h"
 
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <ada.h>
 
 #include "../lifecycle.h"

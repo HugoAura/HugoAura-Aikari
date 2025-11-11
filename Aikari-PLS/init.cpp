@@ -321,7 +321,7 @@ namespace AikariPLS::Init
 
         // ↓ Init MQTT Broker
         LOG_INFO("Starting MQTT Broker server...");
-        LOG_DEBUG(aikariRootDir.string());
+        LOG_DEBUG("Aikari Root DIR: {}", aikariRootDir.string());
         {
             AikariPLS::Components::MQTTBroker::BrokerLaunchArg
                 brokerLaunchArg = {
