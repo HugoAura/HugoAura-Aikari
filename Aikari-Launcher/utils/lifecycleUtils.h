@@ -10,10 +10,10 @@ namespace AikariLifecycle::Utils
     namespace Config
     {
         void editConfig(
-            std::function<
-                void(std::shared_ptr<AikariTypes::Config::AikariConfig> &)>
+            std::function<AikariTypes::Config::
+                              AikariConfig(AikariTypes::Config::AikariConfig &)>
                 lambda,
-            bool writeConfig = false
+            bool writeConfig
         );
     };  // namespace Config
 };  // namespace AikariLifecycle::Utils

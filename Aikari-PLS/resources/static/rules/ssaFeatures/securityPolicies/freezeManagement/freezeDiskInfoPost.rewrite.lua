@@ -1,6 +1,8 @@
 -- Rule Prop Area --
 
-local cjsonUtil = require("cjson")
+local cjsonUtils = require("cjson")
+local arrayUtils = require("commonUtils/array")
+local stringUtils = require("commonUtils/string")
 
 ruleProp = {
     ruleType = "REWRITE",
@@ -16,11 +18,15 @@ ruleProp = {
 -- Impl Area --
 
 function onRecv(packet, config)
-    local pktAsTable, err = cjsonUtil.decode(packet)
-    if not pktAsTable then
-        print("Error decoding JSON: " .. err)
-        return packet
+    local pktAsTable, configAsTable = stringUtils.handleFnArgResolve(packet, config)
+    if not pktAsTable or not configAsTable then return packet end
+    for _, thisDisk in ipairs(pktAsTable.params.diskInfoList) do
+        local isFrozen = arrayUtils.includes(configAsTable.frozenDisks, thisDisk.diskName)
+        if isFrozen then
+            thisDisk.protectedStatus = 1
+        else
+            thisDisk.protectedStatus = 0
+        end
     end
-    pktAsTable.testFlag = true
-    return cjsonUtil.encode(pktAsTable)
+    return stringUtils.encodeTableToStringifyJSON(pktAsTable)
 end

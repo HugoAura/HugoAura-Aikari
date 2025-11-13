@@ -42,8 +42,7 @@ namespace AikariLauncherMiddlewares::WebSocket
         }
 
         auto authTokenOpt = paramIns.get("auth");
-        std::string userAuthToken =
-            authTokenOpt.has_value() ? std::string(authTokenOpt.value()) : "";
+        std::string userAuthToken(authTokenOpt.value_or(""));
 
         /*
         auto& lifecycleIns =

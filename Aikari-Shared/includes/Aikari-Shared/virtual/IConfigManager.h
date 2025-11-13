@@ -50,7 +50,7 @@ namespace AikariShared::VirtualIns
     class IConfigManagerBase : public IConfigManager
     {
        public:
-        std::shared_ptr<ConfigType> config;
+        std::atomic<std::shared_ptr<ConfigType>> config;
 
         IConfigManagerBase(
             std::string module,

@@ -138,11 +138,13 @@ int launchAikari(
         return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
     }
 
+    auto curConfigPtr = std::atomic_load(&configManagerPtr->config);
+
     LOG_INFO("Initializing TLS certificates...");
     std::filesystem::path certDir =
         fileSystemManagerIns->aikariConfigDir / "certs";
     bool wsCertInitResult = AikariUtils::SSLUtils::initWsCert(
-        certDir, configManagerPtr->config->tls.regenWsCertNextLaunch
+        certDir, curConfigPtr->tls.regenWsCertNextLaunch
     );
     if (!wsCertInitResult)
     {
@@ -156,7 +158,7 @@ int launchAikari(
     ix::initNetSystem();
     LOG_INFO("Starting Aikari WebSocket server...");
     {
-        int wsDefaultPort = configManagerPtr->config->wsPreferPort;
+        int wsDefaultPort = curConfigPtr->wsPreferPort;
         auto wsServerManagerIns = std::make_unique<
             AikariLauncherComponents::AikariWebSocketServer::MainWSServer>(
             "127.0.0.1", wsDefaultPort, certDir / "wss.crt", certDir / "wss.key"
@@ -220,6 +222,8 @@ int launchAikari(
     );
 
     // --- To Be Done --- //
+
+    curConfigPtr.reset();
 
     LOG_INFO("Aikari is loaded, waiting for further operations...");
     aikariAliveFuture.get();  // Run forever - until sig recv

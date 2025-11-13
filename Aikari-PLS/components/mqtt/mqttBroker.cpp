@@ -449,10 +449,15 @@ namespace AikariPLS::Components::MQTTBroker
 
         while (!this->shouldExit)
         {
-            // 加个 writeFd 可能更好, 但目前应该没必要
+            bool curHasPendingData = false;
+            if (mbedtls_ssl_get_bytes_avail(&this->sslCtx) > 0)
+            {
+                curHasPendingData = true;
+            }
 
             fd_set readFds;
-            struct timeval timeVal = { .tv_sec = 1, .tv_usec = 0 };
+            struct timeval timeVal = { .tv_sec = curHasPendingData ? 0 : 1,
+                                       .tv_usec = 0 };
 
             FD_ZERO(&readFds);
             FD_SET(this->netCtx.listenFd.fd, &readFds);
@@ -618,7 +623,8 @@ namespace AikariPLS::Components::MQTTBroker
             do
             {
                 if (this->netCtx.curClientFd != nullptr &&
-                    FD_ISSET(this->netCtx.clientFd.fd, &readFds))
+                    (FD_ISSET(this->netCtx.clientFd.fd, &readFds) ||
+                     curHasPendingData))
                 {
                     unsigned char clientMsgBuffer[4096] = {};
 

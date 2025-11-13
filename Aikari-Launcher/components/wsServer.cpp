@@ -1,6 +1,7 @@
 ﻿#include "wsServer.h"
 
 #include <Aikari-Launcher-Private/types/constants/webSocket.h>
+#include <Aikari-Launcher-Public/constants/ws/errors.h>
 #include <Aikari-Shared/utils/crypto.h>
 #include <Aikari-Shared/utils/string.h>
 #include <chrono>
@@ -11,7 +12,7 @@
 #include "../infrastructure/registry.h"
 #include "../lifecycle.h"
 #include "../middleware/wsAuthHandler.h"
-#include "wsMsgHandler.h"
+#include "./wsMsgHandler.h"
 
 namespace winStringUtils = AikariShared::Utils::String;
 namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
@@ -320,7 +321,9 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                                   WEBSOCKET_AUTH_STATUS::PASSED)
             {
                 static const nlohmann::json deniedRep = {
-                    { "code", -1 },
+                    { "code",
+                      AikariLauncherPublic::Constants::WebSocket::Errors::
+                          Codes::AUTH_FAILURE },
                     { "type", "basic.auth.reportAuthStatus" },
                     { "success", false },
                     { "data", { { "authStatus", "denied" } } }

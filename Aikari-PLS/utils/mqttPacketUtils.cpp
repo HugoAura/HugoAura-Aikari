@@ -327,7 +327,7 @@ namespace AikariPLS::Utils::MQTTPacketUtils
 
                     sol::protected_function_result fnExecResult =
                         perRewriteRule.rewriteFn(
-                            fullPayloadRaw, perRewriteRule.config
+                            fullPayloadRaw, perRewriteRule.config.dump()
                         );
                     bool fnRepValid = false;
 
@@ -343,17 +343,19 @@ namespace AikariPLS::Utils::MQTTPacketUtils
 
                     if (!fnRepValid)
                     {
+                        sol::error err = fnExecResult;
                         LOG_ERROR(
                             "{} "
                             "Detected error while running Lua "
                             "function for REWRITE://{}/{}, "
                             "please report this to Aikari GitHub "
-                            "Issues",
+                            "Issues.\nError: {}",
                             logHeader,
                             AikariPLS::Types::MQTTMsgQueue::to_string(
                                 endpointType
                             ),
-                            methodName
+                            methodName,
+                            err.what()
                         );
                     }
                 }

@@ -31,7 +31,7 @@ namespace AikariPLS::Components::Rules
         std::ranges::replace(baseRuleDirForwardSlash, '\\', '/');
 
         std::string customPackagePaths = std::format(
-            "{}/utils/?.lua;{}/utils/init.lua;{}",
+            "{}/../utils/?.lua;{}/../utils/init.lua;{}",
             baseRuleDirForwardSlash,
             baseRuleDirForwardSlash,
             originalPackagePaths
@@ -155,11 +155,11 @@ namespace AikariPLS::Components::Rules
                         {
                             case mqttMsgQueueTypes::PACKET_ENDPOINT_TYPE::GET:
                             {
-                                rewriteFeaturesMap = &(
-                                    perSideRulesStore->rewrite
-                                        .method[mqttMsgQueueTypes::
-                                                    PACKET_ENDPOINT_TYPE::GET]
-                                );
+                                rewriteFeaturesMap =
+                                    &(perSideRulesStore->rewrite
+                                          .method[mqttMsgQueueTypes::
+                                                      PACKET_ENDPOINT_TYPE::GET]
+                                    );
                                 break;
                             }
                             case mqttMsgQueueTypes::PACKET_ENDPOINT_TYPE::POST:
@@ -173,11 +173,11 @@ namespace AikariPLS::Components::Rules
                             }
                             case mqttMsgQueueTypes::PACKET_ENDPOINT_TYPE::RPC:
                             {
-                                rewriteFeaturesMap = &(
-                                    perSideRulesStore->rewrite
-                                        .method[mqttMsgQueueTypes::
-                                                    PACKET_ENDPOINT_TYPE::RPC]
-                                );
+                                rewriteFeaturesMap =
+                                    &(perSideRulesStore->rewrite
+                                          .method[mqttMsgQueueTypes::
+                                                      PACKET_ENDPOINT_TYPE::RPC]
+                                    );
                                 break;
                             }
                             default:

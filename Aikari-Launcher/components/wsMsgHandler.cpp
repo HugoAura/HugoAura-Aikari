@@ -1,17 +1,55 @@
 ﻿#include "wsMsgHandler.h"
 
+#include <Aikari-Launcher-Public/constants/ws/basic.h>
+#include <Aikari-Launcher-Public/constants/ws/errorTemplates.h>
+#include <Aikari-Launcher-Public/constants/ws/errors.h>
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 #include <Aikari-Shared/types/itc/shared.h>
+#include <Aikari-Shared/utils/string.h>
 #include <nlohmann/json.hpp>
 
 #include "../lifecycle.h"
+#include "../routes/ws/basicRoute.h"
+#include "../routes/ws/configRoute.h"
+#include "Aikari-Launcher-Public/constants/ws/config.h"
 
 namespace wsTypes = AikariTypes::Components::WebSocket;
+namespace wsConstants = AikariLauncherPublic::Constants::WebSocket;
 namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
+
+namespace AikariLauncherComponents::AikariWebSocketDispatcher
+{
+    AikariTypes::Components::WebSocket::ServerWSRep dispatch(
+        const AikariTypes::Components::WebSocket::ClientWSMsg& clientMsgProps,
+        const std::vector<std::string>& methodVec
+    )
+    {
+        const std::string& topLevelMethod = methodVec.at(0);
+
+        if (topLevelMethod == wsConstants::Basic::_PREFIX)
+        {
+            return AikariLauncherRoutes::WebSocket::Basic::handleBasicMethods(
+                clientMsgProps, methodVec
+            );
+        }
+        else if (topLevelMethod == wsConstants::Config::_PREFIX)
+        {
+            return AikariLauncherRoutes::WebSocket::Config::handleConfigMethods(
+                clientMsgProps, methodVec
+            );
+        }
+        else
+        {
+            return AikariLauncherPublic::Constants::WebSocket::Errors::
+                Templates::METHOD_NOT_FOUND;
+        };
+    }
+}  // namespace AikariLauncherComponents::AikariWebSocketDispatcher
 
 namespace AikariLauncherComponents::AikariWebSocketHandler
 {
-    wsTypes::MODULES getMsgModule(std::string moduleStr)
+    wsTypes::MODULES getMsgModule(std::string& moduleStr)
     {
         if (moduleStr == "launcher")
         {
@@ -31,31 +69,35 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
         }
     }
 
-    namespace RepTemplates
-    {
-        static const nlohmann::json moduleNotFoundJSON = {
-            { "message", "Requested module not found" }
-        };
-
-        static const wsTypes::ServerWSRep moduleNotFoundRep = {
-            .code = 9000, .success = false, .data = moduleNotFoundJSON
-        };  // namespace RepTemplates
-    }  // namespace RepTemplates
-
     void handleTask(
         wsTypes::ClientWSTask task,
         messageQueue::SinglePointMessageQueue<wsTypes::ServerWSTaskRet>*
             retMsgQueue
     )
     {
-        wsTypes::MODULES msgModule = getMsgModule(task.content.module);
-        switch (msgModule)
+        switch (wsTypes::MODULES msgModule = getMsgModule(task.content.module);
+                msgModule)
         {
             case wsTypes::MODULES::LAUNCHER:
             {
-                // TO DO: Handle msg for launcher
-                break;
+                std::vector<std::string> methodVec =
+                    AikariShared::Utils::String::split(
+                        task.content.method, '.'
+                    );
+
+                wsTypes::ServerWSRep result =
+                    AikariLauncherComponents::AikariWebSocketDispatcher::
+                        dispatch(task.content, methodVec);
+
+                result.eventId = task.content.eventId;
+
+                wsTypes::ServerWSTaskRet retMsg = { .result = std::move(result),
+                                                    .clientId = task.clientId,
+                                                    .isBroadcast = false };
+
+                retMsgQueue->push(std::move(retMsg));
             }
+            break;
             case wsTypes::MODULES::PLS:
             {
                 auto& lifecycleStates =
@@ -70,12 +112,14 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                         "PLSInputQueue not found, is PLS correctly loaded?"
                     );
                     wsTypes::ServerWSRep repContent{
-                        .code = -1,
+                        .code = AikariLauncherPublic::Constants::WebSocket::
+                            Errors::Codes::MODULE_CONNECTION_BROKEN,
                         .eventId = task.content.eventId,
                         .success = false,
                         .data = { { "message", "PLS module load failed" },
                                   { "diagnoseId",
-                                    "E_SUBMD_PLS_QUEUE_ENOENT" } },
+                                    AikariLauncherPublic::Constants::WebSocket::Errors::
+                                        MODULE_CONNECTION_BROKEN_VARIANT_QUEUE } },
                     };
                     wsTypes::ServerWSTaskRet taskRet{
                         .result = repContent,
@@ -98,20 +142,20 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                                  .msg = curMsgWsInfo };
 
                 sharedMsgQueues.plsInputQueue->push(std::move(plsInputMsg));
-                break;
             }
+            break;
             case wsTypes::MODULES::UNKNOWN:
             default:
             {
                 wsTypes::ServerWSTaskRet retVal;
-                wsTypes::ServerWSRep repContent;
-                repContent = RepTemplates::moduleNotFoundRep;
+                wsTypes::ServerWSRep repContent = AikariLauncherPublic::
+                    Constants::WebSocket::Errors::Templates::MODULE_NOT_FOUND;
                 repContent.eventId = task.content.eventId;
                 retVal.clientId = task.clientId;
                 retVal.result = repContent;
                 retMsgQueue->push(std::move(retVal));
-                break;
             }
+            break;
         }
     }
 }  // namespace AikariLauncherComponents::AikariWebSocketHandler

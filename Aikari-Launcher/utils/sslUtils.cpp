@@ -305,7 +305,8 @@ namespace AikariUtils::SSLUtils
             AikariLifecycle::Utils::Config::editConfig(
                 [](auto &config)
                 {
-                    config->tls.regenWsCertNextLaunch = false;
+                    config.tls.regenWsCertNextLaunch = false;
+                    return config;
                 },
                 true
             );

@@ -39,12 +39,13 @@ namespace AikariLauncherComponents::AikariConfig
             configData.template get<AikariTypes::Config::AikariConfig>();
         auto configInsPtr =
             std::make_shared<AikariTypes::Config::AikariConfig>(configIns);
-        this->config = configInsPtr;
+        // this->config = configInsPtr;
+        std::atomic_store(&this->config, configInsPtr);
     };
 
     nlohmann::json LauncherConfigManager::getStringifyConfigImpl()
     {
-        nlohmann::json stringifyConfig = *(this->config);
+        nlohmann::json stringifyConfig = *std::atomic_load(&this->config);
         return stringifyConfig;
     };
 };  // namespace AikariLauncherComponents::AikariConfig

@@ -23,7 +23,6 @@
     },
     "cxxopts",
     "ixwebsocket",
-    "libsodium",
     "mbedtls",
     "nlohmann-json",
     "spdlog",
@@ -35,11 +34,6 @@
     {
       "name": "fmt",
       "version": "11.2.0"
-    },
-    {
-      "name": "libsodium",
-      "version": "1.0.20",
-      "port-version": 3
     }
   ],
   "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149"

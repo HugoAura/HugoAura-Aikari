@@ -7,6 +7,19 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
+namespace AikariTypes::Config
+{
+    template <typename BasicJsonType>
+    void to_json(
+        BasicJsonType& target, const AikariTypes::Config::AikariConfig& origin
+    );
+
+    template <typename BasicJsonType>
+    void from_json(
+        const BasicJsonType& origin, AikariTypes::Config::AikariConfig& target
+    );
+}  // namespace AikariTypes::Config
+
 namespace AikariLauncherComponents::AikariConfig
 {
     class LauncherConfigManager

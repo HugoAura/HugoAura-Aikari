@@ -30,12 +30,13 @@ namespace AikariPLS::Components::Config
             configData.template get<AikariPLS::Types::Config::PLSConfig>();
         auto configInsPtr =
             std::make_shared<AikariPLS::Types::Config::PLSConfig>(configIns);
-        this->config = configInsPtr;
+        // this->config = configInsPtr;
+        std::atomic_store(&this->config, configInsPtr);
     }
 
     nlohmann::json PLSConfigManager::getStringifyConfigImpl()
     {
-        nlohmann::json stringifyConfig = *(this->config);
+        nlohmann::json stringifyConfig = *std::atomic_load(&this->config);
         return stringifyConfig;
     }
 }  // namespace AikariPLS::Components::Config

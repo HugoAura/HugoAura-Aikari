@@ -1,8 +1,6 @@
 ﻿#pragma once
 
-#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/components/wsTypes.h>
-#include <memory>
 #include <string>
 
 namespace AikariShared::Infrastructure::MessageQueue
@@ -11,10 +9,18 @@ namespace AikariShared::Infrastructure::MessageQueue
     class SinglePointMessageQueue;
 };  // namespace AikariShared::Infrastructure::MessageQueue
 
+namespace AikariLauncherComponents::AikariWebSocketDispatcher
+{
+    AikariTypes::Components::WebSocket::ServerWSRep dispatch(
+        const AikariTypes::Components::WebSocket::ClientWSMsg& clientMsgProps,
+        const std::vector<std::string>& methodVec
+    );
+}
+
 namespace AikariLauncherComponents::AikariWebSocketHandler
 {
     AikariTypes::Components::WebSocket::MODULES getMsgModule(
-        std::string moduleStr
+        std::string& moduleStr
     );
 
     void handleTask(

@@ -28,6 +28,10 @@ project_add_executable(Aikari-Launcher
         routes/itc/filesystemRoute.h
         routes/itc/networkRoute.cpp
         routes/itc/networkRoute.h
+        routes/ws/basicRoute.cpp
+        routes/ws/basicRoute.h
+        routes/ws/configRoute.cpp
+        routes/ws/configRoute.h
         utils/lifecycleUtils.cpp
         utils/lifecycleUtils.h
         utils/sslUtils.cpp

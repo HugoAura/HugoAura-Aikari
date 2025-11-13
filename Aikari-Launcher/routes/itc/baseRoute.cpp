@@ -47,16 +47,10 @@ namespace AikariLauncherRoutes::InterThread::Base
             if (fullRoute == itcConstants::Base::Props::GET_RUNTIME_MODE)
             {
                 result.data = Props::_getRuntimeMode();
-            }
-            else
-            {
-                result.data = itcConstants::Errors::Templates::ROUTE_NOT_FOUND;
+                return result;
             }
         }
-        else
-        {
-            result.data = itcConstants::Errors::Templates::ROUTE_NOT_FOUND;
-        }
+        result.data = itcConstants::Errors::Templates::ROUTE_NOT_FOUND;
 
         return result;
     }

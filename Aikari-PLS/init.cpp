@@ -253,6 +253,8 @@ namespace AikariPLS::Init
         }
         // ↑ Init Config Manager
 
+        auto curConfigPtr = std::atomic_load(&configManagerPtr->config);
+
         // ↓ Init Rule Scripts
         LOG_INFO("Loading rules...");
         {
@@ -263,7 +265,7 @@ namespace AikariPLS::Init
                 )
                     .parent_path() /
                 "resources" / "pls" / "rules";
-            nlohmann::json& ruleConfig = configManagerPtr->config->rules;
+            nlohmann::json& ruleConfig = curConfigPtr->rules;
             auto ruleManagerIns =
                 std::make_unique<AikariPLS::Components::Rules::Manager>(
                     rulePath, ruleConfig
@@ -352,6 +354,8 @@ namespace AikariPLS::Init
             );
         }
         // ↑ Init MQTT Broker
+
+        curConfigPtr.reset();
 
         return true;
     }
