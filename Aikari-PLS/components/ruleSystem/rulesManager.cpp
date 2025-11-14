@@ -155,11 +155,11 @@ namespace AikariPLS::Components::Rules
                         {
                             case mqttMsgQueueTypes::PACKET_ENDPOINT_TYPE::GET:
                             {
-                                rewriteFeaturesMap =
-                                    &(perSideRulesStore->rewrite
-                                          .method[mqttMsgQueueTypes::
-                                                      PACKET_ENDPOINT_TYPE::GET]
-                                    );
+                                rewriteFeaturesMap = &(
+                                    perSideRulesStore->rewrite
+                                        .method[mqttMsgQueueTypes::
+                                                    PACKET_ENDPOINT_TYPE::GET]
+                                );
                                 break;
                             }
                             case mqttMsgQueueTypes::PACKET_ENDPOINT_TYPE::POST:
@@ -173,11 +173,11 @@ namespace AikariPLS::Components::Rules
                             }
                             case mqttMsgQueueTypes::PACKET_ENDPOINT_TYPE::RPC:
                             {
-                                rewriteFeaturesMap =
-                                    &(perSideRulesStore->rewrite
-                                          .method[mqttMsgQueueTypes::
-                                                      PACKET_ENDPOINT_TYPE::RPC]
-                                    );
+                                rewriteFeaturesMap = &(
+                                    perSideRulesStore->rewrite
+                                        .method[mqttMsgQueueTypes::
+                                                    PACKET_ENDPOINT_TYPE::RPC]
+                                );
                                 break;
                             }
                             default:
@@ -209,9 +209,17 @@ namespace AikariPLS::Components::Rules
                                           .enabledBy = ruleProps.enabledBy,
                                           .configKey = ruleProps.configKey };
                 rulePropInMapping.onConfigUpdate(thisConfig);
+                auto rulePropInMappingPtr =
+                    std::make_unique<AikariPLS::Types::RuleSystem::RuleMapping::
+                                         PerRuleProp::Rewrite>(
+                        rulePropInMapping
+                    );
 
                 (*rewriteFeaturesMap)[ruleProps.featureName.value()]
-                    .emplace_back(rulePropInMapping);
+                    .emplace_back(std::move(rulePropInMappingPtr));
+                this->configKeyAssociationMap[ruleProps.configKey
+                                                  .value_or("ORPHANED")]
+                    .emplace_back(&rulePropInMappingPtr);
                 break;
             }
             case AikariPLS::Types::RuleSystem::RuleType::ASCEND:

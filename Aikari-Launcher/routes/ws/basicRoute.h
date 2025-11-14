@@ -1,11 +1,12 @@
 #pragma once
 
-#include <Aikari-Launcher-Private/types/components/wsTypes.h>
+#include <Aikari-Launcher-Public/types/components/wsTypes.h>
 
 namespace AikariLauncherRoutes::WebSocket::Basic
 {
-    AikariTypes::Components::WebSocket::ServerWSRep handleBasicMethods(
-        const AikariTypes::Components::WebSocket::ClientWSMsg&
+    AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+    handleBasicMethods(
+        const AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg&
             clientDataIncoming,
         const std::vector<std::string>& methods
     );

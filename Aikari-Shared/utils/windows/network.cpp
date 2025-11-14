@@ -1,14 +1,13 @@
 ﻿#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/registry.h>
-#include <Aikari-Shared/utils/string.h>
 #include <Aikari-Shared/utils/windows.h>  // self
+#include <Aikari-Shared/utils/windows/winString.h>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <windows.h>
 
 namespace registryUtils = AikariShared::Utils::WindowsRegistry;
-namespace stringUtils = AikariShared::Utils::String;
+namespace winStringUtils = AikariShared::Utils::Windows::WinString;
 
 namespace AikariShared::Utils::Windows::Network
 {
@@ -25,8 +24,8 @@ namespace AikariShared::Utils::Windows::Network
 
     isSeewoCoreNeedToBeKill ensureHostKeyExists(const std::string& hostLine)
     {
-        const int SW_CORE_DONT_NEED_KILL = false;
-        const int SW_CORE_NEED_KILL = true;
+        constexpr int SW_CORE_DONT_NEED_KILL = false;
+        constexpr int SW_CORE_NEED_KILL = true;
 
         std::wstring hostDir;
         try
@@ -51,10 +50,10 @@ namespace AikariShared::Utils::Windows::Network
 
         try
         {
-            hostDir = stringUtils::expandEnvStr(hostDir);
+            hostDir = winStringUtils::expandEnvStr(hostDir);
             LOG_DEBUG(
                 "Successfully parsed host path, result: {}",
-                stringUtils::WstringToString(hostDir)
+                winStringUtils::WstringToString(hostDir)
             );
         }
         catch (const std::exception& err)
@@ -69,7 +68,9 @@ namespace AikariShared::Utils::Windows::Network
 
         // ↑ hostPath parsed
 
-        std::filesystem::path hostDirIns(stringUtils::WstringToString(hostDir));
+        std::filesystem::path hostDirIns(
+            winStringUtils::WstringToString(hostDir)
+        );
         std::filesystem::path hostPathIns = hostDirIns / "hosts";
 
         if (!std::filesystem::exists(hostPathIns))
@@ -134,4 +135,4 @@ namespace AikariShared::Utils::Windows::Network
 
         return result;
     }
-}  // namespace AikariShared::utils::windows::network
+}  // namespace AikariShared::Utils::Windows::Network

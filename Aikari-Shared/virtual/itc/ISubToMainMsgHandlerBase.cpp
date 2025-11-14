@@ -49,9 +49,9 @@ namespace AikariShared::Infrastructure::InterThread
 
     void SubToMainMsgHandlerBase::addCtrlMsgCallbackListener(
         const AikariShared::Types::InterThread::eventId& eventId,
-        std::move_only_function<
-            void(AikariShared::Types::InterThread::SubToMainControlReplyMessage
-            )> callbackLambda
+        std::move_only_function<void(
+            AikariShared::Types::InterThread::SubToMainControlReplyMessage
+        )> callbackLambda
     )
     {
         this->listeners[eventId].emplace_back(std::move(callbackLambda));
@@ -61,7 +61,7 @@ namespace AikariShared::Infrastructure::InterThread
 
     void SubToMainMsgHandlerBase::retMsgWorker()
     {
-        std::string logHeader = this->logHeader;
+        const std::string logHeader = this->logHeader;
         try
         {
             LOG_INFO(logHeader + " Starting message queue handler...");
@@ -119,8 +119,7 @@ namespace AikariShared::Infrastructure::InterThread
                     auto& eventId = msgContent.eventId;
 
                     {
-                        if (this->listeners.find(eventId) !=
-                            this->listeners.end())
+                        if (this->listeners.contains(eventId))
                         {
                             while (!this->listeners[eventId].empty())
                             {

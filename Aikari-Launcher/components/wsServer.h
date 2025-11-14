@@ -2,7 +2,7 @@
 #pragma comment(lib, "crypt32")
 
 #include <Aikari-Launcher-Private/common.h>
-#include <Aikari-Launcher-Private/types/components/wsTypes.h>
+#include <Aikari-Launcher-Public/types/components/wsTypes.h>
 #include <Aikari-Shared/infrastructure/queue/PoolQueue.hpp>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
 #include <filesystem>
@@ -48,7 +48,8 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         void waitWssServer();
         void stopWssServer();
         void pushRetQueue(
-            AikariTypes::Components::WebSocket::ServerWSTaskRet& ret
+            AikariLauncherPublic::Types::Components::WebSocket::ServerWSTaskRet&
+                ret
         );
 
        private:
@@ -58,18 +59,20 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         std::shared_ptr<WebSocketStates> wsStates;
         std::unique_ptr<
             AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariTypes::Components::WebSocket::ServerWSTaskRet>>
+                AikariLauncherPublic::Types::Components::WebSocket::
+                    ServerWSTaskRet>>
             retMsgQueue;
         std::unique_ptr<
             AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariTypes::Components::WebSocket::ClientWSTask>>
+                AikariLauncherPublic::Types::Components::WebSocket::
+                    ClientWSTask>>
             inputMsgQueue;
 
         std::unique_ptr<std::jthread> retMsgWorkerThread;
         std::unique_ptr<std::jthread> inputMsgWorkerThread;
 
         std::unique_ptr<AikariShared::Infrastructure::MessageQueue::PoolQueue<
-            AikariTypes::Components::WebSocket::ClientWSTask>>
+            AikariLauncherPublic::Types::Components::WebSocket::ClientWSTask>>
             threadPool;
 
         size_t threadCount = 4;

@@ -2,6 +2,7 @@
 
 #include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Shared/utils/string.h>
+#include <Aikari-Shared/utils/windows/winString.h>
 #include <ShlObj.h>
 #include <filesystem>
 #include <windows.h>
@@ -51,7 +52,9 @@ namespace AikariFileSystem
                 "trying to use default val."
             );
             LOG_ERROR("Error detail: ");
-            LOG_ERROR(AikariShared::Utils::String::parseHResult(hResult));
+            LOG_ERROR(
+                AikariShared::Utils::Windows::WinString::parseHResult(hResult)
+            );
             finalPath = fs::path("C") / "ProgramData";
         }
 

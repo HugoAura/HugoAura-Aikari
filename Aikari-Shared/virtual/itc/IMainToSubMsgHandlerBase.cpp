@@ -33,12 +33,12 @@ namespace AikariShared::Infrastructure::InterThread
 
     void MainToSubMsgHandlerBase::manualDestroy()
     {
-        itcTypes::MainToSubDestroyMessage subDestoryMsg;
-        itcTypes::MainToSubMessageInstance subDestoryMsgIns = {
+        itcTypes::MainToSubDestroyMessage subDestroyMsg;
+        itcTypes::MainToSubMessageInstance subDestroyMsgIns = {
             .type = itcTypes::MESSAGE_TYPES::DESTROY_MESSAGE,
-            .msg = subDestoryMsg
+            .msg = subDestroyMsg
         };
-        this->srcQueue->push(std::move(subDestoryMsgIns));
+        this->srcQueue->push(std::move(subDestroyMsgIns));
 
         itcTypes::SubToMainDestroyMessage mainDestroyMsg;
         itcTypes::SubToMainMessageInstance mainDestroyMsgIns = {
@@ -55,8 +55,8 @@ namespace AikariShared::Infrastructure::InterThread
 
     void MainToSubMsgHandlerBase::addCtrlMsgCallbackListener(
         const itcTypes::eventId& eventId,
-        std::move_only_function<void(itcTypes::MainToSubControlReplyMessage msg
-        )> callbackLambda
+        std::move_only_function<
+            void(itcTypes::MainToSubControlReplyMessage msg)> callbackLambda
     )
     {
         this->listeners[eventId].emplace_back(std::move(callbackLambda));
@@ -151,9 +151,10 @@ namespace AikariShared::Infrastructure::InterThread
                 case itcTypes::MESSAGE_TYPES::CONTROL_MESSAGE:
                 {
                     auto& msgContent =
-                        std::get<itcTypes::MainToSubControlMessage>(msgIns.msg
+                        std::get<itcTypes::MainToSubControlMessage>(
+                            msgIns.msg
                         );  // if convert failed, error will be directly
-                            // catched
+                            // caught
 
                     this->onControlMessage(
                         msgContent
@@ -171,8 +172,7 @@ namespace AikariShared::Infrastructure::InterThread
                     auto& eventId = msgContent.eventId;
 
                     {
-                        if (this->listeners.find(eventId) !=
-                            this->listeners.end())
+                        if (this->listeners.contains(eventId))
                         {
                             while (!this->listeners[eventId].empty())
                             {
@@ -203,7 +203,8 @@ namespace AikariShared::Infrastructure::InterThread
                 case itcTypes::MESSAGE_TYPES::WS_MESSAGE:
                 {
                     auto& msgContent =
-                        std::get<itcTypes::MainToSubWebSocketMessage>(msgIns.msg
+                        std::get<itcTypes::MainToSubWebSocketMessage>(
+                            msgIns.msg
                         );
 
                     this->onWebSocketMessage(msgContent);

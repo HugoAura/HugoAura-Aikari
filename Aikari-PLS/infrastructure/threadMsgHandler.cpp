@@ -1,6 +1,7 @@
 ﻿#include "threadMsgHandler.h"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <string>
 
 namespace AikariPLS::Infrastructure::MsgQueue
 {

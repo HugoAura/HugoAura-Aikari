@@ -2,12 +2,12 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Aikari-Launcher-Private/types/components/wsTypes.h"
+#include "../../types/components/wsTypes.h"
 #include "errors.h"
 
 namespace AikariLauncherPublic::Constants::WebSocket::Errors::Templates
 {
-    inline const AikariTypes::Components::WebSocket::ServerWSRep
+    inline const AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
         MODULE_NOT_FOUND = { .code = Errors::Codes::MODULE_NOT_FOUND,
                              .success = false,
                              .data = {
@@ -16,14 +16,14 @@ namespace AikariLauncherPublic::Constants::WebSocket::Errors::Templates
                                    "running the latest version of HugoAura?" },
                                  { "diagnoseId", Errors::MODULE_NOT_FOUND } } };
 
-    inline const AikariTypes::Components::WebSocket::ServerWSRep INVALID_ARG = {
+    inline const AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep INVALID_ARG = {
         .code = Errors::Codes::INVALID_ARG,
         .success = false,
         .data = { { "message", "Invalid arguments provided" },
                   { "diagnoseId", Errors::INVALID_ARG } }
     };
 
-    inline const AikariTypes::Components::WebSocket::ServerWSRep
+    inline const AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
         METHOD_NOT_FOUND = { .code = Errors::Codes::METHOD_NOT_FOUND,
                              .success = false,
                              .data = {

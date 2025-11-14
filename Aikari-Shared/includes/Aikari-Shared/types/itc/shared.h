@@ -50,7 +50,7 @@ namespace AikariShared::Types::InterThread
 
     struct MainToSubDestroyMessage
     {
-        bool destory = true;
+        bool destroy = true;
     };
 
     struct MainToSubMessageInstance
@@ -83,16 +83,17 @@ namespace AikariShared::Types::InterThread
 
     struct SubToMainWebSocketReply
     {
-        bool success;
-        int code;
+        std::optional<bool> success;
+        std::optional<int> code;
         nlohmann::json data;
-        eventId eventId;
+        std::optional<std::string> method;
+        std::optional<eventId> eventId;
         WebSocketInfo wsInfo;
     };
 
     struct SubToMainDestroyMessage
     {
-        bool destory = true;
+        bool destroy = true;
     };
 
     struct SubToMainMessageInstance
@@ -104,5 +105,20 @@ namespace AikariShared::Types::InterThread
             SubToMainWebSocketReply,
             SubToMainDestroyMessage>
             msg;
+    };
+
+    // Msg Cores
+    struct MainToSubWebSocketMessageCore
+    {
+        std::string method;
+        nlohmann::json data;
+    };
+
+    struct SubToMainWebSocketMessageCore
+    {
+        std::optional<int> code;
+        std::optional<bool> success;
+        nlohmann::json data;
+        std::optional<std::string> method;
     };
 }  // namespace AikariShared::Types::InterThread

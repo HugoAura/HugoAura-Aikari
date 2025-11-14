@@ -21,8 +21,12 @@
         components/mqtt/mqttLifecycle.cpp
         components/ruleSystem/rulesManager.h
         components/ruleSystem/rulesManager.cpp
+        components/ws/dispatcher.h
+        components/ws/dispatcher.cpp
         infrastructure/threadMsgHandler.h
         infrastructure/threadMsgHandler.cpp
+        routes/ws/configRoute.h
+        routes/ws/configRoute.cpp
         typesImpl/components/mqtt.cpp
         typesImpl/components/rules.cpp
         utils/mqttPacketUtils.h

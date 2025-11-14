@@ -11,7 +11,7 @@ namespace AikariLauncherRoutes::WebSocket::Basic
 {
     namespace Props
     {
-        static AikariTypes::Components::WebSocket::ServerWSRep
+        static AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
         _impl_GET_VERSION()
         {
             return { .code = 0,
@@ -23,15 +23,15 @@ namespace AikariLauncherRoutes::WebSocket::Basic
         }
     }  // namespace Props
 
-    AikariTypes::Components::WebSocket::ServerWSRep handleBasicMethods(
-        const AikariTypes::Components::WebSocket::ClientWSMsg&
+    AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep handleBasicMethods(
+        const AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg&
             clientDataIncoming,
         const std::vector<std::string>& methods
     )
     {
         const std::string& subMethod = methods.at(1);
         const std::string& fullMethod = clientDataIncoming.method;
-        AikariTypes::Components::WebSocket::ServerWSRep result;
+        AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep result;
         result.code =
             wsConstants::Errors::Codes::UNEXPECTED_ERROR;  // default val
 

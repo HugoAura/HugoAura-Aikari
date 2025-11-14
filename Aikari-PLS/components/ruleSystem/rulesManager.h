@@ -10,6 +10,8 @@ namespace AikariPLS::Components::Rules
 {
     inline std::string FILE_EXT = ".lua";
 
+    typedef std::string ConfigKeyStr;
+
     class Manager
     {
        public:
@@ -22,20 +24,24 @@ namespace AikariPLS::Components::Rules
         bool loadRules();
         /*
         bool unloadRules();
+        */
 
-        AikariPLS::Types::MQTTMsgQueue::PayloadWithInfo processPacket(
-            const AikariPLS::Types::MQTTMsgQueue::PayloadWithInfo& packetSrc
-        );
-
-        AikariPLS::Types::MQTTMsgQueue::PayloadWithInfo generateVirtualPayload(
-            const AikariPLS::Types::MQTTMsgQueue::PACKET_SIDE& side,
-            const std::string& ruleName,
-            const std::optional<nlohmann::json>& data
-        );*/
+        // TODO: Impl manual rules unload
 
         std::unique_ptr<sol::state> luaRuntime;
 
         AikariPLS::Types::RuleSystem::RuleMapping::FullRuleMapping ruleMapping;
+        // clang-format off
+        std::unordered_map<
+            ConfigKeyStr,
+            std::vector<
+                std::unique_ptr<
+                    AikariPLS::Types::RuleSystem::RuleMapping::
+                                    PerRuleProp::Rewrite
+                                >*
+                        >
+        > configKeyAssociationMap; // stores rawPtrsForUniquePtrs
+        // clang-format on
 
        private:
         const std::filesystem::path& ruleDir;

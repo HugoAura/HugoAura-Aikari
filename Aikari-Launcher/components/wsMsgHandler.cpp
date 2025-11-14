@@ -1,6 +1,7 @@
 ﻿#include "wsMsgHandler.h"
 
 #include <Aikari-Launcher-Public/constants/ws/basic.h>
+#include <Aikari-Launcher-Public/constants/ws/config.h>
 #include <Aikari-Launcher-Public/constants/ws/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/ws/errors.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
@@ -12,16 +13,15 @@
 #include "../lifecycle.h"
 #include "../routes/ws/basicRoute.h"
 #include "../routes/ws/configRoute.h"
-#include "Aikari-Launcher-Public/constants/ws/config.h"
 
-namespace wsTypes = AikariTypes::Components::WebSocket;
+namespace wsTypes = AikariLauncherPublic::Types::Components::WebSocket;
 namespace wsConstants = AikariLauncherPublic::Constants::WebSocket;
 namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
 
 namespace AikariLauncherComponents::AikariWebSocketDispatcher
 {
-    AikariTypes::Components::WebSocket::ServerWSRep dispatch(
-        const AikariTypes::Components::WebSocket::ClientWSMsg& clientMsgProps,
+    wsTypes::ServerWSRep dispatch(
+        const wsTypes::ClientWSMsg& clientMsgProps,
         const std::vector<std::string>& methodVec
     )
     {
@@ -41,8 +41,7 @@ namespace AikariLauncherComponents::AikariWebSocketDispatcher
         }
         else
         {
-            return AikariLauncherPublic::Constants::WebSocket::Errors::
-                Templates::METHOD_NOT_FOUND;
+            return wsConstants::Errors::Templates::METHOD_NOT_FOUND;
         };
     }
 }  // namespace AikariLauncherComponents::AikariWebSocketDispatcher
@@ -112,13 +111,13 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                         "PLSInputQueue not found, is PLS correctly loaded?"
                     );
                     wsTypes::ServerWSRep repContent{
-                        .code = AikariLauncherPublic::Constants::WebSocket::
-                            Errors::Codes::MODULE_CONNECTION_BROKEN,
+                        .code = wsConstants::Errors::Codes::
+                            MODULE_CONNECTION_BROKEN,
                         .eventId = task.content.eventId,
                         .success = false,
                         .data = { { "message", "PLS module load failed" },
                                   { "diagnoseId",
-                                    AikariLauncherPublic::Constants::WebSocket::Errors::
+                                    wsConstants::Errors::
                                         MODULE_CONNECTION_BROKEN_VARIANT_QUEUE } },
                     };
                     wsTypes::ServerWSTaskRet taskRet{

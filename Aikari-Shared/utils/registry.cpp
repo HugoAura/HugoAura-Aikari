@@ -1,12 +1,12 @@
 ﻿#include <Aikari-Shared/utils/registry.h>  // self
-#include <Aikari-Shared/utils/string.h>
+#include <Aikari-Shared/utils/windows/winString.h>
 #include <format>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <windows.h>
 
-namespace winStrUtils = AikariShared::Utils::String;
+namespace winStrUtils = AikariShared::Utils::Windows::WinString;
 
 namespace AikariShared::Utils::WindowsRegistry
 {
@@ -83,4 +83,4 @@ namespace AikariShared::Utils::WindowsRegistry
         std::wstring finalStr(dataBuffer.data());
         return finalStr;
     };
-}  // namespace AikariShared::utils::windowsRegistry
+}  // namespace AikariShared::Utils::WindowsRegistry

@@ -3,7 +3,7 @@
 #include <Aikari-Launcher-Private/types/constants/webSocket.h>
 #include <Aikari-Launcher-Public/constants/ws/errors.h>
 #include <Aikari-Shared/utils/crypto.h>
-#include <Aikari-Shared/utils/string.h>
+#include <Aikari-Shared/utils/windows/winString.h>
 #include <chrono>
 #include <ixwebsocket/IXSocketTLSOptions.h>
 #include <nlohmann/json.hpp>
@@ -14,10 +14,10 @@
 #include "../middleware/wsAuthHandler.h"
 #include "./wsMsgHandler.h"
 
-namespace winStringUtils = AikariShared::Utils::String;
+namespace winStringUtils = AikariShared::Utils::Windows::WinString;
 namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
 
-namespace wsTypes = AikariTypes::Components::WebSocket;
+namespace wsTypes = AikariLauncherPublic::Types::Components::WebSocket;
 
 typedef messageQueue::SinglePointMessageQueue<wsTypes::ClientWSTask>
     InputMsgQueue;
@@ -174,7 +174,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
 
     // ↓ public
     void MainWSServer::pushRetQueue(
-        AikariTypes::Components::WebSocket::ServerWSTaskRet& ret
+        AikariLauncherPublic::Types::Components::WebSocket::ServerWSTaskRet& ret
     )
     {
         this->retMsgQueue->push(std::move(ret));
@@ -223,7 +223,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                         if (auto perClientLocked = itr->second.lock())
                         {
                             perClientLocked->send(repJson.dump());
-                            itr++;
+                            ++itr;
                         }
                         else
                         {
@@ -374,7 +374,8 @@ namespace AikariLauncherComponents::AikariWebSocketServer
 #endif
 
             const std::string& clientId = connectionState->getId();
-            AikariTypes::Components::WebSocket::ClientWSMsg clientMsg;
+            AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg
+                clientMsg;
             try
             {
                 nlohmann::json clientMsgJson;
@@ -404,7 +405,8 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                 return;
             }
 
-            AikariTypes::Components::WebSocket::ClientWSTask taskIns;
+            AikariLauncherPublic::Types::Components::WebSocket::ClientWSTask
+                taskIns;
             taskIns.content = clientMsg;
             taskIns.clientId = clientId;
             this->inputMsgQueue->push(std::move(taskIns));

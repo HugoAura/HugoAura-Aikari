@@ -8,6 +8,7 @@ project_add_library(Aikari-Shared STATIC
         utils/string.cpp
         utils/windows/network.cpp
         utils/windows/process.cpp
+        utils/windows/winString.cpp
         virtual/IConfigManager.cpp
         virtual/itc/IMainToSubMsgHandlerBase.cpp
         virtual/itc/ISubToMainMsgHandlerBase.cpp

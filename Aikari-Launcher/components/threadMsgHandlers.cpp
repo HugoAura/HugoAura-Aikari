@@ -77,14 +77,14 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
             &AikariTypes::Global::Lifecycle::SharedInstances::wsServerMgrIns
         );
 
-        AikariTypes::Components::WebSocket::ServerWSRep repFinData{
+        AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep repFinData{
             .code = wsReply.code,
             .eventId = wsReply.eventId,
             .success = wsReply.success,
             .data = wsReply.data,
         };
 
-        AikariTypes::Components::WebSocket::ServerWSTaskRet taskFinRet{
+        AikariLauncherPublic::Types::Components::WebSocket::ServerWSTaskRet taskFinRet{
             .result = repFinData,
             .clientId = wsReply.wsInfo.clientId,
             .isBroadcast = wsReply.wsInfo.isBroadcast.value_or(false)

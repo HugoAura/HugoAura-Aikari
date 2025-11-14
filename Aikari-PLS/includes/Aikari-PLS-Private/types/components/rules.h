@@ -133,9 +133,10 @@ namespace AikariPLS::Types::RuleSystem
             };
         };  // namespace PerRuleProp
 
-        typedef std::
-            unordered_map<std::string, std::vector<PerRuleProp::Rewrite>>
-                RewriteFeaturesMap;
+        typedef std::unordered_map<
+            std::string,
+            std::vector<std::unique_ptr<PerRuleProp::Rewrite>>>
+            RewriteFeaturesMap;
         typedef std::unordered_map<
             Types::MQTTMsgQueue::PACKET_ENDPOINT_TYPE,
             RewriteFeaturesMap>

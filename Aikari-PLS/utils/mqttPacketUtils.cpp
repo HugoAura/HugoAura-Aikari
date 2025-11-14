@@ -193,8 +193,13 @@ namespace AikariPLS::Utils::MQTTPacketUtils
             // ↓ chk if appears in featureStore.prop
             if (!featureStore.prop.contains(el.key()))
                 continue;
-            for (const auto& perRewriteRule : featureStore.prop.at(el.key()))
+            for (const auto& perRewriteRulePtr : featureStore.prop.at(el.key()))
             {
+                auto* perRewriteRuleRawPtr = perRewriteRulePtr.get();
+                if (perRewriteRuleRawPtr == nullptr)
+                    continue;
+
+                auto& perRewriteRule = *perRewriteRuleRawPtr;
                 if (!perRewriteRule.isEnabled)
                     continue;
 
@@ -315,10 +320,15 @@ namespace AikariPLS::Utils::MQTTPacketUtils
                     return { .packetMethodType = methodType,
                              .newPayload = std::nullopt };
 
-                auto rewriteRulePropVec = featureMapIterator->second;
+                auto& rewriteRulePropVec = featureMapIterator->second;
                 std::string curNewPayload;
-                for (const auto& perRewriteRule : rewriteRulePropVec)
+                for (const auto& perRewriteRulePtr : rewriteRulePropVec)
                 {
+                    auto* perRewriteRuleRawPtr = perRewriteRulePtr.get();
+                    if (perRewriteRuleRawPtr == nullptr)
+                        continue;
+
+                    auto& perRewriteRule = *perRewriteRuleRawPtr;
                     if (!perRewriteRule.isEnabled)
                         continue;
 

@@ -77,12 +77,12 @@ BEGIN
         BLOCK "080404b0"
         BEGIN
             VALUE "CompanyName", "HugoAura Devs"
-            VALUE "FileDescription", "Aikari, unified UX tweak tool for Seewo family softwares."
+            VALUE "FileDescription", "Aikari Launcher Host"
             VALUE "FileVersion", "0.0.1.0"
             VALUE "InternalName", "Aikari Launcher"
             VALUE "LegalCopyright", "Copyright (C) 2025 HugoAura Devs, All rights reserved."
             VALUE "OriginalFilename", "Aikari-Launcher.exe"
-            VALUE "ProductName", "Aikari Launcher"
+            VALUE "ProductName", "HugoAura Aikari"
             VALUE "ProductVersion", "0.0.1.0"
         END
     END

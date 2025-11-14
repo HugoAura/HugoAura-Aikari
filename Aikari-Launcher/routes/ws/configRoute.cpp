@@ -15,8 +15,8 @@ namespace AikariLauncherRoutes::WebSocket::Config
 {
     namespace Actions
     {
-        static AikariTypes::Components::WebSocket::ServerWSRep _impl_GET_CONFIG(
-        )
+        static AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+        _impl_GET_CONFIG()
         {
             auto& sharedIns =
                 AikariLifecycle::AikariSharedInstances::getInstance();
@@ -44,7 +44,7 @@ namespace AikariLauncherRoutes::WebSocket::Config
             }
         }
 
-        static AikariTypes::Components::WebSocket::ServerWSRep
+        static AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
         _impl_UPDATE_CONFIG(nlohmann::json clientDataIn)
         {
             if (!clientDataIn.contains("key") ||
@@ -139,15 +139,16 @@ namespace AikariLauncherRoutes::WebSocket::Config
         }
     }  // namespace Actions
 
-    AikariTypes::Components::WebSocket::ServerWSRep handleConfigMethods(
-        const AikariTypes::Components::WebSocket::ClientWSMsg&
+    AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+    handleConfigMethods(
+        const AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg&
             clientDataIncoming,
         const std::vector<std::string>& methods
     )
     {
         const std::string& subMethod = methods.at(1);
         const std::string& fullMethod = clientDataIncoming.method;
-        AikariTypes::Components::WebSocket::ServerWSRep result;
+        AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep result;
         result.code = wsConstants::Errors::Codes::UNEXPECTED_ERROR;
 
         if (subMethod == wsConstants::Config::Actions::_PREFIX)
@@ -164,4 +165,5 @@ namespace AikariLauncherRoutes::WebSocket::Config
 
         return wsConstants::Errors::Templates::METHOD_NOT_FOUND;
     }
-}  // namespace AikariLauncherRoutes::WebSocket::Config
+}
+// namespace AikariLauncherRoutes::WebSocket::Config
