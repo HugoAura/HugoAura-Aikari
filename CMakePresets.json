@@ -33,7 +33,10 @@
         "value": "x64",
         "strategy": "set"
       },
-      "environment": { "CMAKE_BUILD_TYPE": "Debug" }
+      "environment": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "USER_CPACK_TARGET_PROCESSOR": "x64"
+      }
     },
     {
       "name": "base-arm64-debug",
@@ -42,7 +45,10 @@
         "value": "arm64",
         "strategy": "set"
       },
-      "environment": { "CMAKE_BUILD_TYPE": "Debug" }
+      "environment": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "USER_CPACK_TARGET_PROCESSOR": "arm64"
+      }
     },
     {
       "name": "base-x64-release",
@@ -51,7 +57,10 @@
         "value": "x64",
         "strategy": "set"
       },
-      "environment": { "CMAKE_BUILD_TYPE": "Release" }
+      "environment": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "USER_CPACK_TARGET_PROCESSOR": "x64"
+      }
     },
     {
       "name": "base-arm64-release",
@@ -60,7 +69,10 @@
         "value": "arm64",
         "strategy": "set"
       },
-      "environment": { "CMAKE_BUILD_TYPE": "Release" }
+      "environment": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "USER_CPACK_TARGET_PROCESSOR": "arm64"
+      }
     },
     {
       "name": "vs-x64-debug",
