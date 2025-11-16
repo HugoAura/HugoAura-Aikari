@@ -9,9 +9,9 @@
 #include "../../lifecycle.h"
 
 namespace itcTypes = AikariShared::Types::InterThread;
-namespace itcConstants = AikariLauncherPublic::Constants::InterThread;
+namespace itcConstants = AikariLauncher::Public::Constants::InterThread;
 
-namespace AikariLauncherRoutes::InterThread::FileSystem
+namespace AikariLauncher::Routes::InterThread::FileSystem
 {
     namespace Base
     {
@@ -80,4 +80,4 @@ namespace AikariLauncherRoutes::InterThread::FileSystem
 
         return result;
     };
-}  // namespace AikariLauncherRoutes::InterThread::FileSystem
+}  // namespace AikariLauncher::Routes::InterThread::FileSystem

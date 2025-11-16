@@ -67,7 +67,7 @@ namespace AikariPLS::Init
         )
         {
             itcConstants::SubToMainControlMessage getDirMsg = {
-                .method = AikariLauncherPublic::Constants::InterThread::
+                .method = AikariLauncher::Public::Constants::InterThread::
                     FileSystem::Base::GET_DIR,
                 .data = { { "dirType", "aikariRoot" } },
                 .fromModule = plsConstants::MsgQueue::MODULE_NAME,
@@ -117,7 +117,7 @@ namespace AikariPLS::Init
             }
 
             itcConstants::SubToMainControlMessage initCertMsg = {
-                .method = AikariLauncherPublic::Constants::InterThread::
+                .method = AikariLauncher::Public::Constants::InterThread::
                     Network::TLS::GEN_TLS_CERTS,
                 .data = { { "baseDir",
                             (aikariDir / "config" / "certs").string() },
@@ -148,7 +148,7 @@ namespace AikariPLS::Init
             return true;
         };
 
-        static AikariLauncherPublic::Constants::Lifecycle::
+        static AikariLauncher::Public::Constants::Lifecycle::
             APPLICATION_RUNTIME_MODES
             _getRuntimeMode(
                 AikariPLS::Infrastructure::MsgQueue::PLSThreadMsgQueueHandler*
@@ -156,7 +156,7 @@ namespace AikariPLS::Init
             )
         {
             itcConstants::SubToMainControlMessage getRuntimeModeMsg = {
-                .method = AikariLauncherPublic::Constants::InterThread::Base::
+                .method = AikariLauncher::Public::Constants::InterThread::Base::
                     Props::GET_RUNTIME_MODE,
                 .data = {},
                 .fromModule = plsConstants::MsgQueue::MODULE_NAME,
@@ -170,7 +170,7 @@ namespace AikariPLS::Init
             int runtimeModeRaw = getRuntimeModeResult.data.value("mode", 0);
 
             auto runtimeMode =
-                static_cast<AikariLauncherPublic::Constants::Lifecycle::
+                static_cast<AikariLauncher::Public::Constants::Lifecycle::
                                 APPLICATION_RUNTIME_MODES>(runtimeModeRaw);
 
             return runtimeMode;

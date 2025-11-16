@@ -16,7 +16,7 @@ namespace AikariFileSystem
     class FileSystemManager;
 }
 
-namespace AikariLauncherComponents
+namespace AikariLauncher::Components
 {
     namespace AikariWebSocketServer
     {
@@ -32,7 +32,7 @@ namespace AikariLauncherComponents
     {
         class LauncherConfigManager;
     };
-}  // namespace AikariLauncherComponents
+}  // namespace AikariLauncher::Components
 
 namespace AikariShared::Infrastructure::MessageQueue
 {
@@ -44,7 +44,7 @@ namespace AikariTypes::Global::Lifecycle
 {
     struct GlobalSharedHandlersRegistry
     {
-        std::shared_ptr<AikariLauncherComponents::SubModuleSystem::
+        std::shared_ptr<AikariLauncher::Components::SubModuleSystem::
                             ThreadMsgHandlers::PLSMsgHandler>
             plsIncomingMsgQueueHandler;
 
@@ -59,10 +59,10 @@ namespace AikariTypes::Global::Lifecycle
         std::unique_ptr<AikariRegistry::RegistryManager> registryManagerIns;
         std::unique_ptr<AikariFileSystem::FileSystemManager> fsManagerIns;
         std::unique_ptr<
-            AikariLauncherComponents::AikariWebSocketServer::MainWSServer>
+            AikariLauncher::Components::AikariWebSocketServer::MainWSServer>
             wsServerMgrIns;
         std::unique_ptr<
-            AikariLauncherComponents::AikariConfig::LauncherConfigManager>
+            AikariLauncher::Components::AikariConfig::LauncherConfigManager>
             configManagerIns;
 
         SharedInstances();
@@ -90,7 +90,7 @@ namespace AikariTypes::Global::Lifecycle
 
     struct GlobalLifecycleStates
     {
-        AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
+        AikariLauncher::Public::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
             runtimeMode;
         long long launchTime;
         SERVICE_STATUS svcStatus;
@@ -100,7 +100,7 @@ namespace AikariTypes::Global::Lifecycle
 
         static GlobalLifecycleStates createDefault()
         {
-            return { .runtimeMode = AikariLauncherPublic::Constants::Lifecycle::
+            return { .runtimeMode = AikariLauncher::Public::Constants::Lifecycle::
                          APPLICATION_RUNTIME_MODES::NORMAL,
                      .launchTime = 0,
                      .svcStatus = { 0 },

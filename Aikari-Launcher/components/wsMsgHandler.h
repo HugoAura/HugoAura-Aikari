@@ -9,25 +9,25 @@ namespace AikariShared::Infrastructure::MessageQueue
     class SinglePointMessageQueue;
 };  // namespace AikariShared::Infrastructure::MessageQueue
 
-namespace AikariLauncherComponents::AikariWebSocketDispatcher
+namespace AikariLauncher::Components::AikariWebSocketDispatcher
 {
-    AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep dispatch(
-        const AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg&
+    AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep dispatch(
+        const AikariLauncher::Public::Types::Components::WebSocket::ClientWSMsg&
             clientMsgProps,
         const std::vector<std::string>& methodVec
     );
 }
 
-namespace AikariLauncherComponents::AikariWebSocketHandler
+namespace AikariLauncher::Components::AikariWebSocketHandler
 {
-    AikariLauncherPublic::Types::Components::WebSocket::MODULES getMsgModule(
-        std::string& moduleStr
+    AikariLauncher::Public::Types::Components::WebSocket::MODULES getMsgModule(
+        const std::string& moduleStr
     );
 
     void handleTask(
-        AikariLauncherPublic::Types::Components::WebSocket::ClientWSTask task,
+        AikariLauncher::Public::Types::Components::WebSocket::ClientWSTask task,
         AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariLauncherPublic::Types::Components::WebSocket::
+            AikariLauncher::Public::Types::Components::WebSocket::
                 ServerWSTaskRet>* retMsgQueue
     );
-}  // namespace AikariLauncherComponents::AikariWebSocketHandler
+}  // namespace AikariLauncher::Components::AikariWebSocketHandler

@@ -2,11 +2,11 @@
 
 #include <Aikari-Launcher-Public/types/components/wsTypes.h>
 
-namespace AikariLauncherRoutes::WebSocket::Basic
+namespace AikariLauncher::Routes::WebSocket::Basic
 {
-    AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+    AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
     handleBasicMethods(
-        const AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg&
+        const AikariLauncher::Public::Types::Components::WebSocket::ClientWSMsg&
             clientDataIncoming,
         const std::vector<std::string>& methods
     );

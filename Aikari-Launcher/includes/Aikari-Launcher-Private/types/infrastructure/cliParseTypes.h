@@ -9,5 +9,7 @@ namespace AikariTypes::Infrastructure::CLIParse
     {
         bool isDebug = false;
         std::string serviceCtrl = "";
+        std::string logMode = "";
+        bool exitNow = false;
     };
 }  // namespace AikariTypes::Infrastructure::CLIParse

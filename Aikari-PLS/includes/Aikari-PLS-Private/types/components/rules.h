@@ -8,7 +8,6 @@
 #include <sol/table.hpp>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 namespace AikariPLS::Types::RuleSystem
 {

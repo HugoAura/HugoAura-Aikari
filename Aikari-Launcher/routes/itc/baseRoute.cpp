@@ -7,9 +7,9 @@
 #include "../lifecycle.h"
 
 namespace itcTypes = AikariShared::Types::InterThread;
-namespace itcConstants = AikariLauncherPublic::Constants::InterThread;
+namespace itcConstants = AikariLauncher::Public::Constants::InterThread;
 
-namespace AikariLauncherRoutes::InterThread::Base
+namespace AikariLauncher::Routes::InterThread::Base
 {
     namespace Props
     {
@@ -55,4 +55,4 @@ namespace AikariLauncherRoutes::InterThread::Base
         return result;
     }
 
-}  // namespace AikariLauncherRoutes::InterThread::Base
+}  // namespace AikariLauncher::Routes::InterThread::Base

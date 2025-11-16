@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/config/configType.h>
 #include <Aikari-Shared/virtual/IConfigManager.h>
 #include <filesystem>
@@ -20,7 +19,7 @@ namespace AikariTypes::Config
     );
 }  // namespace AikariTypes::Config
 
-namespace AikariLauncherComponents::AikariConfig
+namespace AikariLauncher::Components::AikariConfig
 {
     class LauncherConfigManager
         : public AikariShared::VirtualIns::IConfigManagerBase<
@@ -44,4 +43,4 @@ namespace AikariLauncherComponents::AikariConfig
         void loadConfigImpl(nlohmann::json& configData) override;
         nlohmann::json getStringifyConfigImpl() override;
     };
-}  // namespace AikariLauncherComponents::AikariConfig
+}  // namespace AikariLauncher::Components::AikariConfig

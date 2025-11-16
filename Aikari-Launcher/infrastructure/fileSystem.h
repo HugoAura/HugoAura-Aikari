@@ -22,6 +22,9 @@ namespace AikariFileSystem
               aikariConfigDir(aikariRootDir / "config"),
               aikariLogDir(aikariRootDir / "log") {};
 
-        int ensureDirExists() const;
+        // [!IMPORTANT] If aikariLogDir / aikariRootDir changed,
+        // /logger.cpp:105/ should be updated too
+
+        bool ensureDirExists() const;
     };
 };  // namespace AikariFileSystem

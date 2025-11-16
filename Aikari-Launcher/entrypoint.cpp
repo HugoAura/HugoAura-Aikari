@@ -1,4 +1,6 @@
-﻿#include <Aikari-Launcher-Private/common.h>
+﻿#define CUSTOM_LOG_HEADER "[Lifecycle Controller]"
+
+#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/constants/entrypoint.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 #include <Aikari-Launcher-Public/constants/lifecycle.h>
@@ -10,7 +12,9 @@
 #include <csignal>
 #include <cxxopts.hpp>
 #include <future>
+#include <iostream>
 #include <ixwebsocket/IXNetSystem.h>
+#include <shlobj_core.h>
 #include <windows.h>
 
 #include "components/config.h"
@@ -23,283 +27,519 @@
 #include "lifecycle.h"
 #include "resource.h"
 #include "utils/sslUtils.h"
+#include "virtual/lifecycle/ILaunchProgressReporter.h"
+#include "winSvcHandler.h"
 
-namespace lifecycleTypes = AikariTypes::Global::Lifecycle;
-
-namespace entrypointConstants = AikariTypes::Constants::Entrypoint;
-
-std::promise<bool> aikariAlivePromise;
-
-static void logVersion()
+namespace Aikari::EternalCore
 {
-    LOG_INFO(
-        "⚛️ Version: " + AikariLauncherPublic::Version::Version +
-        std::format(" ({})", AikariLauncherPublic::Version::VersionCode)
-    );
-}
+    namespace lifecycleTypes = AikariTypes::Global::Lifecycle;
+    namespace entrypointConstants = AikariTypes::Constants::Entrypoint;
 
-static void exitSignalHandler(int signum)
-{
-    LOG_INFO(
-        "Received " + std::to_string(signum) + " signal, exiting Aikari..."
-    );
-    aikariAlivePromise.set_value(true);
-}
+    std::promise<bool> aikariAlivePromise;
 
-int launchAikari(
-    const AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES&
-        runtimeMode
-)
-{
-    std::future<bool> aikariAliveFuture = aikariAlivePromise.get_future();
+    static void exitSignalHandler(int signum)
+    {
+        CUSTOM_LOG_INFO(
+            "Received {} signal, exiting Aikari...", std::to_string(signum)
+        );
+        aikariAlivePromise.set_value(true);
+    }
 
-    auto curTime = std::chrono::duration_cast<std::chrono::seconds>(
-                       std::chrono::system_clock::now().time_since_epoch()
+    int launchAikari(
+        const AikariLauncher::Public::Constants::Lifecycle::
+            APPLICATION_RUNTIME_MODES& runtimeMode,
+        std::optional<std::unique_ptr<
+            AikariLauncher::Virtual::Lifecycle::IProgressReporter>>
+            launchProgressReporter,
+        std::optional<HANDLE> winSvcStopEvent
     )
-                       .count();
-
-    HINSTANCE selfHIns = GetModuleHandleW(NULL);
-    if (selfHIns == NULL)
     {
-        LOG_CRITICAL(
-            "--- DO NOT REPORT THIS TO HUGOAURA, THIS IS NOT A BUG OR A CRASH "
-            "---"
+        AikariLauncher::Virtual::Lifecycle::GenericReportFn reportProgress =
+            [&launchProgressReporter](
+                bool isFailed,
+                bool isCompleted,
+                bool isStarting,
+                unsigned int waitForMs,
+                unsigned int percent,
+                unsigned int exitCode
+            )
+        {
+            // Maybe report to Aikari Frontend (in the future)
+            if (launchProgressReporter != std::nullopt)
+            {
+                launchProgressReporter.value()->reportLaunchProgress(
+                    isFailed,
+                    isCompleted,
+                    isStarting,
+                    waitForMs,
+                    percent,
+                    exitCode
+                );
+            }
+        };
+
+        std::future<bool> aikariAliveFuture = aikariAlivePromise.get_future();
+
+        reportProgress(false, false, true, 100, 0, 0);
+
+        auto curTime = std::chrono::duration_cast<std::chrono::seconds>(
+                           std::chrono::system_clock::now().time_since_epoch()
+        )
+                           .count();
+
+        HINSTANCE selfHIns = GetModuleHandleW(NULL);
+        if (selfHIns == NULL)
+        {
+            LOG_CRITICAL(
+                "--- DO NOT REPORT THIS TO HUGOAURA, THIS IS NOT A BUG OR A "
+                "CRASH "
+                "---"
+            );  // paper mc 🤣
+            LOG_CRITICAL(
+                "Failed to get the handle of main process, exiting..."
+            );
+            LOG_CRITICAL("Please check your system environment.");
+            reportProgress(
+                true,
+                false,
+                true,
+                0,
+                0,
+                entrypointConstants::EXIT_CODES::HINS_GET_FAILED
+            );
+            return entrypointConstants::EXIT_CODES::HINS_GET_FAILED;
+        }
+
+        auto& lifecycleStates =
+            AikariLifecycle::AikariStatesManager::getInstance();
+        CUSTOM_LOG_INFO("Initializing states manager...");
+        lifecycleStates.setVal(
+            &lifecycleTypes::GlobalLifecycleStates::runtimeMode, runtimeMode
         );
-        LOG_CRITICAL("Failed to get the handle of main process, exiting...");
-        LOG_CRITICAL("Please check your system environment.");
-        return entrypointConstants::EXIT_CODES::HINS_GET_FAILED;
-    }
-
-    auto& lifecycleStates = AikariLifecycle::AikariStatesManager::getInstance();
-    LOG_INFO("Initializing states manager...");
-    lifecycleStates.setVal(
-        &lifecycleTypes::GlobalLifecycleStates::runtimeMode, runtimeMode
-    );
-    lifecycleStates.setVal(
-        &lifecycleTypes::GlobalLifecycleStates::launchTime, curTime
-    );
-
-    auto& sharedInstances =
-        AikariLifecycle::AikariSharedInstances::getInstance();
-
-    LOG_INFO("Initializing file system manager...");
-    {
-        auto fileSystemManagerIns =
-            std::make_unique<AikariFileSystem::FileSystemManager>();
-        fileSystemManagerIns->ensureDirExists();
-        sharedInstances.setPtr(
-            &lifecycleTypes::SharedInstances::fsManagerIns,
-            std::move(fileSystemManagerIns)
+        lifecycleStates.setVal(
+            &lifecycleTypes::GlobalLifecycleStates::launchTime, curTime
         );
-    }
-    auto* fileSystemManagerIns =
-        sharedInstances.getPtr(&lifecycleTypes::SharedInstances::fsManagerIns);
+        reportProgress(false, false, true, 1000, 25, 0);
 
-    LOG_INFO("Initializing registry manager...");
-    {
-        auto registryManagerIns =
-            std::make_unique<AikariRegistry::RegistryManager>();
-        sharedInstances.setPtr(
-            &lifecycleTypes::SharedInstances::registryManagerIns,
-            std::move(registryManagerIns)
+        auto& sharedInstances =
+            AikariLifecycle::AikariSharedInstances::getInstance();
+
+        CUSTOM_LOG_INFO("Initializing file system manager...");
+        {
+            auto fileSystemManagerIns =
+                std::make_unique<AikariFileSystem::FileSystemManager>();
+            bool fsInitResult = fileSystemManagerIns->ensureDirExists();
+            if (fsInitResult == false)
+            {
+                CUSTOM_LOG_CRITICAL(
+                    "Aikari directories initialization failed, exiting "
+                    "Aikari..."
+                );
+                reportProgress(
+                    true,
+                    false,
+                    true,
+                    0,
+                    25,
+                    entrypointConstants::EXIT_CODES::FS_INIT_FAILED
+                );
+                return entrypointConstants::EXIT_CODES::FS_INIT_FAILED;
+            }
+            sharedInstances.setPtr(
+                &lifecycleTypes::SharedInstances::fsManagerIns,
+                std::move(fileSystemManagerIns)
+            );
+        }
+        auto* fileSystemManagerIns = sharedInstances.getPtr(
+            &lifecycleTypes::SharedInstances::fsManagerIns
         );
-    }
-    auto* registryManagerPtr = sharedInstances.getPtr(
-        &lifecycleTypes::SharedInstances::registryManagerIns
-    );
-    int regKeyValidateResult = registryManagerPtr->ensureRegKeyExists();
-    if (regKeyValidateResult == -1)
-    {
-        LOG_CRITICAL("Registry initialization failed, exiting Aikari...");
-        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
-    }
+        reportProgress(false, false, true, 1000, 35, 0);
 
-    LOG_INFO("Initializing config manager...");
-    {
-        auto configManagerIns = std::make_unique<
-            AikariLauncherComponents::AikariConfig::LauncherConfigManager>(
-            "launcher",
-            fileSystemManagerIns->aikariConfigDir / "config.json",
-            IDR_AIKARI_DEFAULT_JSON,
-            selfHIns
+        CUSTOM_LOG_INFO("Initializing registry manager...");
+        {
+            auto registryManagerIns =
+                std::make_unique<AikariRegistry::RegistryManager>();
+            sharedInstances.setPtr(
+                &lifecycleTypes::SharedInstances::registryManagerIns,
+                std::move(registryManagerIns)
+            );
+        }
+        auto* registryManagerPtr = sharedInstances.getPtr(
+            &lifecycleTypes::SharedInstances::registryManagerIns
         );
-        sharedInstances.setPtr(
-            &lifecycleTypes::SharedInstances::configManagerIns,
-            std::move(configManagerIns)
+        int regKeyValidateResult = registryManagerPtr->ensureRegKeyExists();
+        if (regKeyValidateResult == -1)
+        {
+            CUSTOM_LOG_CRITICAL(
+                "Registry initialization failed, exiting Aikari..."
+            );
+            reportProgress(
+                true,
+                false,
+                true,
+                0,
+                35,
+                entrypointConstants::EXIT_CODES::REG_INIT_FAILED
+            );
+            return entrypointConstants::EXIT_CODES::REG_INIT_FAILED;
+        }
+        reportProgress(false, false, true, 1000, 40, 0);
+
+        CUSTOM_LOG_INFO("Initializing config manager...");
+        {
+            auto configManagerIns =
+                std::make_unique<AikariLauncher::Components::AikariConfig::
+                                     LauncherConfigManager>(
+                    "launcher",
+                    fileSystemManagerIns->aikariConfigDir / "config.json",
+                    IDR_AIKARI_DEFAULT_JSON,
+                    selfHIns
+                );
+            sharedInstances.setPtr(
+                &lifecycleTypes::SharedInstances::configManagerIns,
+                std::move(configManagerIns)
+            );
+        }
+        auto* configManagerPtr = sharedInstances.getPtr(
+            &lifecycleTypes::SharedInstances::configManagerIns
         );
-    }
-    auto* configManagerPtr = sharedInstances.getPtr(
-        &lifecycleTypes::SharedInstances::configManagerIns
-    );
-    bool initConfigResult = configManagerPtr->initConfig();
-    if (!initConfigResult)
-    {
-        LOG_CRITICAL("Config initialization failed, exiting Aikari...");
-        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
-    }
+        bool initConfigResult = configManagerPtr->initConfig();
+        if (!initConfigResult)
+        {
+            CUSTOM_LOG_CRITICAL(
+                "Config initialization failed, exiting Aikari..."
+            );
+            reportProgress(
+                true,
+                false,
+                true,
+                0,
+                40,
+                entrypointConstants::EXIT_CODES::CONFIG_INIT_FAILED
+            );
+            return entrypointConstants::EXIT_CODES::CONFIG_INIT_FAILED;
+        }
 
-    auto curConfigPtr = std::atomic_load(&configManagerPtr->config);
+        auto curConfigPtr = std::atomic_load(&configManagerPtr->config);
+        reportProgress(false, false, true, 1250, 45, 0);
 
-    LOG_INFO("Initializing TLS certificates...");
-    std::filesystem::path certDir =
-        fileSystemManagerIns->aikariConfigDir / "certs";
-    bool wsCertInitResult = AikariUtils::SSLUtils::initWsCert(
-        certDir, curConfigPtr->tls.regenWsCertNextLaunch
-    );
-    if (!wsCertInitResult)
-    {
-        LOG_CRITICAL(
-            "Failed to initialize WebSocket TLS cert, exiting Aikari..."
+        CUSTOM_LOG_INFO("Initializing TLS certificates...");
+        std::filesystem::path certDir =
+            fileSystemManagerIns->aikariConfigDir / "certs";
+        bool wsCertInitResult = AikariUtils::SSLUtils::initWsCert(
+            certDir, curConfigPtr->tls.regenWsCertNextLaunch
         );
-        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
-    }
+        if (!wsCertInitResult)
+        {
+            CUSTOM_LOG_CRITICAL(
+                "Failed to initialize WebSocket TLS cert, exiting Aikari..."
+            );
+            reportProgress(
+                true,
+                false,
+                true,
+                0,
+                45,
+                entrypointConstants::EXIT_CODES::NETWORK_SERVICES_INIT_FAILED
+            );
+            return entrypointConstants::EXIT_CODES::
+                NETWORK_SERVICES_INIT_FAILED;
+        }
+        reportProgress(false, false, true, 2000, 50, 0);
 
-    LOG_INFO("Initializing Windows socket environment...");
-    ix::initNetSystem();
-    LOG_INFO("Starting Aikari WebSocket server...");
-    {
-        int wsDefaultPort = curConfigPtr->wsPreferPort;
-        auto wsServerManagerIns = std::make_unique<
-            AikariLauncherComponents::AikariWebSocketServer::MainWSServer>(
-            "127.0.0.1", wsDefaultPort, certDir / "wss.crt", certDir / "wss.key"
+        CUSTOM_LOG_INFO("Initializing Windows socket environment...");
+        ix::initNetSystem();
+        CUSTOM_LOG_INFO("Starting Aikari WebSocket server...");
+        {
+            int wsDefaultPort = curConfigPtr->wsPreferPort;
+            auto wsServerManagerIns =
+                std::make_unique<AikariLauncher::Components::
+                                     AikariWebSocketServer::MainWSServer>(
+                    "127.0.0.1",
+                    wsDefaultPort,
+                    certDir / "wss.crt",
+                    certDir / "wss.key"
+                );
+            sharedInstances.setPtr(
+                &lifecycleTypes::SharedInstances::wsServerMgrIns,
+                std::move(wsServerManagerIns)
+            );
+        }
+        auto* wsServerMgrPtr = sharedInstances.getPtr(
+            &lifecycleTypes::SharedInstances::wsServerMgrIns
         );
-        sharedInstances.setPtr(
-            &lifecycleTypes::SharedInstances::wsServerMgrIns,
-            std::move(wsServerManagerIns)
-        );
-    }
-    auto* wsServerMgrPtr =
-        sharedInstances.getPtr(&lifecycleTypes::SharedInstances::wsServerMgrIns
-        );
-    bool wsLaunchResult = wsServerMgrPtr->tryLaunchWssServer();
-    if (!wsLaunchResult)
-    {
-        LOG_CRITICAL("Failed to launch Aikari ws server, exiting Aikari...");
-        return entrypointConstants::EXIT_CODES::MODULE_LOAD_FAILED;
-    }
+        bool wsLaunchResult = wsServerMgrPtr->tryLaunchWssServer();
+        if (!wsLaunchResult)
+        {
+            CUSTOM_LOG_CRITICAL(
+                "Failed to launch Aikari ws server, exiting Aikari..."
+            );
+            reportProgress(
+                true,
+                false,
+                true,
+                0,
+                50,
+                entrypointConstants::EXIT_CODES::NETWORK_SERVICES_INIT_FAILED
+            );
+            return entrypointConstants::EXIT_CODES::
+                NETWORK_SERVICES_INIT_FAILED;
+        }
+        reportProgress(false, false, true, 1000, 60, 0);
 
-    auto& curSharedMsgQueues = lifecycleStates.getVal(
-        &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue
-    );
-
-    auto plsInputMsgQueue = std::make_shared<
-        AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
-            AikariShared::Types::InterThread::MainToSubMessageInstance>>();
-
-    curSharedMsgQueues.plsInputQueue = plsInputMsgQueue;
-
-    AikariPLS::Types::Entrypoint::EntrypointRet plsLaunchResult =
-        AikariPLS::Exports::main(
-            fileSystemManagerIns->aikariRootDir, certDir, plsInputMsgQueue
+        auto& curSharedMsgQueues = lifecycleStates.getVal(
+            &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue
         );
 
-    if (plsLaunchResult.success && plsLaunchResult.retMessageQueue.has_value())
-    {
-        curSharedMsgQueues.plsRetQueue =
-            plsLaunchResult.retMessageQueue.value();
-        LOG_DEBUG("PLS retMessageQueue set up");
+        auto plsInputMsgQueue = std::make_shared<
+            AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
+                AikariShared::Types::InterThread::MainToSubMessageInstance>>();
 
-        auto plsQueueHandler =
-            std::make_shared<AikariLauncherComponents::SubModuleSystem::
-                                 ThreadMsgHandlers::PLSMsgHandler>(
-                curSharedMsgQueues.plsRetQueue.get(),
-                curSharedMsgQueues.plsInputQueue.get(),
-                "PLS"
+        curSharedMsgQueues.plsInputQueue = plsInputMsgQueue;
+
+        AikariPLS::Types::Entrypoint::EntrypointRet plsLaunchResult =
+            AikariPLS::Exports::main(
+                fileSystemManagerIns->aikariRootDir,
+                certDir,
+                plsInputMsgQueue,
+                &AikariShared::LoggerSystem::defaultLoggerSink
             );
 
-        auto& handlersMgr =
-            AikariLifecycle::AikariSharedHandlers::getInstance();
-        handlersMgr.setVal(
-            &lifecycleTypes::GlobalSharedHandlersRegistry::
-                plsIncomingMsgQueueHandler,
-            plsQueueHandler
-        );
-    }
+        if (plsLaunchResult.success &&
+            plsLaunchResult.retMessageQueue.has_value())
+        {
+            curSharedMsgQueues.plsRetQueue =
+                plsLaunchResult.retMessageQueue.value();
+            CUSTOM_LOG_DEBUG("<PLS> retMessageQueue set up");
 
-    lifecycleStates.setVal(
-        &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue,
-        curSharedMsgQueues
-    );
+            auto plsQueueHandler =
+                std::make_shared<AikariLauncher::Components::SubModuleSystem::
+                                     ThreadMsgHandlers::PLSMsgHandler>(
+                    curSharedMsgQueues.plsRetQueue.get(),
+                    curSharedMsgQueues.plsInputQueue.get(),
+                    "PLS"
+                );
 
-    // --- To Be Done --- //
-
-    curConfigPtr.reset();
-
-    LOG_INFO("Aikari is loaded, waiting for further operations...");
-    aikariAliveFuture.get();  // Run forever - until sig recv
-
-    LOG_INFO("Stopping ws server...");
-    wsServerMgrPtr->stopWssServer();
-    ix::uninitNetSystem();
-
-    LOG_INFO("Cleaning up sub modules...");
-    if (plsLaunchResult.success)
-    {
-        AikariPLS::Exports::onExit();
-
-        auto& threadsMgr = AikariLifecycle::AikariSharedHandlers::getInstance();
-        if (auto& plsQueueHandler = threadsMgr.getVal(
+            auto& handlersMgr =
+                AikariLifecycle::AikariSharedHandlers::getInstance();
+            handlersMgr.setVal(
                 &lifecycleTypes::GlobalSharedHandlersRegistry::
-                    plsIncomingMsgQueueHandler
-            ))
-        {
-            plsQueueHandler->manualDestroy();
+                    plsIncomingMsgQueueHandler,
+                plsQueueHandler
+            );
         }
 
-        if (plsLaunchResult.plsRuntimeThread->joinable())
-        {
-            plsLaunchResult.plsRuntimeThread->join();
-        }
+        lifecycleStates.setVal(
+            &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue,
+            curSharedMsgQueues
+        );
+        reportProgress(false, false, true, 100, 90, 0);
 
-        LOG_INFO("Clean up for module PLS finished.");
+        // --- To Be Done --- //
+
+        curConfigPtr.reset();
+
+        reportProgress(false, true, true, 0, 100, 0);
+        CUSTOM_LOG_INFO("Aikari is loaded, waiting for further operations...");
+        if (runtimeMode == AikariLauncher::Public::Constants::Lifecycle::
+                               APPLICATION_RUNTIME_MODES::NORMAL ||
+            runtimeMode == AikariLauncher::Public::Constants::Lifecycle::
+                               APPLICATION_RUNTIME_MODES::DEBUG)
+        {
+            aikariAliveFuture.get();  // Run forever - until sig recv
+        }
+        else if (runtimeMode == AikariLauncher::Public::Constants::Lifecycle::
+                                    APPLICATION_RUNTIME_MODES::SERVICE)
+        {
+            WaitForSingleObject(winSvcStopEvent.value(), INFINITE);
+        }
+        reportProgress(false, false, false, 1750, 0, 0);
+
+        CUSTOM_LOG_INFO("Stopping ws server...");
+        wsServerMgrPtr->stopWssServer();
+        ix::uninitNetSystem();
+        reportProgress(false, false, false, 4000, 30, 0);
+
+        CUSTOM_LOG_INFO("Cleaning up sub modules...");
+        if (plsLaunchResult.success)
+        {
+            AikariPLS::Exports::onExit();
+
+            auto& threadsMgr =
+                AikariLifecycle::AikariSharedHandlers::getInstance();
+            if (auto& plsQueueHandler = threadsMgr.getVal(
+                    &lifecycleTypes::GlobalSharedHandlersRegistry::
+                        plsIncomingMsgQueueHandler
+                ))
+            {
+                plsQueueHandler->manualDestroy();
+            }
+
+            if (plsLaunchResult.plsRuntimeThread->joinable())
+            {
+                plsLaunchResult.plsRuntimeThread->join();
+            }
+
+            CUSTOM_LOG_INFO("Clean up for module PLS finished.");
+        }
+        reportProgress(false, false, false, 2000, 50, 0);
+
+        CUSTOM_LOG_INFO("Unloading shared instances...");
+        sharedInstances.resetPtr(
+            &lifecycleTypes::SharedInstances::configManagerIns
+        );
+        sharedInstances.resetPtr(
+            &lifecycleTypes::SharedInstances::registryManagerIns
+        );
+        sharedInstances.resetPtr(
+            &lifecycleTypes::SharedInstances::wsServerMgrIns
+        );
+        reportProgress(false, false, false, 100, 80, 0);
+
+        CUSTOM_LOG_INFO("👋 Clean up completed, goodbye.");
+        reportProgress(
+            false,
+            true,
+            false,
+            0,
+            100,
+            entrypointConstants::EXIT_CODES::NORMAL_EXIT
+        );
+        CUSTOM_LOG_DEBUG("↓ Auto deconstruction begins.");
+        return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
     }
 
-    LOG_INFO("Unloading shared instances...");
-    sharedInstances.resetPtr(&lifecycleTypes::SharedInstances::configManagerIns
-    );
-    sharedInstances.resetPtr(
-        &lifecycleTypes::SharedInstances::registryManagerIns
-    );
-    sharedInstances.resetPtr(&lifecycleTypes::SharedInstances::wsServerMgrIns);
+    namespace Utility
+    {
+        static void setupLoggerMode(
+            const AikariTypes::Infrastructure::CLIParse::CLIOptionsRet&
+                cliParseRet
+        )
+        {
+            if (cliParseRet.logMode == "ttyAndFile")
+            {
+                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                    AikariShared::LoggerSystem::LOGGER_SINK::FILE
+                );
+                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                    AikariShared::LoggerSystem::LOGGER_SINK::CONSOLE
+                );
+            }
+            else if (cliParseRet.logMode == "file")
+            {
+                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                    AikariShared::LoggerSystem::LOGGER_SINK::FILE
+                );
+            }
+            else
+            {
+                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                    AikariShared::LoggerSystem::LOGGER_SINK::CONSOLE
+                );
+            }
+        }
+    }  // namespace Utility
+}  // namespace Aikari::EternalCore
 
-    LOG_INFO("👋 Clean up completed, goodbye.");
-    LOG_DEBUG("↓ Auto deconstruction begins.");
-    return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
-}
+namespace Aikari::AsWindowsServices
+{
+    class AikariWinSvcLifecycleController
+        : public AikariLauncher::Core::WinSCM::IWinSvcHandler
+    {
+       public:
+        AikariWinSvcLifecycleController(const std::wstring& serviceName)
+            : AikariLauncher::Core::WinSCM::IWinSvcHandler(serviceName) {};
+
+       protected:
+        void onServiceStart(DWORD dwordArgc, LPWSTR* lpszArgv) override
+        {
+            std::function<void(
+                DWORD dwordCurState,
+                DWORD dwordWin32ExitCode,
+                DWORD dwordWaitHint
+            )>
+                reportFn = [this](
+                               DWORD dwordCurState,
+                               DWORD dwordWin32ExitCode,
+                               DWORD dwordWaitHint
+                           )
+            {
+                this->reportServiceStatus(
+                    dwordCurState, dwordWin32ExitCode, dwordWaitHint
+                );
+            };
+
+            auto progressReporter = std::make_unique<
+                AikariLauncher::Core::WinSCM::WinSvcLaunchProgressReporter>(
+                reportFn
+            );
+
+            Aikari::EternalCore::launchAikari(
+                AikariLauncher::Public::Constants::Lifecycle::
+                    APPLICATION_RUNTIME_MODES::SERVICE,
+                std::move(progressReporter),
+                this->hServiceStopEvent
+            );
+        };
+    };
+}  // namespace Aikari::AsWindowsServices
 
 int main(int argc, const char* argv[])
 {
+    auto parseRet = AikariCliUtils::parseCliOptions(argc, argv);
+    if (parseRet.exitNow)
+        return 0;
+    bool isRunAsSvc = (parseRet.serviceCtrl == "runAs");
+    if (isRunAsSvc)
+    {
+        AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+            AikariShared::LoggerSystem::LOGGER_SINK::FILE
+        );
+    }
+    else
+    {
+        Aikari::EternalCore::Utility::setupLoggerMode(parseRet);
+    }
     AikariShared::LoggerSystem::initLogger(
         "Main", 30, 47
     );  // 30 = Black text; 47 = White background
-    auto cliOptions = AikariCliUtils::constructCliOptions();
-    auto parseRet = AikariCliUtils::parseCliOptions(cliOptions, argc, argv);
+    if (isRunAsSvc)
+    {
+        CUSTOM_LOG_INFO("❇️ Welcome to HugoAura-Aikari");
+        CUSTOM_LOG_INFO("⌛ Launching as Service mode");
+        Aikari::AsWindowsServices::AikariWinSvcLifecycleController
+            winSvcHandler(AikariDefaults::ServiceConfig::ServiceName);
+        return winSvcHandler.startAsService();
+    }
 
-    LOG_INFO("❇️ Welcome to HugoAura-Aikari");
-    LOG_INFO("Launching as CLI mode");
-    logVersion();
-    LOG_INFO(
-        "Argv: [isDebug={}, serviceCtrl={}]",
+    CUSTOM_LOG_INFO("❇️ Welcome to HugoAura-Aikari");
+    CUSTOM_LOG_INFO("🧱 Launching as CLI mode");
+    CUSTOM_LOG_INFO(
+        "⚛️ Version: {} ({})",
+        AikariLauncher::Public::Version::Version,
+        AikariLauncher::Public::Version::VersionCode
+    );
+    CUSTOM_LOG_INFO(
+        "🎲 Argv: [isDebug={}, serviceCtrl={}]",
         parseRet.isDebug,
         parseRet.serviceCtrl
     );
 
-    switch (parseRet.isDebug)
+    if (!parseRet.isDebug)
     {
-        case false:
-            DEFAULT_LOGGER->set_level(spdlog::level::info);
-            break;
-        case true:
-            DEFAULT_LOGGER->set_level(spdlog::level::trace);
-            break;
+        DEFAULT_LOGGER->set_level(spdlog::level::info);
+    }
+    else
+    {
+        DEFAULT_LOGGER->set_level(spdlog::level::trace);
     }
 
     // TODO: Service
-    AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
+    AikariLauncher::Public::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
         curRuntimeMode =
-            parseRet.isDebug ? AikariLauncherPublic::Constants::Lifecycle::
+            parseRet.isDebug ? AikariLauncher::Public::Constants::Lifecycle::
                                    APPLICATION_RUNTIME_MODES::DEBUG
-                             : AikariLauncherPublic::Constants::Lifecycle::
+                             : AikariLauncher::Public::Constants::Lifecycle::
                                    APPLICATION_RUNTIME_MODES::NORMAL;
 
     if (parseRet.serviceCtrl == "install")
@@ -307,31 +547,37 @@ int main(int argc, const char* argv[])
         auto winSvcMgrIns = std::make_unique<AikariWinSvc::WinSvcManager>();
         if (winSvcMgrIns->isServiceExists)
         {
-            LOG_WARN("Aikari Svc already installed, skipping installation.");
-            return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
+            CUSTOM_LOG_WARN(
+                "Aikari Svc already installed, skipping installation."
+            );
+            return AikariTypes::Constants::Entrypoint::EXIT_CODES::NORMAL_EXIT;
         }
 
         bool instResult = winSvcMgrIns->installService();
         return instResult
-                   ? entrypointConstants::EXIT_CODES::NORMAL_EXIT
-                   : entrypointConstants::EXIT_CODES::SERVICE_ACTION_FAILED;
+                   ? AikariTypes::Constants::Entrypoint::EXIT_CODES::NORMAL_EXIT
+                   : AikariTypes::Constants::Entrypoint::EXIT_CODES::
+                         SERVICE_ACTION_FAILED;
     }
     else if (parseRet.serviceCtrl == "uninstall")
     {
         auto winSvcMgrIns = std::make_unique<AikariWinSvc::WinSvcManager>();
         if (!winSvcMgrIns->isServiceExists)
         {
-            LOG_WARN("Aikari Svc not installed, cannot uninstall.");
-            return entrypointConstants::EXIT_CODES::NORMAL_EXIT;
+            CUSTOM_LOG_WARN("Aikari Svc not installed, cannot uninstall.");
+            return AikariTypes::Constants::Entrypoint::EXIT_CODES::NORMAL_EXIT;
         }
 
         bool uninstResult = winSvcMgrIns->uninstallService();
         return uninstResult
-                   ? entrypointConstants::EXIT_CODES::NORMAL_EXIT
-                   : entrypointConstants::EXIT_CODES::SERVICE_ACTION_FAILED;
+                   ? AikariTypes::Constants::Entrypoint::EXIT_CODES::NORMAL_EXIT
+                   : AikariTypes::Constants::Entrypoint::EXIT_CODES::
+                         SERVICE_ACTION_FAILED;
     }
 
-    signal(SIGINT, exitSignalHandler);
+    signal(SIGINT, Aikari::EternalCore::exitSignalHandler);
 
-    return launchAikari(curRuntimeMode);
+    return Aikari::EternalCore::launchAikari(
+        curRuntimeMode, std::nullopt, std::nullopt
+    );
 }

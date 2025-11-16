@@ -3,7 +3,7 @@
 #include <Aikari-Shared/types/itc/shared.h>
 #include <nlohmann/json.hpp>
 
-namespace AikariLauncherRoutes::InterThread::Network
+namespace AikariLauncher::Routes::InterThread::Network
 {
     AikariShared::Types::InterThread::MainToSubControlReplyMessage
     handleNetworkCtrlMessage(

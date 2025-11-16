@@ -10,9 +10,9 @@
 #include "../../utils/sslUtils.h"
 
 namespace itcTypes = AikariShared::Types::InterThread;
-namespace itcConstants = AikariLauncherPublic::Constants::InterThread;
+namespace itcConstants = AikariLauncher::Public::Constants::InterThread;
 
-namespace AikariLauncherRoutes::InterThread::Network
+namespace AikariLauncher::Routes::InterThread::Network
 {
     namespace TLS
     {
@@ -103,4 +103,4 @@ namespace AikariLauncherRoutes::InterThread::Network
         return result;
     };
 
-}  // namespace AikariLauncherRoutes::InterThread::Network
+}  // namespace AikariLauncher::Routes::InterThread::Network

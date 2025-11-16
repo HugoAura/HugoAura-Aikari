@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AikariLauncherPublic::Constants::WebSocket::Errors
+namespace AikariLauncher::Public::Constants::WebSocket::Errors
 {
     constexpr const char* INVALID_ARG = "E_INVALID_ARG";
     constexpr const char* MODULE_NOT_FOUND = "E_MODULE_NOT_FOUND";
@@ -23,4 +23,4 @@ namespace AikariLauncherPublic::Constants::WebSocket::Errors
         constexpr int GENERIC_FAILURE = -3;
         constexpr int RUNTIME_FAILURE = -4;
     }  // namespace Codes
-}  // namespace AikariLauncherPublic::Constants::WebSocket::Errors
+}  // namespace AikariLauncher::Public::Constants::WebSocket::Errors

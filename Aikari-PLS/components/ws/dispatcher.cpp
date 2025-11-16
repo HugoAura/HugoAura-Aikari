@@ -6,7 +6,7 @@
 
 #include "../../routes/ws/configRoute.h"
 
-namespace launcherWsConstants = AikariLauncherPublic::Constants::WebSocket;
+namespace launcherWsConstants = AikariLauncher::Public::Constants::WebSocket;
 
 namespace AikariPLS::Components::WebSocket::Dispatcher
 {
@@ -20,14 +20,14 @@ namespace AikariPLS::Components::WebSocket::Dispatcher
         auto& rootMethod = methodVec.at(0);
 
         if (rootMethod ==
-            AikariPLS::Types::Constants::WebSocket::Config::Rules::_PREFIX)
+            AikariPLS::Types::Constants::WebSocket::Config::_PREFIX)
         {
             return AikariPLS::Routes::WebSocket::Config::handleConfigMsg(
                 srcMsg, methodVec
             );
         }
 
-        return { .code = AikariLauncherPublic::Constants::WebSocket::Errors::
+        return { .code = AikariLauncher::Public::Constants::WebSocket::Errors::
                      Codes::METHOD_NOT_FOUND,
                  .success = false,
                  .data = { { "message", "Method not found" },

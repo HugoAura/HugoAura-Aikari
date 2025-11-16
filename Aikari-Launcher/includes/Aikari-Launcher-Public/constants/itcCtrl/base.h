@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AikariLauncherPublic::Constants::InterThread::Base
+namespace AikariLauncher::Public::Constants::InterThread::Base
 {
     constexpr const char* _PREFIX = "base";
     namespace Props
@@ -15,8 +15,8 @@ namespace AikariLauncherPublic::Constants::InterThread::Base
         Data REP →
         {
             "mode": enum class to int
-        (AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES)
+        (AikariLauncher::Public::Constants::Lifecycle::APPLICATION_RUNTIME_MODES)
         }
         */
     }  // namespace Props
-}  // namespace AikariLauncherPublic::Constants::InterThread::Base
+}  // namespace AikariLauncher::Public::Constants::InterThread::Base

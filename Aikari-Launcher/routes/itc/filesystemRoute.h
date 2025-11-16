@@ -2,7 +2,7 @@
 
 #include <Aikari-Shared/types/itc/shared.h>
 
-namespace AikariLauncherRoutes::InterThread::FileSystem
+namespace AikariLauncher::Routes::InterThread::FileSystem
 {
     AikariShared::Types::InterThread::MainToSubControlReplyMessage
     handleFsCtrlMessage(

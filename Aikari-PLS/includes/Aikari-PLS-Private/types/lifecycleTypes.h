@@ -42,12 +42,12 @@ namespace AikariPLS::Types::Lifecycle
 {
     struct PLSSharedStates
     {
-        AikariLauncherPublic::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
+        AikariLauncher::Public::Constants::Lifecycle::APPLICATION_RUNTIME_MODES
             runtimeMode;
 
         static PLSSharedStates createDefault()
         {
-            return { .runtimeMode = AikariLauncherPublic::Constants::Lifecycle::
+            return { .runtimeMode = AikariLauncher::Public::Constants::Lifecycle::
                          APPLICATION_RUNTIME_MODES::NORMAL };
         };
     };

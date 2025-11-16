@@ -1,6 +1,8 @@
 ﻿#include "registry.h"
 
-#include <Aikari-Shared/utils/string.h>
+#define CUSTOM_LOG_HEADER "[Reg Manager]"
+
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/windows/winString.h>
 
 namespace AikariRegistry
@@ -10,9 +12,9 @@ namespace AikariRegistry
     {
         int success = 0;
         HKEY hKey;
-        LOG_INFO("Checking aikari root regKey...");
+        CUSTOM_LOG_INFO("Checking aikari root regKey...");
 
-        // LOG_DEBUG(std::format("Target key: {}",
+        // CUSTOM_LOG_DEBUG(std::format("Target key: {}",
         // static_cast<char>(this->aikariRootKey)));
 
         LONG result = RegCreateKeyEx(
@@ -29,7 +31,7 @@ namespace AikariRegistry
 
         if (result == ERROR_SUCCESS)
         {
-            LOG_INFO("Reg key confirmation succeed");
+            CUSTOM_LOG_INFO("Reg key confirmation succeed");
         }
         else
         {
@@ -38,8 +40,8 @@ namespace AikariRegistry
                     result
                 )
             );
-            LOG_CRITICAL(
-                "Unexpected error occurred creating aikari root regKey: " +
+            CUSTOM_LOG_CRITICAL(
+                "Unexpected error occurred creating aikari root regKey: {}",
                 parsedErr
             );
             success = -1;
@@ -151,7 +153,7 @@ namespace AikariRegistry
     {
         if (errorCode != ERROR_SUCCESS)
         {
-            LOG_ERROR(
+            CUSTOM_LOG_ERROR(
                 "An error occurred while {}, error code: {}",
                 action,
                 AikariShared::Utils::Windows::WinString::parseDWORDResult(
@@ -162,7 +164,7 @@ namespace AikariRegistry
         }
         else
         {
-            LOG_TRACE("Action: {} | Result: Success", action);
+            CUSTOM_LOG_TRACE("Action: {} | Result: Success", action);
             return true;
         }
     };

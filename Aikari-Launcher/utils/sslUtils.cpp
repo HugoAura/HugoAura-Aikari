@@ -1,5 +1,6 @@
 ﻿#include "sslUtils.h"
 
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <chrono>
 #include <fstream>
 #include <mbedtls/ctr_drbg.h>
@@ -16,8 +17,8 @@
 namespace AikariUtils::SSLUtils
 {
     bool checkCertExists(
-        const std::filesystem::path &certPath,
-        const std::filesystem::path &keyPath
+        const std::filesystem::path& certPath,
+        const std::filesystem::path& keyPath
     )
     {
         auto isCertExists = std::filesystem::exists(certPath);
@@ -33,9 +34,9 @@ namespace AikariUtils::SSLUtils
     }
 
     int genEC256TlsCert(
-        std::filesystem::path &baseDir,
-        std::string &certHost,
-        std::string &certIdentifier
+        std::filesystem::path& baseDir,
+        std::string& certHost,
+        std::string& certIdentifier
     )
     {
         mbedtls_pk_context keyContainer;
@@ -63,12 +64,12 @@ namespace AikariUtils::SSLUtils
         {
             int tmpRetVar = 0;
             std::filesystem::create_directories(baseDir);
-            const char *pers = "AikariX";
+            const char* pers = "AikariX";
             tmpRetVar = mbedtls_ctr_drbg_seed(
                 &ctrDrbg,
                 mbedtls_entropy_func,
                 &entropy,
-                reinterpret_cast<const unsigned char *>(pers),
+                reinterpret_cast<const unsigned char*>(pers),
                 strlen(pers)
             );
             if (tmpRetVar != 0)
@@ -168,8 +169,8 @@ namespace AikariUtils::SSLUtils
             mbedtls_x509_san_list sanList = {};
             sanList.node.type = MBEDTLS_X509_SAN_DNS_NAME;
             sanList.node.san.unstructured_name.p =
-                reinterpret_cast<unsigned char *>(
-                    const_cast<char *>(certHost.c_str())
+                reinterpret_cast<unsigned char*>(
+                    const_cast<char*>(certHost.c_str())
                 );
             sanList.node.san.unstructured_name.len = strlen(certHost.c_str());
 
@@ -211,7 +212,7 @@ namespace AikariUtils::SSLUtils
                     );
                 }
 
-                auto castedChar = reinterpret_cast<const char *>(keyBuffer);
+                auto castedChar = reinterpret_cast<const char*>(keyBuffer);
                 keyFile.write(castedChar, strlen(castedChar));
 
                 keyFile.close();
@@ -249,7 +250,7 @@ namespace AikariUtils::SSLUtils
                     );
                 }
 
-                auto castedChar = reinterpret_cast<const char *>(crtBuffer);
+                auto castedChar = reinterpret_cast<const char*>(crtBuffer);
                 crtFile.write(castedChar, strlen(castedChar));
 
                 crtFile.close();
@@ -258,7 +259,7 @@ namespace AikariUtils::SSLUtils
             }
             LOG_INFO("Self-signed TLS cert successfully generated.");
         }
-        catch (const std::exception &err)
+        catch (const std::exception& err)
         {
             LOG_ERROR(
                 "Unexpected error during cert generation, error: {}", err.what()
@@ -271,7 +272,7 @@ namespace AikariUtils::SSLUtils
         return 0;
     }
 
-    bool initWsCert(std::filesystem::path &baseDir, bool force)
+    bool initWsCert(std::filesystem::path& baseDir, bool force)
     {
         std::filesystem::path crtPath = baseDir / "wss.crt";
         std::filesystem::path keyPath = baseDir / "wss.key";
@@ -303,7 +304,7 @@ namespace AikariUtils::SSLUtils
         if (force)
         {
             AikariLifecycle::Utils::Config::editConfig(
-                [](auto &config)
+                [](auto& config)
                 {
                     config.tls.regenWsCertNextLaunch = false;
                     return config;

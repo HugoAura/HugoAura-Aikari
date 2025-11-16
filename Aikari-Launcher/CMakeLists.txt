@@ -3,6 +3,8 @@ project_add_executable(Aikari-Launcher
         lifecycle.cpp
         lifecycle.h
         resource.h
+        winSvcHandler.cpp
+        winSvcHandler.h
         Aikari-Launcher.rc
         components/config.cpp
         components/config.h
@@ -36,6 +38,7 @@ project_add_executable(Aikari-Launcher
         utils/lifecycleUtils.h
         utils/sslUtils.cpp
         utils/sslUtils.h
+        virtual/lifecycle/ILaunchProgressReporter.h
 )
 
 # --- Packages --- #

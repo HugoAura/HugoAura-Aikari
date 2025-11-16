@@ -89,3 +89,37 @@ add_custom_target(Aikari-Virtual-CMD-CP-PLS-RES ALL
 )
 add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-PLS-RES)
 # <<< TASK COPY_PLS_RES
+
+# --- Install --- #
+install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/
+        DESTINATION .
+        COMPONENT Core
+        PATTERN "*.pdb" EXCLUDE
+        PATTERN "*.lib" EXCLUDE
+        PATTERN "*.ilk" EXCLUDE
+)
+
+set(CPACK_PACKAGE_NAME "HugoAura Aikari")
+set(CPACK_PACKAGE_VERSION "0.0.1.0-early-alpha")
+set(CPACK_PACKAGE_VENDOR "HugoAura Devs")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Unified UX tweak tool for Seewo Hugo")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/assets/Aikari_Installer_License_File.rtf")
+# set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/Aikari_2D_Logo_ICO_Control_Panel.ico")
+
+set(CPACK_COMPONENTS_ALL Core)
+set(CPACK_COMPONENT_CORE_DISPLAY_NAME "主要组件")
+set(CPACK_COMPONENT_CORE_DESCRIPTION "应用的主要组件")
+set(CPACK_COMPONENT_CORE_REQUIRED TRUE)
+
+set(CPACK_GENERATOR "InnoSetup")
+set(CPACK_INNOSETUP_LANGUAGE "english")
+set(CPACK_INNOSETUP_ARCHITECTURE "x64")
+set(CPACK_INNOSETUP_SETUP_AppId "HugoAura.Aikari")
+set(CPACK_INNOSETUP_SETUP_AppPublisher "HugoAura Devs")
+set(CPACK_INNOSETUP_SETUP_SetupIconFile "${CMAKE_CURRENT_SOURCE_DIR}/assets/Aikari_2D_Logo_ICO_Installer.ico")
+set(CPACK_INNOSETUP_SETUP_MinVersion "6.1sp2")
+set(CPACK_INNOSETUP_SETUP_DefaultDirName "{autopf}\\HugoAura\\Aikari")
+set(CPACK_INNOSETUP_SETUP_AllowNoIcons ON)
+set(CPACK_INNOSETUP_USE_CMAKE_BOOL_FORMAT ON)
+
+include(CPack)

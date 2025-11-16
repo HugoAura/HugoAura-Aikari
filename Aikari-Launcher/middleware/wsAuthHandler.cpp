@@ -7,7 +7,7 @@
 
 namespace wsTypes = AikariTypes::Middleware::WebSocket;
 
-namespace AikariLauncherMiddlewares::WebSocket
+namespace AikariLauncher::Middlewares::WebSocket
 {
     wsTypes::WEBSOCKET_AUTH_STATUS handleClientAuth(
         const std::string& uri, const std::string& authToken
@@ -59,4 +59,4 @@ namespace AikariLauncherMiddlewares::WebSocket
             return wsTypes::WEBSOCKET_AUTH_STATUS::DENIED;
         }
     };
-}  // namespace AikariLauncherMiddlewares::WebSocket
+}  // namespace AikariLauncher::Middlewares::WebSocket

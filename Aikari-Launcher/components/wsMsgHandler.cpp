@@ -14,11 +14,11 @@
 #include "../routes/ws/basicRoute.h"
 #include "../routes/ws/configRoute.h"
 
-namespace wsTypes = AikariLauncherPublic::Types::Components::WebSocket;
-namespace wsConstants = AikariLauncherPublic::Constants::WebSocket;
+namespace wsTypes = AikariLauncher::Public::Types::Components::WebSocket;
+namespace wsConstants = AikariLauncher::Public::Constants::WebSocket;
 namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
 
-namespace AikariLauncherComponents::AikariWebSocketDispatcher
+namespace AikariLauncher::Components::AikariWebSocketDispatcher
 {
     wsTypes::ServerWSRep dispatch(
         const wsTypes::ClientWSMsg& clientMsgProps,
@@ -29,13 +29,13 @@ namespace AikariLauncherComponents::AikariWebSocketDispatcher
 
         if (topLevelMethod == wsConstants::Basic::_PREFIX)
         {
-            return AikariLauncherRoutes::WebSocket::Basic::handleBasicMethods(
+            return AikariLauncher::Routes::WebSocket::Basic::handleBasicMethods(
                 clientMsgProps, methodVec
             );
         }
         else if (topLevelMethod == wsConstants::Config::_PREFIX)
         {
-            return AikariLauncherRoutes::WebSocket::Config::handleConfigMethods(
+            return AikariLauncher::Routes::WebSocket::Config::handleConfigMethods(
                 clientMsgProps, methodVec
             );
         }
@@ -44,11 +44,11 @@ namespace AikariLauncherComponents::AikariWebSocketDispatcher
             return wsConstants::Errors::Templates::METHOD_NOT_FOUND;
         };
     }
-}  // namespace AikariLauncherComponents::AikariWebSocketDispatcher
+}  // namespace AikariLauncher::Components::AikariWebSocketDispatcher
 
-namespace AikariLauncherComponents::AikariWebSocketHandler
+namespace AikariLauncher::Components::AikariWebSocketHandler
 {
-    wsTypes::MODULES getMsgModule(std::string& moduleStr)
+    wsTypes::MODULES getMsgModule(const std::string& moduleStr)
     {
         if (moduleStr == "launcher")
         {
@@ -85,7 +85,7 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                     );
 
                 wsTypes::ServerWSRep result =
-                    AikariLauncherComponents::AikariWebSocketDispatcher::
+                    AikariLauncher::Components::AikariWebSocketDispatcher::
                         dispatch(task.content, methodVec);
 
                 result.eventId = task.content.eventId;
@@ -121,8 +121,8 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                                         MODULE_CONNECTION_BROKEN_VARIANT_QUEUE } },
                     };
                     wsTypes::ServerWSTaskRet taskRet{
-                        .result = repContent,
-                        .clientId = task.clientId,
+                        .result = std::move(repContent),
+                        .clientId = std::move(task.clientId),
                         .isBroadcast = false,
                     };
                     retMsgQueue->push(std::move(taskRet));
@@ -130,10 +130,11 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
                 }
 
                 AikariShared::Types::InterThread::MainToSubWebSocketMessage
-                    curMsgWsInfo{ .method = task.content.method,
-                                  .data = task.content.data,
-                                  .eventId = task.content.eventId,
-                                  .wsInfo = { .clientId = task.clientId } };
+                    curMsgWsInfo{ .method = std::move(task.content.method),
+                                  .data = std::move(task.content.data),
+                                  .eventId = std::move(task.content.eventId),
+                                  .wsInfo = { .clientId =
+                                                  std::move(task.clientId) } };
 
                 AikariShared::Types::InterThread::MainToSubMessageInstance
                     plsInputMsg{ .type = AikariShared::Types::InterThread::
@@ -147,7 +148,7 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
             default:
             {
                 wsTypes::ServerWSTaskRet retVal;
-                wsTypes::ServerWSRep repContent = AikariLauncherPublic::
+                wsTypes::ServerWSRep repContent = AikariLauncher::Public::
                     Constants::WebSocket::Errors::Templates::MODULE_NOT_FOUND;
                 repContent.eventId = task.content.eventId;
                 retVal.clientId = task.clientId;
@@ -157,4 +158,4 @@ namespace AikariLauncherComponents::AikariWebSocketHandler
             break;
         }
     }
-}  // namespace AikariLauncherComponents::AikariWebSocketHandler
+}  // namespace AikariLauncher::Components::AikariWebSocketHandler

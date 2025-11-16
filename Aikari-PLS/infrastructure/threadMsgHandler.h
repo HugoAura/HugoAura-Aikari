@@ -15,13 +15,11 @@ namespace AikariPLS::Infrastructure::MsgQueue
 
        protected:
         void onControlMessage(
-            const AikariShared::Types::InterThread::MainToSubControlMessage&
-                retMsg
+            AikariShared::Types::InterThread::MainToSubControlMessage& srcMsg
         ) override final;
 
         void onWebSocketMessage(
-            const AikariShared::Types::InterThread::MainToSubWebSocketMessage&
-                retMsg
+            AikariShared::Types::InterThread::MainToSubWebSocketMessage& srcMsg
         ) override final;
     };
 }  // namespace AikariPLS::Infrastructure::MsgQueue

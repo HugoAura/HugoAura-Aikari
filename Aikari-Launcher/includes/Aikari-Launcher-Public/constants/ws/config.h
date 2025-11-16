@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AikariLauncherPublic::Constants::WebSocket::Config
+namespace AikariLauncher::Public::Constants::WebSocket::Config
 {
     constexpr const char* _PREFIX = "config";
     namespace Actions
@@ -34,4 +34,4 @@ namespace AikariLauncherPublic::Constants::WebSocket::Config
         }
         */
     }  // namespace Actions
-}  // namespace AikariLauncherPublic::Constants::WebSocket::Config
+}  // namespace AikariLauncher::Public::Constants::WebSocket::Config

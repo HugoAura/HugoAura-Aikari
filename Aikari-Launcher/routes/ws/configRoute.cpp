@@ -9,13 +9,13 @@
 #include "../../lifecycle.h"
 #include "../../utils/lifecycleUtils.h"
 
-namespace wsConstants = AikariLauncherPublic::Constants::WebSocket;
+namespace wsConstants = AikariLauncher::Public::Constants::WebSocket;
 
-namespace AikariLauncherRoutes::WebSocket::Config
+namespace AikariLauncher::Routes::WebSocket::Config
 {
     namespace Actions
     {
-        static AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+        static AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
         _impl_GET_CONFIG()
         {
             auto& sharedIns =
@@ -36,7 +36,7 @@ namespace AikariLauncherRoutes::WebSocket::Config
             }
             else
             {
-                return { .code = AikariLauncherPublic::Constants::WebSocket::
+                return { .code = AikariLauncher::Public::Constants::WebSocket::
                              Errors::Codes::GENERIC_FAILURE,
                          .success = false,
                          .data = {
@@ -44,7 +44,7 @@ namespace AikariLauncherRoutes::WebSocket::Config
             }
         }
 
-        static AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+        static AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
         _impl_UPDATE_CONFIG(nlohmann::json clientDataIn)
         {
             if (!clientDataIn.contains("key") ||
@@ -139,16 +139,16 @@ namespace AikariLauncherRoutes::WebSocket::Config
         }
     }  // namespace Actions
 
-    AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+    AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
     handleConfigMethods(
-        const AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg&
+        const AikariLauncher::Public::Types::Components::WebSocket::ClientWSMsg&
             clientDataIncoming,
         const std::vector<std::string>& methods
     )
     {
         const std::string& subMethod = methods.at(1);
         const std::string& fullMethod = clientDataIncoming.method;
-        AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep result;
+        AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep result;
         result.code = wsConstants::Errors::Codes::UNEXPECTED_ERROR;
 
         if (subMethod == wsConstants::Config::Actions::_PREFIX)
@@ -166,4 +166,4 @@ namespace AikariLauncherRoutes::WebSocket::Config
         return wsConstants::Errors::Templates::METHOD_NOT_FOUND;
     }
 }
-// namespace AikariLauncherRoutes::WebSocket::Config
+// namespace AikariLauncher::Routes::WebSocket::Config

@@ -31,7 +31,7 @@ namespace AikariTypes::Config
     };
 }  // namespace AikariTypes::Config
 
-namespace AikariLauncherComponents::AikariConfig
+namespace AikariLauncher::Components::AikariConfig
 {
     void LauncherConfigManager::loadConfigImpl(nlohmann::json& configData)
     {
@@ -48,4 +48,4 @@ namespace AikariLauncherComponents::AikariConfig
         nlohmann::json stringifyConfig = *std::atomic_load(&this->config);
         return stringifyConfig;
     };
-};  // namespace AikariLauncherComponents::AikariConfig
+};  // namespace AikariLauncher::Components::AikariConfig

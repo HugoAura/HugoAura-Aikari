@@ -1,4 +1,5 @@
 #include <Aikari-PLS-Private/types/components/rules.h>
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/string.h>
 
 namespace AikariPLS::Types::RuleSystem
@@ -87,7 +88,9 @@ namespace AikariPLS::Types::RuleSystem
     {
         void Rewrite::onConfigUpdate(nlohmann::json& newConfig)
         {
-            this->config = newConfig;
+            if (newConfig == nullptr)
+                throw std::invalid_argument("Invalid newConfig provided.");
+            this->config = std::move(newConfig);
             if (this->enabledBy.value_or("").empty())
             {
                 // ↑ handle nullopt || enabledBy exactly === ""
@@ -95,29 +98,27 @@ namespace AikariPLS::Types::RuleSystem
             }
             else
             {
-                auto enabledByLevels = AikariShared::Utils::String::split(
-                    this->enabledBy.value(), '.'
+                const nlohmann::json::json_pointer enabledByAsJsonPointer(
+                    std::format(
+                        "/{}",
+                        AikariShared::Utils::String::replaceAll(
+                            this->enabledBy.value(), ".", "/"
+                        )
+                    )
                 );
-                nlohmann::json* curConfigAt = &newConfig;
-                bool isInvalidEnabledBy = false;
-                for (auto iterator = enabledByLevels.begin();
-                     iterator != enabledByLevels.end() - 1;
-                     ++iterator)
+                try
                 {
-                    if (curConfigAt->contains(*iterator))
-                    {
-                        curConfigAt = &(*curConfigAt)[*iterator];
-                    }
-                    else
-                    {
-                        isInvalidEnabledBy = true;
-                        break;
-                    }
+                    this->isEnabled = this->config.at(enabledByAsJsonPointer);
                 }
-                this->isEnabled =
-                    isInvalidEnabledBy
-                        ? false
-                        : curConfigAt->value(enabledByLevels.back(), false);
+                catch (const std::exception& e)
+                {
+                    this->isEnabled = false;
+                    LOG_WARN(
+                        "[Rule Manager / Per Rule / Update Config] Invalid "
+                        "enabledBy provided. Error: {} ",
+                        e.what()
+                    );
+                }
             }
         }
     }  // namespace RuleMapping::PerRuleProp

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace AikariLauncherPublic::Constants::InterThread::FileSystem
+namespace AikariLauncher::Public::Constants::InterThread::FileSystem
 {
     constexpr const char* _PREFIX = "fs";
     namespace Base
@@ -22,4 +22,4 @@ namespace AikariLauncherPublic::Constants::InterThread::FileSystem
         }
         */
     }  // namespace Base
-}  // namespace AikariLauncherPublic::Constants::InterThread::FileSystem
+}  // namespace AikariLauncher::Public::Constants::InterThread::FileSystem

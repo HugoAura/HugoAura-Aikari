@@ -8,7 +8,7 @@ namespace ix
     class WebSocket;
 }
 
-namespace AikariLauncherPublic::Types::Components::WebSocket
+namespace AikariLauncher::Public::Types::Components::WebSocket
 {
     enum class MODULES
     {
@@ -47,4 +47,4 @@ namespace AikariLauncherPublic::Types::Components::WebSocket
         std::optional<std::string> clientId;
         bool isBroadcast = false;
     };
-};  // namespace AikariLauncherPublic::Types::Components::WebSocket
+};  // namespace AikariLauncher::Public::Types::Components::WebSocket

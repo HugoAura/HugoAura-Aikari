@@ -12,7 +12,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace AikariLauncherComponents::AikariWebSocketServer
+namespace AikariLauncher::Components::AikariWebSocketServer
 {
     struct WebSocketStates
     {
@@ -48,7 +48,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         void waitWssServer();
         void stopWssServer();
         void pushRetQueue(
-            AikariLauncherPublic::Types::Components::WebSocket::ServerWSTaskRet&
+            AikariLauncher::Public::Types::Components::WebSocket::ServerWSTaskRet&
                 ret
         );
 
@@ -59,12 +59,12 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         std::shared_ptr<WebSocketStates> wsStates;
         std::unique_ptr<
             AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariLauncherPublic::Types::Components::WebSocket::
+                AikariLauncher::Public::Types::Components::WebSocket::
                     ServerWSTaskRet>>
             retMsgQueue;
         std::unique_ptr<
             AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
-                AikariLauncherPublic::Types::Components::WebSocket::
+                AikariLauncher::Public::Types::Components::WebSocket::
                     ClientWSTask>>
             inputMsgQueue;
 
@@ -72,7 +72,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         std::unique_ptr<std::jthread> inputMsgWorkerThread;
 
         std::unique_ptr<AikariShared::Infrastructure::MessageQueue::PoolQueue<
-            AikariLauncherPublic::Types::Components::WebSocket::ClientWSTask>>
+            AikariLauncher::Public::Types::Components::WebSocket::ClientWSTask>>
             threadPool;
 
         size_t threadCount = 4;
@@ -90,4 +90,4 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         static std::string genAuthToken();
         static int genRandomPort();
     };
-}  // namespace AikariLauncherComponents::AikariWebSocketServer
+}  // namespace AikariLauncher::Components::AikariWebSocketServer

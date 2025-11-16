@@ -2,7 +2,6 @@
 
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 #include <Aikari-Shared/base/SingleIns.hpp>
-#include <mutex>
 
 namespace AikariLifecycle
 {

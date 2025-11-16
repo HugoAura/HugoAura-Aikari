@@ -69,16 +69,14 @@ namespace AikariShared::Infrastructure::InterThread
             threadPool;
 
         virtual void onControlMessage(
-            const AikariShared::Types::InterThread::SubToMainControlMessage&
-                retMsg
+            AikariShared::Types::InterThread::SubToMainControlMessage& retMsg
         ) {};
         virtual void onControlReply(
             const AikariShared::Types::InterThread::
                 SubToMainControlReplyMessage& retMsg
         ) {};
         virtual void onWebSocketMessage(
-            const AikariShared::Types::InterThread::SubToMainWebSocketReply&
-                wsReply
+            AikariShared::Types::InterThread::SubToMainWebSocketReply& wsReply
         ) {};
 
         void retMsgWorker() override;

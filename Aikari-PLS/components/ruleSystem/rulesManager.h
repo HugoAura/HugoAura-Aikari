@@ -35,10 +35,9 @@ namespace AikariPLS::Components::Rules
         std::unordered_map<
             ConfigKeyStr,
             std::vector<
-                std::unique_ptr<
                     AikariPLS::Types::RuleSystem::RuleMapping::
                                     PerRuleProp::Rewrite
-                                >*
+                                *
                         >
         > configKeyAssociationMap; // stores rawPtrsForUniquePtrs
         // clang-format on

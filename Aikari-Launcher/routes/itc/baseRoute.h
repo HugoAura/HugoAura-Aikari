@@ -2,7 +2,7 @@
 
 #include <Aikari-Shared/types/itc/shared.h>
 
-namespace AikariLauncherRoutes::InterThread::Base
+namespace AikariLauncher::Routes::InterThread::Base
 {
     AikariShared::Types::InterThread::MainToSubControlReplyMessage
     handleBaseCtrlMsg(

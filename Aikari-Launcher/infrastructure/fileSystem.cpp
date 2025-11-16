@@ -1,6 +1,8 @@
 ﻿#include "fileSystem.h"
 
-#include <Aikari-Launcher-Private/common.h>
+#define CUSTOM_LOG_HEADER "[FS Manager]"
+
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/string.h>
 #include <Aikari-Shared/utils/windows/winString.h>
 #include <ShlObj.h>
@@ -24,7 +26,7 @@ namespace AikariFileSystem
             try
             {
                 fs::path programDataPath(pathPtr);
-                LOG_DEBUG(
+                CUSTOM_LOG_DEBUG(
                     "Get ProgramData path success: {}", programDataPath.string()
                 );
 
@@ -32,56 +34,67 @@ namespace AikariFileSystem
             }
             catch (const fs::filesystem_error& error)
             {
-                LOG_ERROR(
-                    "⚠ A filesystem error occurred getting the path of "
-                    "ProgramData "
-                    "dir."
+                CUSTOM_LOG_ERROR(
+                    "<!> A filesystem error occurred getting the path of "
+                    "ProgramData dir."
                 );
                 LOG_ERROR(error.what());
                 LOG_ERROR("Using the default value.");
-                finalPath = fs::path("C") / "ProgramData";
+                finalPath = fs::path("C:") / "ProgramData";
             }
 
             CoTaskMemFree(pathPtr);
         }
         else
         {
-            LOG_ERROR(
-                "⚠ Unexpected error occurred getting the path of ProgramData "
-                "dir, "
-                "trying to use default val."
+            CUSTOM_LOG_ERROR(
+                "<!> Unexpected error occurred getting the path of ProgramData "
+                "dir, trying to use default val."
             );
             LOG_ERROR("Error detail: ");
             LOG_ERROR(
                 AikariShared::Utils::Windows::WinString::parseHResult(hResult)
             );
-            finalPath = fs::path("C") / "ProgramData";
+            finalPath = fs::path("C:") / "ProgramData";
         }
 
         return finalPath;
     };
 
-    int FileSystemManager::ensureDirExists() const
+    bool FileSystemManager::ensureDirExists() const
     {
-        if (!fs::exists(this->aikariRootDir))
+        try
         {
-            LOG_INFO("Aikari root directory not exists, creating it...");
-            fs::create_directories(this->aikariRootDir);
-        }
+            if (!fs::exists(this->aikariRootDir))
+            {
+                CUSTOM_LOG_INFO(
+                    "Aikari root directory not exists, creating it..."
+                );
+                fs::create_directories(this->aikariRootDir);
+            }
 
-        LOG_INFO("Checking log dir...");
-        if (!fs::exists(this->aikariLogDir))
+            CUSTOM_LOG_INFO("Checking log dir...");
+            if (!fs::exists(this->aikariLogDir))
+            {
+                fs::create_directory(this->aikariLogDir);
+            }
+
+            CUSTOM_LOG_INFO("Checking config dir...");
+            if (!fs::exists(this->aikariConfigDir))
+            {
+                fs::create_directory(this->aikariConfigDir);
+            }
+
+            return true;
+        }
+        catch (const std::exception& err)
         {
-            fs::create_directory(this->aikariLogDir);
+            CUSTOM_LOG_ERROR(
+                "Error initializing Aikari storage directories. Error: {}",
+                err.what()
+            );
+            return false;
         }
-
-        LOG_INFO("Checking config dir...");
-        if (!fs::exists(this->aikariConfigDir))
-        {
-            fs::create_directory(this->aikariConfigDir);
-        }
-
-        return 0;
     }
     // --- End implementations of FileSystemManager --- //
 };  // namespace AikariFileSystem

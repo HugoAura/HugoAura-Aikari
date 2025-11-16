@@ -23,7 +23,9 @@ namespace AikariPLS::Exports
         std::shared_ptr<
             AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>>
-            inputMessageQueue
+            inputMessageQueue,
+        const std::unordered_set<AikariShared::LoggerSystem::LOGGER_SINK>*
+            loggerSinks
     )
     {
         auto& sharedInsManager =
@@ -31,6 +33,7 @@ namespace AikariPLS::Exports
         auto& sharedQueuesManager =
             AikariPLS::Lifecycle::PLSSharedQueuesManager::getInstance();
 
+        AikariShared::LoggerSystem::defaultLoggerSink = *loggerSinks;
         AikariShared::LoggerSystem::initLogger(
             "PLS", 37, 45
         );  // 37 = White text; 45 = Purple background

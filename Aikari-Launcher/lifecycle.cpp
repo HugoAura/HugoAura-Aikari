@@ -1,6 +1,5 @@
-﻿#include "lifecycle.h"
+﻿#include "./lifecycle.h"
 
-#include <Aikari-Launcher-Private/common.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 
 #include "components/config.h"

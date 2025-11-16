@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AikariLauncherPublic::Constants::Lifecycle
+namespace AikariLauncher::Public::Constants::Lifecycle
 {
     enum class APPLICATION_RUNTIME_MODES
     {
@@ -8,4 +8,4 @@ namespace AikariLauncherPublic::Constants::Lifecycle
         DEBUG,
         SERVICE,
     };
-}  // namespace AikariLauncherPublic::Constants::Lifecycle
+}  // namespace AikariLauncher::Public::Constants::Lifecycle

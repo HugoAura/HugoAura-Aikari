@@ -5,33 +5,33 @@
 #include <Aikari-Launcher-Public/version.h>
 #include <nlohmann/json.hpp>
 
-namespace wsConstants = AikariLauncherPublic::Constants::WebSocket;
+namespace wsConstants = AikariLauncher::Public::Constants::WebSocket;
 
-namespace AikariLauncherRoutes::WebSocket::Basic
+namespace AikariLauncher::Routes::WebSocket::Basic
 {
     namespace Props
     {
-        static AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep
+        static AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
         _impl_GET_VERSION()
         {
             return { .code = 0,
                      .success = true,
                      .data = {
-                         { "version", AikariLauncherPublic::Version::Version },
+                         { "version", AikariLauncher::Public::Version::Version },
                          { "versionCode",
-                           AikariLauncherPublic::Version::VersionCode } } };
+                           AikariLauncher::Public::Version::VersionCode } } };
         }
     }  // namespace Props
 
-    AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep handleBasicMethods(
-        const AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg&
+    AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep handleBasicMethods(
+        const AikariLauncher::Public::Types::Components::WebSocket::ClientWSMsg&
             clientDataIncoming,
         const std::vector<std::string>& methods
     )
     {
         const std::string& subMethod = methods.at(1);
         const std::string& fullMethod = clientDataIncoming.method;
-        AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep result;
+        AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep result;
         result.code =
             wsConstants::Errors::Codes::UNEXPECTED_ERROR;  // default val
 
@@ -53,4 +53,4 @@ namespace AikariLauncherRoutes::WebSocket::Basic
 
         return result;
     };
-}  // namespace AikariLauncherRoutes::WebSocket::Basic
+}  // namespace AikariLauncher::Routes::WebSocket::Basic

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace AikariLauncherPublic::Constants::InterThread::Network
+namespace AikariLauncher::Public::Constants::InterThread::Network
 {
     constexpr const char* _PREFIX = "network";
     namespace TLS
@@ -24,4 +24,4 @@ namespace AikariLauncherPublic::Constants::InterThread::Network
         }
         */
     }  // namespace TLS
-}  // namespace AikariLauncherPublic::Constants::InterThread::Network
+}  // namespace AikariLauncher::Public::Constants::InterThread::Network

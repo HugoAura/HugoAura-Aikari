@@ -2,6 +2,7 @@
 
 #include <Aikari-Launcher-Private/types/constants/webSocket.h>
 #include <Aikari-Launcher-Public/constants/ws/errors.h>
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/utils/crypto.h>
 #include <Aikari-Shared/utils/windows/winString.h>
 #include <chrono>
@@ -17,7 +18,7 @@
 namespace winStringUtils = AikariShared::Utils::Windows::WinString;
 namespace messageQueue = AikariShared::Infrastructure::MessageQueue;
 
-namespace wsTypes = AikariLauncherPublic::Types::Components::WebSocket;
+namespace wsTypes = AikariLauncher::Public::Types::Components::WebSocket;
 
 typedef messageQueue::SinglePointMessageQueue<wsTypes::ClientWSTask>
     InputMsgQueue;
@@ -25,7 +26,7 @@ typedef messageQueue::SinglePointMessageQueue<wsTypes::ClientWSTask>
 typedef messageQueue::SinglePointMessageQueue<wsTypes::ServerWSTaskRet>
     RetMsgQueue;
 
-namespace AikariLauncherComponents::AikariWebSocketServer
+namespace AikariLauncher::Components::AikariWebSocketServer
 {
     MainWSServer::~MainWSServer()
     {
@@ -113,7 +114,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
             this->threadCount,
             [this](wsTypes::ClientWSTask task)
             {
-                AikariLauncherComponents::AikariWebSocketHandler::handleTask(
+                AikariLauncher::Components::AikariWebSocketHandler::handleTask(
                     task, this->retMsgQueue.get()
                 );
             }
@@ -174,7 +175,8 @@ namespace AikariLauncherComponents::AikariWebSocketServer
 
     // ↓ public
     void MainWSServer::pushRetQueue(
-        AikariLauncherPublic::Types::Components::WebSocket::ServerWSTaskRet& ret
+        AikariLauncher::Public::Types::Components::WebSocket::ServerWSTaskRet&
+            ret
     )
     {
         this->retMsgQueue->push(std::move(ret));
@@ -313,7 +315,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
             auto webSocketIns = webSocketWeak.lock();
 
             auto authStatus =
-                AikariLauncherMiddlewares::WebSocket::handleClientAuth(
+                AikariLauncher::Middlewares::WebSocket::handleClientAuth(
                     msg->openInfo.uri, this->authToken
                 );
 
@@ -322,7 +324,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
             {
                 static const nlohmann::json deniedRep = {
                     { "code",
-                      AikariLauncherPublic::Constants::WebSocket::Errors::
+                      AikariLauncher::Public::Constants::WebSocket::Errors::
                           Codes::AUTH_FAILURE },
                     { "type", "basic.auth.reportAuthStatus" },
                     { "success", false },
@@ -374,7 +376,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
 #endif
 
             const std::string& clientId = connectionState->getId();
-            AikariLauncherPublic::Types::Components::WebSocket::ClientWSMsg
+            AikariLauncher::Public::Types::Components::WebSocket::ClientWSMsg
                 clientMsg;
             try
             {
@@ -383,7 +385,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                 clientMsg.module = clientMsgJson.at("module");
                 clientMsg.method = clientMsgJson.at("method");
                 clientMsg.eventId = clientMsgJson.at("eventId");
-                clientMsg.data = clientMsgJson.at("data");
+                clientMsg.data = clientMsgJson["data"];
             }
             catch (const nlohmann::json::exception& e)
             {
@@ -405,7 +407,7 @@ namespace AikariLauncherComponents::AikariWebSocketServer
                 return;
             }
 
-            AikariLauncherPublic::Types::Components::WebSocket::ClientWSTask
+            AikariLauncher::Public::Types::Components::WebSocket::ClientWSTask
                 taskIns;
             taskIns.content = clientMsg;
             taskIns.clientId = clientId;
@@ -479,4 +481,4 @@ namespace AikariLauncherComponents::AikariWebSocketServer
         int randomPort = dist(generator);
         return randomPort;
     };
-}  // namespace AikariLauncherComponents::AikariWebSocketServer
+}  // namespace AikariLauncher::Components::AikariWebSocketServer

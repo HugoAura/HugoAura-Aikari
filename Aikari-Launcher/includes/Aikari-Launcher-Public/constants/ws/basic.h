@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AikariLauncherPublic::Constants::WebSocket::Basic
+namespace AikariLauncher::Public::Constants::WebSocket::Basic
 {
     constexpr const char* _PREFIX = "basic";
     namespace Props
@@ -19,4 +19,4 @@ namespace AikariLauncherPublic::Constants::WebSocket::Basic
         }
         */
     }  // namespace Props
-}  // namespace AikariLauncherPublic::Constants::WebSocket::Basic
+}  // namespace AikariLauncher::Public::Constants::WebSocket::Basic

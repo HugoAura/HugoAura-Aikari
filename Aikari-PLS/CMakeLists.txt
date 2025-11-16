@@ -35,6 +35,15 @@
         utils/windowsApi.h
 )
 
+# --- Ext Src Defs --- #
+set(AIKARI_PLS_STATIC_RESOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources/config/default.json"
+)
+
+set_source_files_properties("Aikari-PLS.rc" PROPERTIES
+        OBJECT_DEPENDS ${AIKARI_PLS_STATIC_RESOURCES}
+)
+
 # --- Packages --- #
 
 # SPDLog

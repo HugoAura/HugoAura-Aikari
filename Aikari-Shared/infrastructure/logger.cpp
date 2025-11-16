@@ -1,12 +1,19 @@
 ﻿#include <Aikari-Shared/infrastructure/logger.h>
+#include <ShlObj.h>
+#include <filesystem>
+#include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <windows.h>
 
+#ifdef _DEBUG
+#include <iostream>
+#endif
+
 class AikariCustomFormatter : public spdlog::formatter
 {
    public:
-    AikariCustomFormatter(const std::string moduleSection)
+    AikariCustomFormatter(const std::string& moduleSection)
         : sharedHead{ "\033[0;36m<Aikari>\033[0m [%Y-%m-%d %H:%M:%S]" },
           sharedEnd{ "@ \033[0;33m/%s:%#/\033[0m %v" },
           moduleSection(moduleSection)
@@ -97,29 +104,173 @@ class AikariCustomFormatter : public spdlog::formatter
 
 namespace AikariShared::LoggerSystem
 {
+    namespace Utility
+    {
+        static std::filesystem::path getOrCreateLogFileBaseDir()
+        {
+            PWSTR pathPtr = NULL;
+            HRESULT hResult =
+                SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &pathPtr);
+            std::filesystem::path programDataDir;
+            if (SUCCEEDED(hResult))
+            {
+                programDataDir = std::filesystem::path(pathPtr);
+            }
+            else
+            {
+                programDataDir = std::filesystem::path("C:") / "ProgramData";
+            }
+            CoTaskMemFree(pathPtr);
+            std::filesystem::path logDir =
+                programDataDir / "HugoAura" / "Aikari" / "log";
+            if (!std::filesystem::exists(logDir))
+                std::filesystem::create_directories(logDir);
+            return logDir;
+        };
+
+        static void cleanOldLogs(
+            const std::filesystem::path& baseDir,
+            std::string_view fileFormat,
+            unsigned int preserveDays
+        )
+        {
+            if (!std::filesystem::exists(baseDir) ||
+                !std::filesystem::is_directory(baseDir))
+                return;
+            const auto dateFmtStartPos = fileFormat.find('<');
+            const auto dateFmtEndPos = fileFormat.find('>');
+            if (dateFmtStartPos == std::string::npos ||
+                dateFmtEndPos == std::string::npos)
+                return;
+            const std::string_view filePrefix =
+                fileFormat.substr(0, dateFmtStartPos);
+            const std::string_view fileSuffix =
+                fileFormat.substr(dateFmtEndPos + 1);
+
+            std::string dateFmtStr = std::string(fileFormat.substr(
+                dateFmtStartPos + 1, dateFmtEndPos - dateFmtStartPos - 1
+            ));
+
+            const std::chrono::zoned_time ztLocal(
+                std::chrono::current_zone(), std::chrono::system_clock::now()
+            );
+            const auto curDay =
+                std::chrono::floor<std::chrono::days>(ztLocal.get_local_time());
+            const auto cutoffDayLocal =
+                curDay - std::chrono::days(preserveDays);
+            const std::chrono::zoned_time ztCutoff(
+                ztLocal.get_time_zone(), cutoffDayLocal
+            );
+            const std::chrono::sys_days cutoffDay =
+                std::chrono::floor<std::chrono::days>(ztCutoff.get_sys_time());
+
+            for (const auto& fileEntity :
+                 std::filesystem::recursive_directory_iterator(baseDir))
+            {
+                if (!fileEntity.is_regular_file())
+                    continue;
+                const auto& path = fileEntity.path();
+                const std::string fileName = path.filename().string();
+                if (!fileName.starts_with(filePrefix) ||
+                    !fileName.ends_with(fileSuffix))
+                    continue;
+
+                const std::string_view fileNameDate =
+                    std::string_view(fileName).substr(
+                        filePrefix.length(),
+                        fileName.length() - filePrefix.length() -
+                            fileSuffix.length()
+                    );
+
+                std::chrono::sys_days fileDate;
+                std::stringstream fileNameDateSS{ std::string(fileNameDate) };
+                fileNameDateSS >> std::chrono::parse(dateFmtStr, fileDate);
+
+                if (fileNameDateSS.fail())
+                    continue;
+
+                if (fileDate < cutoffDay)
+                {
+                    std::error_code ec;
+                    std::filesystem::remove(path, ec);
+                    if (ec)
+                    {
+#ifdef _DEBUG
+                        std::cerr << "[Log Cleaner] Error removing file: "
+                                  << ec.message() << std::endl;
+#endif
+                    }
+                }
+            }
+        };
+
+        static std::filesystem::path getTodayLogFileName(
+            const std::string& moduleName, const std::filesystem::path& baseDir
+        )
+        {
+            std::chrono::zoned_time ztLocal(
+                std::chrono::current_zone(), std::chrono::system_clock::now()
+            );
+
+            std::string fileNameTimePart = std::format("{:%Y-%m-%d}", ztLocal);
+            std::filesystem::path finalLogFileName =
+                baseDir /
+                std::format("Aikari_{}_{}.log", moduleName, fileNameTimePart);
+
+            return finalLogFileName.string();
+        };
+    }  // namespace Utility
+
     int initLogger(
         const std::string& moduleName, int moduleTextColor, int moduleBgColor
     )
     {
-        SetConsoleOutputCP(CP_UTF8
-        );  // Support emoji output 🥰, refer to:
+        std::vector<std::shared_ptr<spdlog::sinks::sink>> loggerSinks;
+        if (AikariShared::LoggerSystem::defaultLoggerSink.contains(
+                AikariShared::LoggerSystem::LOGGER_SINK::CONSOLE
+            ))
+        {
+            SetConsoleOutputCP(CP_UTF8);  // Support emoji output 🥰, refer to:
             // https://stackoverflow.com/questions/71342226/c-not-printing-emojis-as-expected
 
-        std::string moduleSectionContent = std::format(
-            "\033[0;{}m\033[{}m|{}|\033[0m",
-            moduleTextColor,
-            moduleBgColor,
-            moduleName
-        );
+            std::string moduleSectionContent = std::format(
+                "\033[0;{}m\033[{}m|{}|\033[0m",
+                moduleTextColor,
+                moduleBgColor,
+                moduleName
+            );
 
-        auto consoleSink =
-            std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-        consoleSink->set_level(spdlog::level::trace);
-        consoleSink->set_formatter(
-            std::make_unique<AikariCustomFormatter>(moduleSectionContent)
-        );
+            auto consoleSink =
+                std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+            consoleSink->set_level(spdlog::level::trace);
+            consoleSink->set_formatter(
+                std::make_unique<AikariCustomFormatter>(moduleSectionContent)
+            );
+            loggerSinks.emplace_back(consoleSink);
+        }
 
-        std::vector loggerSinks{ consoleSink };
+        if (AikariShared::LoggerSystem::defaultLoggerSink.contains(
+                AikariShared::LoggerSystem::LOGGER_SINK::FILE
+            ))
+        {
+            const std::filesystem::path targetLogDir =
+                Utility::getOrCreateLogFileBaseDir();
+            Utility::cleanOldLogs(
+                targetLogDir, "Aikari_" + moduleName + "_<%Y-%m-%d>.log", 7
+            );
+            auto targetLogPath =
+                Utility::getTodayLogFileName(moduleName, targetLogDir);
+            auto dailyFileLoggerSink =
+                std::make_shared<spdlog::sinks::daily_file_format_sink_mt>(
+                    targetLogPath.string(), 0, 0, false, 10
+                );
+            dailyFileLoggerSink->set_level(spdlog::level::info);
+            dailyFileLoggerSink->set_pattern(
+                "[%Y-%m-%d %H:%M:%S] |" + moduleName + "| [%l] /%s:%#/ %v"
+            );
+            loggerSinks.emplace_back(dailyFileLoggerSink);
+        }
+
         auto defaultLogger = std::make_shared<spdlog::logger>(
             "defaultLogger", loggerSinks.begin(), loggerSinks.end()
         );

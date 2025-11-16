@@ -16,12 +16,12 @@
 #include "../routes/itc/networkRoute.h"
 #include "wsServer.h"
 
-namespace itcConstants = AikariLauncherPublic::Constants::InterThread;
+namespace itcConstants = AikariLauncher::Public::Constants::InterThread;
 
-namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
+namespace AikariLauncher::Components::SubModuleSystem::ThreadMsgHandlers
 {
     void PLSMsgHandler::onControlMessage(
-        const AikariShared::Types::InterThread::SubToMainControlMessage& retMsg
+        AikariShared::Types::InterThread::SubToMainControlMessage& retMsg
     )
     {
         std::vector<std::string> route =
@@ -32,17 +32,17 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
 
         if (rootRoute == itcConstants::Network::_PREFIX)
         {
-            result = AikariLauncherRoutes::InterThread::Network::
+            result = AikariLauncher::Routes::InterThread::Network::
                 handleNetworkCtrlMessage(retMsg, route);
         }
         else if (rootRoute == itcConstants::FileSystem::_PREFIX)
         {
-            result = AikariLauncherRoutes::InterThread::FileSystem::
+            result = AikariLauncher::Routes::InterThread::FileSystem::
                 handleFsCtrlMessage(retMsg, route);
         }
         else if (rootRoute == itcConstants::Base::_PREFIX)
         {
-            result = AikariLauncherRoutes::InterThread::Base::handleBaseCtrlMsg(
+            result = AikariLauncher::Routes::InterThread::Base::handleBaseCtrlMsg(
                 retMsg, route
             );
         }
@@ -55,7 +55,7 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
                 retMsg.method
             );
             result.eventId = retMsg.eventId;
-            result.data = AikariLauncherPublic::Constants::InterThread::Errors::
+            result.data = AikariLauncher::Public::Constants::InterThread::Errors::
                 Templates::ROUTE_NOT_FOUND;
         }
 
@@ -65,11 +65,11 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
             .msg = result
         };
 
-        this->reportQueue->push(reply);
+        this->reportQueue->push(std::move(reply));
     };
 
     void PLSMsgHandler::onWebSocketMessage(
-        const AikariShared::Types::InterThread::SubToMainWebSocketReply& wsReply
+        AikariShared::Types::InterThread::SubToMainWebSocketReply& wsReply
     )
     {
         auto& sharedIns = AikariLifecycle::AikariSharedInstances::getInstance();
@@ -77,19 +77,20 @@ namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
             &AikariTypes::Global::Lifecycle::SharedInstances::wsServerMgrIns
         );
 
-        AikariLauncherPublic::Types::Components::WebSocket::ServerWSRep repFinData{
-            .code = wsReply.code,
-            .eventId = wsReply.eventId,
-            .success = wsReply.success,
-            .data = wsReply.data,
-        };
+        AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
+            repFinData{
+                .code = wsReply.code,
+                .eventId = std::move(wsReply.eventId),
+                .success = wsReply.success,
+                .data = std::move(wsReply.data),
+            };
 
-        AikariLauncherPublic::Types::Components::WebSocket::ServerWSTaskRet taskFinRet{
-            .result = repFinData,
-            .clientId = wsReply.wsInfo.clientId,
-            .isBroadcast = wsReply.wsInfo.isBroadcast.value_or(false)
-        };
+        AikariLauncher::Public::Types::Components::WebSocket::ServerWSTaskRet
+            taskFinRet{ .result = std::move(repFinData),
+                        .clientId = std::move(wsReply.wsInfo.clientId),
+                        .isBroadcast =
+                            wsReply.wsInfo.isBroadcast.value_or(false) };
 
         wsMgrPtr->pushRetQueue(taskFinRet);
     };
-}  // namespace AikariLauncherComponents::SubModuleSystem::ThreadMsgHandlers
+}  // namespace AikariLauncher::Components::SubModuleSystem::ThreadMsgHandlers

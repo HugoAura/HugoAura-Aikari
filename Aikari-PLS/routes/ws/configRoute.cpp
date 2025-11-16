@@ -7,7 +7,7 @@
 
 #include "../../lifecycle.h"
 
-namespace launcherWsConstants = AikariLauncherPublic::Constants::WebSocket;
+namespace launcherWsConstants = AikariLauncher::Public::Constants::WebSocket;
 namespace plsWsConstants = AikariPLS::Types::Constants::WebSocket;
 
 namespace AikariPLS::Routes::WebSocket::Config
@@ -115,20 +115,14 @@ namespace AikariPLS::Routes::WebSocket::Config
                     );
                     nlohmann::json newConfigPart =
                         ruleConfigInConfigMgr[configKeyAsJsonPointer];
-                    for (const auto* perRawPtr :
+                    for (auto* perRuleRawPtr :
                          ruleMgr->configKeyAssociationMap.at(
                              clientData["affiliated"]
                          ))
                     {
-                        if (perRawPtr == nullptr)
+                        if (perRuleRawPtr == nullptr)
                             continue;
-                        if (auto* perRewriteRule = perRawPtr->get();
-                            perRewriteRule != nullptr)
-                        {
-                            perRewriteRule->onConfigUpdate(
-                                newConfigPart
-                            );  // safe, onConfigUpdate will copy newConfigPart
-                        }
+                        perRuleRawPtr->onConfigUpdate(newConfigPart);
                     }
                 }
                 return { .code = 0,

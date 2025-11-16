@@ -7,6 +7,12 @@
 #include <Aikari-PLS/types/entrypoint.h>
 #include <Aikari-Shared/types/itc/shared.h>
 #include <filesystem>
+#include <unordered_set>
+
+namespace AikariShared::LoggerSystem
+{
+    enum class LOGGER_SINK;
+}
 
 namespace AikariPLS::Exports
 {
@@ -16,7 +22,9 @@ namespace AikariPLS::Exports
         std::shared_ptr<
             AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>>
-            inputMessageQueue
+            inputMessageQueue,
+        const std::unordered_set<AikariShared::LoggerSystem::LOGGER_SINK>*
+            loggerSinks
     );
 
     extern AIKARIPLS_API void onExit();

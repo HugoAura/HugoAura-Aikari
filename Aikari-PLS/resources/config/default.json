@@ -1,5 +1,13 @@
 {
   "rules": {
+    "deviceInfo": {
+      "software": {
+        "softwareReportPost": {
+          "enabled": false,
+          "setAsEmpty": true
+        }
+      }
+    },
     "ssaFeatures": {
       "securityPolicies": {
         "freezeManagement": {

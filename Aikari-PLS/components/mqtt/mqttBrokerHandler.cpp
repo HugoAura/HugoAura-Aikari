@@ -39,7 +39,7 @@ namespace AikariPLS::Components::MQTTBroker::Class
         this->isDebugEnv =
             (sharedStates.getVal(
                  &AikariPLS::Types::Lifecycle::PLSSharedStates::runtimeMode
-             ) == AikariLauncherPublic::Constants::Lifecycle::
+             ) == AikariLauncher::Public::Constants::Lifecycle::
                       APPLICATION_RUNTIME_MODES::DEBUG);
     };
 

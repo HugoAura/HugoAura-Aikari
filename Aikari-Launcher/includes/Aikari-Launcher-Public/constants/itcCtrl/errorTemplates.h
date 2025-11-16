@@ -4,7 +4,7 @@
 
 #include "errors.h"
 
-namespace AikariLauncherPublic::Constants::InterThread::Errors::Templates
+namespace AikariLauncher::Public::Constants::InterThread::Errors::Templates
 {
     inline const nlohmann::json ROUTE_NOT_FOUND = {
         { "success", false },

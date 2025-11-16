@@ -215,11 +215,12 @@ namespace AikariPLS::Components::Rules
                         rulePropInMapping
                     );
 
-                (*rewriteFeaturesMap)[ruleProps.featureName.value()]
-                    .emplace_back(std::move(rulePropInMappingPtr));
+                auto& targetFeatureVec =
+                    (*rewriteFeaturesMap)[ruleProps.featureName.value()];
+                targetFeatureVec.emplace_back(std::move(rulePropInMappingPtr));
                 this->configKeyAssociationMap[ruleProps.configKey
                                                   .value_or("ORPHANED")]
-                    .emplace_back(&rulePropInMappingPtr);
+                    .emplace_back(targetFeatureVec.back().get());
                 break;
             }
             case AikariPLS::Types::RuleSystem::RuleType::ASCEND:
