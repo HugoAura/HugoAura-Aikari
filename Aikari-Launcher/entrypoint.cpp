@@ -12,7 +12,6 @@
 #include <csignal>
 #include <cxxopts.hpp>
 #include <future>
-#include <iostream>
 #include <ixwebsocket/IXNetSystem.h>
 #include <shlobj_core.h>
 #include <windows.h>
@@ -108,6 +107,26 @@ namespace Aikari::EternalCore
                 entrypointConstants::EXIT_CODES::HINS_GET_FAILED
             );
             return entrypointConstants::EXIT_CODES::HINS_GET_FAILED;
+        }
+
+        HANDLE hMutex = CreateMutexA(NULL, FALSE, AikariDefaults::mutexName);
+        if (GetLastError() == ERROR_ALREADY_EXISTS)
+        {
+            CloseHandle(hMutex);
+            CUSTOM_LOG_CRITICAL(
+                "Another Aikari instance is running, close the existing one to "
+                "continue."
+            );
+            reportProgress(
+                true,
+                false,
+                true,
+                0,
+                0,
+                entrypointConstants::EXIT_CODES::MULTI_AIKARI_INSTANCE_DETECTED
+            );
+            return entrypointConstants::EXIT_CODES::
+                MULTI_AIKARI_INSTANCE_DETECTED;
         }
 
         auto& lifecycleStates =
@@ -396,6 +415,8 @@ namespace Aikari::EternalCore
         );
         reportProgress(false, false, false, 100, 80, 0);
 
+        ReleaseMutex(hMutex);
+        CloseHandle(hMutex);
         CUSTOM_LOG_INFO("👋 Clean up completed, goodbye.");
         reportProgress(
             false,
@@ -447,7 +468,9 @@ namespace Aikari::AsWindowsServices
         : public AikariLauncher::Core::WinSCM::IWinSvcHandler
     {
        public:
-        AikariWinSvcLifecycleController(const std::wstring& serviceName)
+        explicit AikariWinSvcLifecycleController(
+            const std::wstring& serviceName
+        )
             : AikariLauncher::Core::WinSCM::IWinSvcHandler(serviceName) {};
 
        protected:
