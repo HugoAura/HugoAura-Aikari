@@ -393,6 +393,10 @@ namespace Aikari::EternalCore
             {
                 plsQueueHandler->manualDestroy();
             }
+#ifdef _DEBUG
+
+            spdlog::get("defaultLogger")->flush();
+#endif
 
             if (plsLaunchResult.plsRuntimeThread->joinable())
             {
@@ -512,6 +516,12 @@ int main(int argc, const char* argv[])
     auto parseRet = AikariCliUtils::parseCliOptions(argc, argv);
     if (parseRet.exitNow)
         return 0;
+    /*
+    while (!IsDebuggerPresent())
+    {
+        Sleep(1000);
+    }
+    */
     bool isRunAsSvc = (parseRet.serviceCtrl == "runAs");
     if (isRunAsSvc)
     {

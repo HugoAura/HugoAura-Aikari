@@ -18,22 +18,24 @@ namespace AikariShared::Infrastructure::InterThread
     )
         : srcQueue(srcQueue),
           reportQueue(reportQueue),
-          logHeader("[" + subModuleName + "->Main]")
+          logHeader("[" + subModuleName + "->Main]"),
+          threadPool(
+              std::make_unique<AikariShared::Infrastructure::MessageQueue::
+                                   PoolQueue<AikariShared::Types::InterThread::
+                                                 SubToMainMessageInstance>>(
+                  DEFAULT_THREAD_COUNT,
+                  [this](
+                      AikariShared::Types::InterThread::SubToMainMessageInstance
+                          content
+                  )
+                  {
+                      this->handleMsg(content);
+                  }
+              )
+          )
     {
         this->srcMsgWorkerThread = std::make_unique<std::jthread>(
             &SubToMainMsgHandlerBase::retMsgWorker, this
-        );
-        this->threadPool = std::make_unique<
-            AikariShared::Infrastructure::MessageQueue::PoolQueue<
-                AikariShared::Types::InterThread::SubToMainMessageInstance>>(
-            DEFAULT_THREAD_COUNT,
-            [this](
-                AikariShared::Types::InterThread::SubToMainMessageInstance
-                    content
-            )
-            {
-                this->handleMsg(content);
-            }
         );
     };
 
@@ -49,9 +51,9 @@ namespace AikariShared::Infrastructure::InterThread
 
     void SubToMainMsgHandlerBase::addCtrlMsgCallbackListener(
         const AikariShared::Types::InterThread::eventId& eventId,
-        std::move_only_function<void(
-            AikariShared::Types::InterThread::SubToMainControlReplyMessage
-        )> callbackLambda
+        std::move_only_function<
+            void(AikariShared::Types::InterThread::SubToMainControlReplyMessage
+            )> callbackLambda
     )
     {
         this->listeners[eventId].emplace_back(std::move(callbackLambda));
@@ -67,7 +69,17 @@ namespace AikariShared::Infrastructure::InterThread
             LOG_INFO(logHeader + " Starting message queue handler...");
             while (true)
             {
-                auto srcMsg = this->srcQueue->pop();
+                AikariShared::Types::InterThread::SubToMainMessageInstance
+                    srcMsg;
+                if (this->msgTempStore.empty() || this->threadPool == nullptr)
+                {
+                    srcMsg = this->srcQueue->pop();
+                }
+                else
+                {
+                    srcMsg = this->msgTempStore.front();
+                    this->msgTempStore.pop_front();
+                }
                 if (srcMsg.type == AikariShared::Types::InterThread::
                                        MESSAGE_TYPES::DESTROY_MESSAGE)
                 {
@@ -76,7 +88,14 @@ namespace AikariShared::Infrastructure::InterThread
                     );
                     break;
                 }
-                this->threadPool->pushTask(srcMsg);
+                if (this->threadPool != nullptr)
+                {
+                    this->threadPool->pushTask(srcMsg);
+                }
+                else
+                {
+                    this->msgTempStore.emplace_back(std::move(srcMsg));
+                }
             }
         }
         catch (const std::exception& err)

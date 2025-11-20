@@ -15,20 +15,22 @@ namespace AikariShared::Infrastructure::InterThread
     )
         : srcQueue(srcQueue),
           destQueue(destQueue),
-          logHeader("[Main->" + subModuleName + "]")
+          logHeader("[Main->" + subModuleName + "]"),
+          threadPool(
+              std::make_unique<
+                  AikariShared::Infrastructure::MessageQueue::PoolQueue<
+                      itcTypes::MainToSubMessageInstance>>(
+                  DEFAULT_THREAD_COUNT,
+                  [this](itcTypes::MainToSubMessageInstance content)
+                  {
+                      this->handleMsg(content);
+                  }
+              )
+          )
     {
         this->srcMsgWorkerThread = std::make_unique<std::jthread>(
             &MainToSubMsgHandlerBase::inputMsgWorker, this
         );
-        this->threadPool =
-            std::make_unique<AikariShared::Infrastructure::MessageQueue::
-                                 PoolQueue<itcTypes::MainToSubMessageInstance>>(
-                DEFAULT_THREAD_COUNT,
-                [this](itcTypes::MainToSubMessageInstance content)
-                {
-                    this->handleMsg(content);
-                }
-            );
     };
 
     void MainToSubMsgHandlerBase::manualDestroy()
@@ -55,8 +57,8 @@ namespace AikariShared::Infrastructure::InterThread
 
     void MainToSubMsgHandlerBase::addCtrlMsgCallbackListener(
         const itcTypes::eventId& eventId,
-        std::move_only_function<
-            void(itcTypes::MainToSubControlReplyMessage msg)> callbackLambda
+        std::move_only_function<void(itcTypes::MainToSubControlReplyMessage msg
+        )> callbackLambda
     )
     {
         this->listeners[eventId].emplace_back(std::move(callbackLambda));
@@ -118,7 +120,17 @@ namespace AikariShared::Infrastructure::InterThread
             LOG_INFO(logHeader + " Starting message queue handler...");
             while (true)
             {
-                auto srcMsg = this->srcQueue->pop();
+                AikariShared::Types::InterThread::MainToSubMessageInstance
+                    srcMsg;
+                if (this->msgTempStore.empty() || this->threadPool == nullptr)
+                {
+                    srcMsg = this->srcQueue->pop();
+                }
+                else
+                {
+                    srcMsg = this->msgTempStore.front();
+                    this->msgTempStore.pop_front();
+                }
                 if (srcMsg.type == itcTypes::MESSAGE_TYPES::DESTROY_MESSAGE)
                 {
                     LOG_INFO(
@@ -126,7 +138,14 @@ namespace AikariShared::Infrastructure::InterThread
                     );
                     break;
                 }
-                this->threadPool->pushTask(srcMsg);
+                if (this->threadPool != nullptr)
+                {
+                    this->threadPool->pushTask(srcMsg);
+                }
+                else
+                {
+                    this->msgTempStore.emplace_back(std::move(srcMsg));
+                }
             }
         }
         catch (const std::exception& err)
@@ -151,8 +170,7 @@ namespace AikariShared::Infrastructure::InterThread
                 case itcTypes::MESSAGE_TYPES::CONTROL_MESSAGE:
                 {
                     auto& msgContent =
-                        std::get<itcTypes::MainToSubControlMessage>(
-                            msgIns.msg
+                        std::get<itcTypes::MainToSubControlMessage>(msgIns.msg
                         );  // if convert failed, error will be directly
                             // caught
 
@@ -203,8 +221,7 @@ namespace AikariShared::Infrastructure::InterThread
                 case itcTypes::MESSAGE_TYPES::WS_MESSAGE:
                 {
                     auto& msgContent =
-                        std::get<itcTypes::MainToSubWebSocketMessage>(
-                            msgIns.msg
+                        std::get<itcTypes::MainToSubWebSocketMessage>(msgIns.msg
                         );
 
                     this->onWebSocketMessage(msgContent);

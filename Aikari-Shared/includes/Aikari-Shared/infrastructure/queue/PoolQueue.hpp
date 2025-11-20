@@ -42,6 +42,8 @@ namespace AikariShared::Infrastructure::MessageQueue
         {
             {
                 std::unique_lock<std::mutex> uLock(this->taskMutex);
+                if (!this->isRunning)
+                    return;
                 this->tasks.emplace(newTask);
             }
             cv.notify_one();
@@ -57,13 +59,13 @@ namespace AikariShared::Infrastructure::MessageQueue
         }
 
        private:
-        std::vector<std::jthread> workers;
         std::queue<TaskType> tasks;
         std::function<void(TaskType)> execFunction;
 
         std::mutex taskMutex;
         std::condition_variable cv;
         bool isRunning = true;
+        std::vector<std::jthread> workers;
 
         void workerLoop()
         {
@@ -82,11 +84,20 @@ namespace AikariShared::Infrastructure::MessageQueue
                 {
                     return;
                 }
+                if (this->tasks.empty())
+                    continue;
 
                 TaskType curTask = std::move(this->tasks.front());
                 this->tasks.pop();
                 uLock.unlock();
-                this->execFunction(std::move(curTask));
+                try
+                {
+                    this->execFunction(std::move(curTask));
+                }
+                catch (...)
+                {
+                    // ...
+                }
             }
         }
     };

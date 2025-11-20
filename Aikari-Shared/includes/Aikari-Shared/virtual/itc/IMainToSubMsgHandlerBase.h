@@ -59,14 +59,16 @@ namespace AikariShared::Infrastructure::InterThread
         );
 
        protected:
+        const std::string logHeader;
+        std::deque<AikariShared::Types::InterThread::MainToSubMessageInstance>
+            msgTempStore;
+
         AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::MainToSubMessageInstance>*
             srcQueue;
         AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
             AikariShared::Types::InterThread::SubToMainMessageInstance>*
             destQueue;
-
-        const std::string logHeader;
 
         std::map<
             AikariShared::Types::InterThread::eventId,
@@ -75,10 +77,10 @@ namespace AikariShared::Infrastructure::InterThread
                          MainToSubControlReplyMessage msg)>>>
             listeners;
 
-        std::unique_ptr<std::jthread> srcMsgWorkerThread;
         std::unique_ptr<AikariShared::Infrastructure::MessageQueue::PoolQueue<
             AikariShared::Types::InterThread::MainToSubMessageInstance>>
             threadPool;
+        std::unique_ptr<std::jthread> srcMsgWorkerThread;
 
         virtual void onControlMessage(
             AikariShared::Types::InterThread::MainToSubControlMessage& srcMsg
