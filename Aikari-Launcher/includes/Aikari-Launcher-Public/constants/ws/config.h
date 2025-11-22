@@ -33,5 +33,29 @@ namespace AikariLauncher::Public::Constants::WebSocket::Config
             "message": "..."
         }
         */
+
+        constexpr const char* GET_TELEMETRY_STATUS =
+            "config.actions.getTelemetryIsEnabled";
+        /*
+        Data IN ←
+        N/A
+        Data REP →
+        {
+            "isEnabled": bool
+        }
+        */
+
+        constexpr const char* SET_TELEMETRY_STATUS =
+            "config.actions.setTelemetryIsEnabled";
+        /*
+        Data IN ←
+        {
+            "isEnabled": bool
+        }
+        Data REP →
+        {
+            "message": "..."
+        }
+        */
     }  // namespace Actions
 }  // namespace AikariLauncher::Public::Constants::WebSocket::Config

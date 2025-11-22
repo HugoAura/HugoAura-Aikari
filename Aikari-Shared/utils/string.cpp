@@ -1,5 +1,6 @@
 ﻿#include <Aikari-Shared/utils/string.h>  // self
 #include <format>
+#include <functional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -27,4 +28,25 @@ namespace AikariShared::Utils::String
         std::string result = std::ranges::to<std::string>(joined);
         return result;
     }
+
+    std::string trim(const std::string& str)
+    {
+        std::string result;
+        std::string::size_type startPos = str.find_first_not_of(' ');
+        if (startPos == std::string::npos)
+        {
+            return result;
+        }
+        std::string::size_type endPos = str.find_last_not_of(' ');
+        if (endPos != std::string::npos)
+        {
+            result = str.substr(startPos, endPos - startPos + 1);
+        }
+        else
+        {
+            result = str.substr(startPos);
+        }
+
+        return result;
+    };
 };  // namespace AikariShared::Utils::String

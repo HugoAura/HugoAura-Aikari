@@ -12,15 +12,7 @@ namespace AikariFileSystem
         std::filesystem::path aikariConfigDir;
         std::filesystem::path aikariLogDir;
 
-        static std::filesystem::path getProgramDataPath();
-
-        FileSystemManager()
-            : hugoAuraRootDir(
-                  FileSystemManager::getProgramDataPath() / "HugoAura"
-              ),
-              aikariRootDir(hugoAuraRootDir / "Aikari"),
-              aikariConfigDir(aikariRootDir / "config"),
-              aikariLogDir(aikariRootDir / "log") {};
+        FileSystemManager();
 
         // [!IMPORTANT] If aikariLogDir / aikariRootDir changed,
         // /logger.cpp:105/ should be updated too

@@ -2,7 +2,7 @@
 
 #include <Aikari-Launcher-Public/constants/ws/basic.h>
 #include <Aikari-Launcher-Public/constants/ws/errorTemplates.h>
-#include <Aikari-Launcher-Public/version.h>
+#include <Aikari-Shared/types/constants/version.h>
 #include <nlohmann/json.hpp>
 
 namespace wsConstants = AikariLauncher::Public::Constants::WebSocket;
@@ -17,13 +17,15 @@ namespace AikariLauncher::Routes::WebSocket::Basic
             return { .code = 0,
                      .success = true,
                      .data = {
-                         { "version", AikariLauncher::Public::Version::Version },
+                         { "version",
+                           AikariShared::Constants::Version::Version },
                          { "versionCode",
-                           AikariLauncher::Public::Version::VersionCode } } };
+                           AikariShared::Constants::Version::VersionCode } } };
         }
     }  // namespace Props
 
-    AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep handleBasicMethods(
+    AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
+    handleBasicMethods(
         const AikariLauncher::Public::Types::Components::WebSocket::ClientWSMsg&
             clientDataIncoming,
         const std::vector<std::string>& methods
@@ -31,7 +33,8 @@ namespace AikariLauncher::Routes::WebSocket::Basic
     {
         const std::string& subMethod = methods.at(1);
         const std::string& fullMethod = clientDataIncoming.method;
-        AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep result;
+        AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
+            result;
         result.code =
             wsConstants::Errors::Codes::UNEXPECTED_ERROR;  // default val
 

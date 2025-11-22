@@ -3,6 +3,7 @@
 #include <Aikari-Launcher-Public/constants/ws/config.h>
 #include <Aikari-Launcher-Public/constants/ws/errorTemplates.h>
 #include <Aikari-Launcher-Public/constants/ws/errors.h>
+#include <Aikari-Shared/infrastructure/telemetry.h>
 #include <Aikari-Shared/utils/string.h>
 
 #include "../../components/config.h"
@@ -137,7 +138,51 @@ namespace AikariLauncher::Routes::WebSocket::Config
                              { "message", "Config manager internal error" } } };
             }
         }
-    }  // namespace Actions
+
+        static AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
+        _impl_GET_TELEMETRY_STATUS()
+        {
+            auto& telemetryManager = AikariShared::Infrastructure::Telemetry::
+                TelemetryManager::getInstance();
+            return { .code = 0,
+                     .success = true,
+                     .data = { { "isEnabled",
+                                 telemetryManager.isTelemetryEnabled } } };
+        };
+
+        static AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
+        _impl_SET_TELEMETRY_STATUS(nlohmann::json clientDataIn)
+        {
+            if (!clientDataIn.contains("isEnabled"))
+            {
+                return wsConstants::Errors::Templates::INVALID_ARG;
+            }
+            try
+            {
+                auto& telemetryManager = AikariShared::Infrastructure::
+                    Telemetry::TelemetryManager::getInstance();
+                telemetryManager.setTelemetryEnableStatus(
+                    clientDataIn["isEnabled"].get<bool>()
+                );
+                return { .code = 0,
+                         .success = true,
+                         .data = {
+                             { "message",
+                               "Successfully updated telemetry settings" } } };
+            }
+            catch (const std::exception& err)
+            {
+                return { .code = AikariLauncher::Public::Constants::WebSocket::
+                             Errors::Codes::GENERIC_FAILURE,
+                         .success = false,
+                         .data = {
+                             { "message",
+                               std::format(
+                                   "Internal error occurred: {}", err.what()
+                               ) } } };
+            }
+        };
+    };  // namespace Actions
 
     AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
     handleConfigMethods(
@@ -148,7 +193,8 @@ namespace AikariLauncher::Routes::WebSocket::Config
     {
         const std::string& subMethod = methods.at(1);
         const std::string& fullMethod = clientDataIncoming.method;
-        AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep result;
+        AikariLauncher::Public::Types::Components::WebSocket::ServerWSRep
+            result;
         result.code = wsConstants::Errors::Codes::UNEXPECTED_ERROR;
 
         if (subMethod == wsConstants::Config::Actions::_PREFIX)
@@ -161,9 +207,21 @@ namespace AikariLauncher::Routes::WebSocket::Config
             {
                 return Actions::_impl_UPDATE_CONFIG(clientDataIncoming.data);
             }
+            else if (fullMethod ==
+                     wsConstants::Config::Actions::GET_TELEMETRY_STATUS)
+            {
+                return Actions::_impl_GET_TELEMETRY_STATUS();
+            }
+            else if (fullMethod ==
+                     wsConstants::Config::Actions::SET_TELEMETRY_STATUS)
+            {
+                return Actions::_impl_SET_TELEMETRY_STATUS(
+                    clientDataIncoming.data
+                );
+            }
         }
 
         return wsConstants::Errors::Templates::METHOD_NOT_FOUND;
     }
-}
+}  // namespace AikariLauncher::Routes::WebSocket::Config
 // namespace AikariLauncher::Routes::WebSocket::Config

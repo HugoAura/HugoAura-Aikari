@@ -80,15 +80,35 @@ add_subdirectory(Aikari-Launcher)
 # not using add_custom_command here because it will cause problems
 # idk why
 
+set(ARTIFACTS_DIR ${CMAKE_BINARY_DIR}/bin/$<CONFIG>)
+
 # >>> TASK COPY_PLS_RES
 set(SOURCE_PLS_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-PLS/resources/static)
-set(DESTINATION_PLS_RESOURCES_DIR ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/resources/pls)
+set(DESTINATION_PLS_RESOURCES_DIR ${ARTIFACTS_DIR}/resources/pls)
 add_custom_target(Aikari-Virtual-CMD-CP-PLS-RES ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${SOURCE_PLS_RESOURCES_DIR}" "${DESTINATION_PLS_RESOURCES_DIR}"
         COMMENT "Copying PLS resources to output directory..."
 )
 add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-PLS-RES)
 # <<< TASK COPY_PLS_RES
+
+# >>> TASK COPY_SENTRY_CRASHPAD_HANDLER
+find_program(SENTRY_HANDLER_PATH
+        crashpad_handler
+        HINTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/tools/sentry-native
+)
+if (SENTRY_HANDLER_PATH)
+    add_custom_target(Aikari-Virtual-CMD-CP-SENTRY-CRASHPAD-HANDLER ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SENTRY_HANDLER_PATH}"
+            "${ARTIFACTS_DIR}/crashpad_handler.exe"
+    )
+    message(STATUS "Copied Sentry CrashPad Handler: ${SENTRY_HANDLER}")
+else ()
+    message(WARNING "Could not find Sentry CrashPad Handler executable, artifact may fail to start.")
+endif ()
+add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-SENTRY-CRASHPAD-HANDLER)
+# <<< TASK COPY_SENTRY_CRASHPAD_HANDLER
 
 # --- Install --- #
 install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/

@@ -7,59 +7,25 @@
 #include <Aikari-Shared/utils/windows/winString.h>
 #include <ShlObj.h>
 #include <filesystem>
-#include <windows.h>
+
+#include "Aikari-Shared/utils/filesystem.h"
 
 namespace fs = std::filesystem;
 
 namespace AikariFileSystem
 {
     // --- Begin implementations of FileSystemManager --- //
-    fs::path FileSystemManager::getProgramDataPath()
-    {
-        PWSTR pathPtr = NULL;
-        HRESULT hResult =
-            SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &pathPtr);
-        fs::path finalPath;
 
-        if (SUCCEEDED(hResult))
-        {
-            try
-            {
-                fs::path programDataPath(pathPtr);
-                CUSTOM_LOG_DEBUG(
-                    "Get ProgramData path success: {}", programDataPath.string()
-                );
-
-                finalPath = programDataPath;
-            }
-            catch (const fs::filesystem_error& error)
-            {
-                CUSTOM_LOG_ERROR(
-                    "<!> A filesystem error occurred getting the path of "
-                    "ProgramData dir."
-                );
-                LOG_ERROR(error.what());
-                LOG_ERROR("Using the default value.");
-                finalPath = fs::path("C:") / "ProgramData";
-            }
-
-            CoTaskMemFree(pathPtr);
-        }
-        else
-        {
-            CUSTOM_LOG_ERROR(
-                "<!> Unexpected error occurred getting the path of ProgramData "
-                "dir, trying to use default val."
-            );
-            LOG_ERROR("Error detail: ");
-            LOG_ERROR(
-                AikariShared::Utils::Windows::WinString::parseHResult(hResult)
-            );
-            finalPath = fs::path("C:") / "ProgramData";
-        }
-
-        return finalPath;
-    };
+    FileSystemManager::FileSystemManager()
+        : hugoAuraRootDir(
+              AikariShared::Utils::FileSystem::getProgramDataPath()
+                  .parent_path()
+          ),
+          aikariRootDir(
+              AikariShared::Utils::FileSystem::getAikariRootDir(true)
+          ),
+          aikariConfigDir(aikariRootDir / "config"),
+          aikariLogDir(aikariRootDir / "log") {};
 
     bool FileSystemManager::ensureDirExists() const
     {

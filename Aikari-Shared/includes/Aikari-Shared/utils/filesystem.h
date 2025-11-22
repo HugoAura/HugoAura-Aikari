@@ -16,4 +16,7 @@ namespace AikariShared::Utils::FileSystem
     );
 
     std::string readFile(const std::filesystem::path& path);
+
+    std::filesystem::path getProgramDataPath(bool showLog = false);
+    std::filesystem::path getAikariRootDir(bool showLog = false);
 }  // namespace AikariShared::Utils::FileSystem

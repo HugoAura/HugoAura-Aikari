@@ -9,4 +9,5 @@ namespace AikariShared::Utils::String
     std::string replaceAll(
         std::string_view str, std::string_view from, std::string_view to
     );
+    std::string trim(const std::string& str);
 }  // namespace AikariShared::Utils::String

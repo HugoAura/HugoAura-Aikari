@@ -1,9 +1,11 @@
 project_add_library(Aikari-Shared STATIC
         Aikari-Shared.cpp
         infrastructure/logger.cpp
+        infrastructure/telemetry.cpp
         utils/crypto.cpp
         utils/filesystem.cpp
         utils/network.cpp
+        utils/random.cpp
         utils/registry.cpp
         utils/string.cpp
         utils/windows/network.cpp
@@ -23,6 +25,10 @@ target_link_libraries(Aikari-Shared PRIVATE nlohmann_json::nlohmann_json)
 # SPDLog
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(Aikari-Shared PRIVATE spdlog::spdlog_header_only)
+
+# Sentry Native SDK
+find_package(sentry CONFIG REQUIRED)
+target_link_libraries(Aikari-Shared PRIVATE sentry::sentry)
 
 target_precompile_headers(Aikari-Shared
         PUBLIC

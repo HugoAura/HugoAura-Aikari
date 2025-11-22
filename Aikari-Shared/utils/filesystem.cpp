@@ -3,11 +3,16 @@
 #define CUSTOM_LOG_HEADER "[Shared / FileSystem Utils]"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <ShlObj.h>
 #include <boost/algorithm/string.hpp>
 #include <format>
 #include <fstream>
+#include <knownfolders.h>
 #include <stdexcept>
 #include <string>
+#include <windows.h>
+
+#include "Aikari-Shared/utils/windows/winString.h"
 
 namespace AikariShared::Utils::FileSystem
 {
@@ -94,4 +99,74 @@ namespace AikariShared::Utils::FileSystem
         return buffer.str();
     }
 
+    std::filesystem::path getProgramDataPath(bool showLog)
+    {
+        PWSTR pathPtr = NULL;
+        HRESULT hResult =
+            SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &pathPtr);
+        std::filesystem::path finalPath;
+
+        if (SUCCEEDED(hResult))
+        {
+            try
+            {
+                std::filesystem::path programDataPath(pathPtr);
+                if (showLog)
+                    CUSTOM_LOG_DEBUG(
+                        "Get ProgramData path success: {}",
+                        programDataPath.string()
+                    );
+
+                finalPath = programDataPath;
+            }
+            catch (const std::filesystem::filesystem_error& error)
+            {
+                if (showLog)
+                {
+                    CUSTOM_LOG_ERROR(
+                        "<!> A filesystem error occurred getting the path of "
+                        "ProgramData dir."
+                    );
+                    LOG_ERROR(error.what());
+                    LOG_ERROR("Using the default value.");
+                }
+                finalPath = std::filesystem::path("C:") / "ProgramData";
+            }
+
+            CoTaskMemFree(pathPtr);
+        }
+        else
+        {
+            if (showLog)
+            {
+                CUSTOM_LOG_ERROR(
+                    "<!> Unexpected error occurred getting the path of "
+                    "ProgramData "
+                    "dir, trying to use default val."
+                );
+                LOG_ERROR("Error detail: ");
+                LOG_ERROR(
+                    AikariShared::Utils::Windows::WinString::parseHResult(
+                        hResult
+                    )
+                );
+            }
+            finalPath = std::filesystem::path("C:") / "ProgramData";
+        }
+
+        return finalPath;
+    };
+
+    std::filesystem::path getAikariRootDir(bool showLog)
+    {
+        try
+        {
+            return getProgramDataPath(showLog) / "HugoAura" / "Aikari";
+        }
+        catch (...)
+        {
+            return std::filesystem::path("C:") / "ProgramData" / "HugoAura" /
+                   "Aikari";
+        }
+    };
 }  // namespace AikariShared::Utils::FileSystem

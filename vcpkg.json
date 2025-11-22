@@ -1,6 +1,7 @@
 {
   "name": "hugoaura-aikari",
   "version": "0.0.1",
+  "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149",
   "dependencies": [
     "ada-url",
     {
@@ -23,18 +24,24 @@
     },
     "cxxopts",
     "ixwebsocket",
+    "lua",
+    "lua-cjson",
     "mbedtls",
     "nlohmann-json",
-    "spdlog",
-    "lua",
     "sol2",
-    "lua-cjson"
+    "spdlog",
+    {
+      "name": "sentry-native",
+      "features": [
+        "wer",
+        "compression"
+      ]
+    }
   ],
   "overrides": [
     {
       "name": "fmt",
       "version": "11.2.0"
     }
-  ],
-  "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149"
+  ]
 }

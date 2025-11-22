@@ -4,15 +4,17 @@
 #include <Aikari-Launcher-Private/types/constants/entrypoint.h>
 #include <Aikari-Launcher-Private/types/global/lifecycleTypes.h>
 #include <Aikari-Launcher-Public/constants/lifecycle.h>
-#include <Aikari-Launcher-Public/version.h>
 #include <Aikari-PLS/Aikari-PLS-Exports.h>
 #include <Aikari-PLS/types/entrypoint.h>
 #include <Aikari-Shared/infrastructure/logger.h>
+#include <Aikari-Shared/infrastructure/telemetry.h>
+#include <Aikari-Shared/types/constants/version.h>
 #include <chrono>
 #include <csignal>
 #include <cxxopts.hpp>
 #include <future>
 #include <ixwebsocket/IXNetSystem.h>
+#include <sentry.h>
 #include <shlobj_core.h>
 #include <windows.h>
 
@@ -29,12 +31,39 @@
 #include "virtual/lifecycle/ILaunchProgressReporter.h"
 #include "winSvcHandler.h"
 
+#define TELEMETRY_ACTION_CATEGORY "launcher.lifecycle.status"
+#define TELEMETRY_MODULE_NAME "Launcher - Lifecycle"
+
 namespace Aikari::EternalCore
 {
     namespace lifecycleTypes = AikariTypes::Global::Lifecycle;
     namespace entrypointConstants = AikariTypes::Constants::Entrypoint;
 
     std::promise<bool> aikariAlivePromise;
+
+    namespace CrashHandler
+    {
+        LPTOP_LEVEL_EXCEPTION_FILTER sentryFilter = NULL;
+
+        LONG WINAPI
+        globalCriticalCrashHandler(EXCEPTION_POINTERS* pExceptionInfo)
+        {
+            LOG_CRITICAL(
+                "\n--- AIKARI DETECTED CRITICAL ERROR ---\n",
+                std::format(
+                    "Exception Code: 0x{}\n",
+                    pExceptionInfo->ExceptionRecord->ExceptionCode
+                )
+            );
+            spdlog::get("defaultLogger")->flush();
+            if (sentryFilter != NULL)
+            {
+                return sentryFilter(pExceptionInfo);
+            }
+
+            return EXCEPTION_EXECUTE_HANDLER;
+        };
+    }  // namespace CrashHandler
 
     static void exitSignalHandler(int signum)
     {
@@ -81,6 +110,21 @@ namespace Aikari::EternalCore
 
         reportProgress(false, false, true, 100, 0, 0);
 
+        auto& telemetryManager = AikariShared::Infrastructure::Telemetry::
+            TelemetryManager::getInstance();
+        auto reportStartupFailureToTelemetry = [&telemetryManager](int exitCode)
+        {
+            telemetryManager.sendMsgEvent(
+                SENTRY_LEVEL_FATAL,
+                TELEMETRY_MODULE_NAME,
+                std::format(
+                    "Application startup failed due to critical error. Error "
+                    "code: {}",
+                    exitCode
+                )
+            );
+        };
+
         auto curTime = std::chrono::duration_cast<std::chrono::seconds>(
                            std::chrono::system_clock::now().time_since_epoch()
         )
@@ -98,15 +142,10 @@ namespace Aikari::EternalCore
                 "Failed to get the handle of main process, exiting..."
             );
             LOG_CRITICAL("Please check your system environment.");
-            reportProgress(
-                true,
-                false,
-                true,
-                0,
-                0,
-                entrypointConstants::EXIT_CODES::HINS_GET_FAILED
-            );
-            return entrypointConstants::EXIT_CODES::HINS_GET_FAILED;
+            auto exitCode = entrypointConstants::EXIT_CODES::HINS_GET_FAILED;
+            reportStartupFailureToTelemetry(exitCode);
+            reportProgress(true, false, true, 0, 0, exitCode);
+            return exitCode;
         }
 
         HANDLE hMutex = CreateMutexA(NULL, FALSE, AikariDefaults::mutexName);
@@ -117,16 +156,11 @@ namespace Aikari::EternalCore
                 "Another Aikari instance is running, close the existing one to "
                 "continue."
             );
-            reportProgress(
-                true,
-                false,
-                true,
-                0,
-                0,
-                entrypointConstants::EXIT_CODES::MULTI_AIKARI_INSTANCE_DETECTED
-            );
-            return entrypointConstants::EXIT_CODES::
-                MULTI_AIKARI_INSTANCE_DETECTED;
+            auto exitCode =
+                entrypointConstants::EXIT_CODES::MULTI_AIKARI_INSTANCE_DETECTED;
+            reportStartupFailureToTelemetry(exitCode);
+            reportProgress(true, false, true, 0, 0, exitCode);
+            return exitCode;
         }
 
         auto& lifecycleStates =
@@ -154,15 +188,10 @@ namespace Aikari::EternalCore
                     "Aikari directories initialization failed, exiting "
                     "Aikari..."
                 );
-                reportProgress(
-                    true,
-                    false,
-                    true,
-                    0,
-                    25,
-                    entrypointConstants::EXIT_CODES::FS_INIT_FAILED
-                );
-                return entrypointConstants::EXIT_CODES::FS_INIT_FAILED;
+                auto exitCode = entrypointConstants::EXIT_CODES::FS_INIT_FAILED;
+                reportStartupFailureToTelemetry(exitCode);
+                reportProgress(true, false, true, 0, 25, exitCode);
+                return exitCode;
             }
             sharedInstances.setPtr(
                 &lifecycleTypes::SharedInstances::fsManagerIns,
@@ -192,15 +221,10 @@ namespace Aikari::EternalCore
             CUSTOM_LOG_CRITICAL(
                 "Registry initialization failed, exiting Aikari..."
             );
-            reportProgress(
-                true,
-                false,
-                true,
-                0,
-                35,
-                entrypointConstants::EXIT_CODES::REG_INIT_FAILED
-            );
-            return entrypointConstants::EXIT_CODES::REG_INIT_FAILED;
+            auto exitCode = entrypointConstants::EXIT_CODES::REG_INIT_FAILED;
+            reportStartupFailureToTelemetry(exitCode);
+            reportProgress(true, false, true, 0, 35, exitCode);
+            return exitCode;
         }
         reportProgress(false, false, true, 1000, 40, 0);
 
@@ -228,15 +252,10 @@ namespace Aikari::EternalCore
             CUSTOM_LOG_CRITICAL(
                 "Config initialization failed, exiting Aikari..."
             );
-            reportProgress(
-                true,
-                false,
-                true,
-                0,
-                40,
-                entrypointConstants::EXIT_CODES::CONFIG_INIT_FAILED
-            );
-            return entrypointConstants::EXIT_CODES::CONFIG_INIT_FAILED;
+            auto exitCode = entrypointConstants::EXIT_CODES::CONFIG_INIT_FAILED;
+            reportStartupFailureToTelemetry(exitCode);
+            reportProgress(true, false, true, 0, 40, exitCode);
+            return exitCode;
         }
 
         auto curConfigPtr = std::atomic_load(&configManagerPtr->config);
@@ -253,16 +272,10 @@ namespace Aikari::EternalCore
             CUSTOM_LOG_CRITICAL(
                 "Failed to initialize WebSocket TLS cert, exiting Aikari..."
             );
-            reportProgress(
-                true,
-                false,
-                true,
-                0,
-                45,
-                entrypointConstants::EXIT_CODES::NETWORK_SERVICES_INIT_FAILED
-            );
-            return entrypointConstants::EXIT_CODES::
-                NETWORK_SERVICES_INIT_FAILED;
+            auto exitCode = entrypointConstants::EXIT_CODES::CONFIG_INIT_FAILED;
+            reportStartupFailureToTelemetry(exitCode);
+            reportProgress(true, false, true, 0, 45, exitCode);
+            return exitCode;
         }
         reportProgress(false, false, true, 2000, 50, 0);
 
@@ -293,16 +306,11 @@ namespace Aikari::EternalCore
             CUSTOM_LOG_CRITICAL(
                 "Failed to launch Aikari ws server, exiting Aikari..."
             );
-            reportProgress(
-                true,
-                false,
-                true,
-                0,
-                50,
-                entrypointConstants::EXIT_CODES::NETWORK_SERVICES_INIT_FAILED
-            );
-            return entrypointConstants::EXIT_CODES::
-                NETWORK_SERVICES_INIT_FAILED;
+            auto exitCode =
+                entrypointConstants::EXIT_CODES::NETWORK_SERVICES_INIT_FAILED;
+            reportStartupFailureToTelemetry(exitCode);
+            reportProgress(true, false, true, 0, 50, exitCode);
+            return exitCode;
         }
         reportProgress(false, false, true, 1000, 60, 0);
 
@@ -360,6 +368,9 @@ namespace Aikari::EternalCore
 
         reportProgress(false, true, true, 0, 100, 0);
         CUSTOM_LOG_INFO("Aikari is loaded, waiting for further operations...");
+        telemetryManager.addBreadcrumb(
+            "default", "Application loaded", TELEMETRY_ACTION_CATEGORY, "info"
+        );
         if (runtimeMode == AikariLauncher::Public::Constants::Lifecycle::
                                APPLICATION_RUNTIME_MODES::NORMAL ||
             runtimeMode == AikariLauncher::Public::Constants::Lifecycle::
@@ -372,12 +383,21 @@ namespace Aikari::EternalCore
         {
             WaitForSingleObject(winSvcStopEvent.value(), INFINITE);
         }
+        telemetryManager.addBreadcrumb(
+            "default", "Received stop signal", TELEMETRY_ACTION_CATEGORY, "info"
+        );
         reportProgress(false, false, false, 1750, 0, 0);
 
         CUSTOM_LOG_INFO("Stopping ws server...");
         wsServerMgrPtr->stopWssServer();
         ix::uninitNetSystem();
         reportProgress(false, false, false, 4000, 30, 0);
+        telemetryManager.addBreadcrumb(
+            "default",
+            "WebSocket server successfully stopped",
+            TELEMETRY_ACTION_CATEGORY,
+            "info"
+        );
 
         CUSTOM_LOG_INFO("Cleaning up sub modules...");
         if (plsLaunchResult.success)
@@ -393,8 +413,14 @@ namespace Aikari::EternalCore
             {
                 plsQueueHandler->manualDestroy();
             }
-#ifdef _DEBUG
+            telemetryManager.addBreadcrumb(
+                "default",
+                "PLS queue destroyed",
+                TELEMETRY_ACTION_CATEGORY,
+                "info"
+            );
 
+#ifdef _DEBUG
             spdlog::get("defaultLogger")->flush();
 #endif
 
@@ -406,6 +432,12 @@ namespace Aikari::EternalCore
             CUSTOM_LOG_INFO("Clean up for module PLS finished.");
         }
         reportProgress(false, false, false, 2000, 50, 0);
+        telemetryManager.addBreadcrumb(
+            "default",
+            "PLS clean up completed",
+            TELEMETRY_ACTION_CATEGORY,
+            "info"
+        );
 
         CUSTOM_LOG_INFO("Unloading shared instances...");
         sharedInstances.resetPtr(
@@ -422,6 +454,11 @@ namespace Aikari::EternalCore
         ReleaseMutex(hMutex);
         CloseHandle(hMutex);
         CUSTOM_LOG_INFO("👋 Clean up completed, goodbye.");
+        telemetryManager.addBreadcrumb(
+            "default", "Done, system exiting", TELEMETRY_ACTION_CATEGORY, "info"
+        );
+        // telemetryManager.endSession();
+        telemetryManager.unloadTelemetry();
         reportProgress(
             false,
             true,
@@ -523,6 +560,26 @@ int main(int argc, const char* argv[])
     }
     */
     bool isRunAsSvc = (parseRet.serviceCtrl == "runAs");
+    {
+        auto& telemetryManager = AikariShared::Infrastructure::Telemetry::
+            TelemetryManager::getInstance();
+        telemetryManager.setupTelemetry();
+        // telemetryManager.startSession();
+        telemetryManager.addBreadcrumb(
+            "default",
+            std::format(
+                "App process started, runtime mode: {}",
+                isRunAsSvc ? "Service" : "CLI"
+            ),
+            TELEMETRY_ACTION_CATEGORY,
+            "info"
+        );
+    }
+    Aikari::EternalCore::CrashHandler::sentryFilter =
+        SetUnhandledExceptionFilter(
+            Aikari::EternalCore::CrashHandler::globalCriticalCrashHandler
+        );
+
     if (isRunAsSvc)
     {
         AikariShared::LoggerSystem::defaultLoggerSink.emplace(
@@ -549,8 +606,8 @@ int main(int argc, const char* argv[])
     CUSTOM_LOG_INFO("🧱 Launching as CLI mode");
     CUSTOM_LOG_INFO(
         "⚛️ Version: {} ({})",
-        AikariLauncher::Public::Version::Version,
-        AikariLauncher::Public::Version::VersionCode
+        AikariShared::Constants::Version::Version,
+        AikariShared::Constants::Version::VersionCode
     );
     CUSTOM_LOG_INFO(
         "🎲 Argv: [isDebug={}, serviceCtrl={}]",
