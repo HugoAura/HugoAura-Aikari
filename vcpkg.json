@@ -28,14 +28,30 @@
     "lua-cjson",
     "mbedtls",
     "nlohmann-json",
-    "sol2",
-    "spdlog",
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": [
+        "gui",
+        "network",
+        "widgets",
+        "png",
+        "jpeg",
+        "concurrent",
+        "testlib"
+      ]
+    },
     {
       "name": "sentry-native",
       "features": [
-        "wer",
-        "compression"
+        "compression",
+        "wer"
       ]
+    },
+    "sol2",
+    "spdlog",
+    {
+      "name": "qtdeclarative"
     }
   ],
   "overrides": [
