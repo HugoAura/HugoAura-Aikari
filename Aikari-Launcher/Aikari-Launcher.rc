@@ -71,8 +71,8 @@ IDI_AIKARI_LAUNCHER_ICON ICON                   "resources\\Aikari_2D_Logo_ICO_T
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,1,0
- PRODUCTVERSION 0,0,1,0
+ FILEVERSION 0,0,1,3
+ PRODUCTVERSION 0,0,1,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -89,12 +89,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "HugoAura Devs"
             VALUE "FileDescription", "Aikari Launcher Host"
-            VALUE "FileVersion", "0.0.1.0"
+            VALUE "FileVersion", "0.0.1.3"
             VALUE "InternalName", "Aikari Launcher"
             VALUE "LegalCopyright", "Copyright (C) 2025 HugoAura Devs, All rights reserved."
             VALUE "OriginalFilename", "Aikari-Launcher.exe"
             VALUE "ProductName", "HugoAura Aikari"
-            VALUE "ProductVersion", "0.0.1.0"
+            VALUE "ProductVersion", "0.0.1.3"
         END
     END
     BLOCK "VarFileInfo"

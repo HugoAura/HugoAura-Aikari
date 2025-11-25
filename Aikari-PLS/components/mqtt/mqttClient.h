@@ -87,10 +87,12 @@ namespace AikariPLS::Components::MQTTClient
         uint8_t retryTimes = 0;
         const uint8_t maxRetry = 3;
 
+        uint8_t curTryingDest = 0;
+
         std::unique_ptr<std::jthread> sendQueueWorker;
 
         ClientLaunchArg launchArg;
-        std::string hostRealIP;
+        std::vector<std::string> realBrokerDest;
 
         std::unique_ptr<std::jthread> clientLoop;
 

@@ -228,6 +228,13 @@ namespace Aikari::EternalCore
         }
         reportProgress(false, false, true, 1000, 40, 0);
 
+        telemetryManager.addBreadcrumb(
+            "default",
+            "Ready to init config",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
+
         CUSTOM_LOG_INFO("Initializing config manager...");
         {
             auto configManagerIns =
@@ -261,6 +268,13 @@ namespace Aikari::EternalCore
         auto curConfigPtr = std::atomic_load(&configManagerPtr->config);
         reportProgress(false, false, true, 1250, 45, 0);
 
+        telemetryManager.addBreadcrumb(
+            "default",
+            "Config init completed",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
+
         CUSTOM_LOG_INFO("Initializing TLS certificates...");
         std::filesystem::path certDir =
             fileSystemManagerIns->aikariConfigDir / "certs";
@@ -281,6 +295,13 @@ namespace Aikari::EternalCore
 
         CUSTOM_LOG_INFO("Initializing Windows socket environment...");
         ix::initNetSystem();
+
+        telemetryManager.addBreadcrumb(
+            "default",
+            "Trying to launch WebSocket server",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
         CUSTOM_LOG_INFO("Starting Aikari WebSocket server...");
         {
             int wsDefaultPort = curConfigPtr->wsPreferPort;
@@ -318,6 +339,12 @@ namespace Aikari::EternalCore
             &lifecycleTypes::GlobalLifecycleStates::sharedMsgQueue
         );
 
+        telemetryManager.addBreadcrumb(
+            "default",
+            "Trying to load module PLS",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
         auto plsInputMsgQueue = std::make_shared<
             AikariShared::Infrastructure::MessageQueue::SinglePointMessageQueue<
                 AikariShared::Types::InterThread::MainToSubMessageInstance>>();
@@ -353,6 +380,22 @@ namespace Aikari::EternalCore
                 &lifecycleTypes::GlobalSharedHandlersRegistry::
                     plsIncomingMsgQueueHandler,
                 plsQueueHandler
+            );
+
+            telemetryManager.addBreadcrumb(
+                "default",
+                "Module PLS is loaded",
+                TELEMETRY_ACTION_CATEGORY,
+                "info"
+            );
+        }
+        else
+        {
+            telemetryManager.addBreadcrumb(
+                "default",
+                "Module PLS failed to init",
+                TELEMETRY_ACTION_CATEGORY,
+                "warning"
             );
         }
 
@@ -450,6 +493,12 @@ namespace Aikari::EternalCore
             &lifecycleTypes::SharedInstances::wsServerMgrIns
         );
         reportProgress(false, false, false, 100, 80, 0);
+        telemetryManager.addBreadcrumb(
+            "default",
+            "Shared instances deconstructions completed",
+            TELEMETRY_ACTION_CATEGORY,
+            "info"
+        );
 
         ReleaseMutex(hMutex);
         CloseHandle(hMutex);

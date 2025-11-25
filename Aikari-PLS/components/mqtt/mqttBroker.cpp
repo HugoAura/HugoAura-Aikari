@@ -3,12 +3,16 @@
 #define CUSTOM_LOG_HEADER "[MQTT Broker]"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/telemetryShortFn.h>
 #include <winsock2.h>
 
-#include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "lifecycle.h"
 #include "mqttLifecycle.h"
 #include "utils/mqttPacketUtils.h"
+
+#define TELEMETRY_ACTION_CATEGORY "pls.mqtt.broker"
+#define TELEMETRY_MODULE_NAME "PLS - MQTT Broker"
 
 #pragma comment(lib, "ws2_32")
 
@@ -83,6 +87,12 @@ namespace AikariPLS::Components::MQTTBroker
 
     void Broker::startTlsServerLoop(const BrokerLaunchArg& arg)
     {
+        Telemetry::addBreadcrumb(
+            "default",
+            "MQTT Broker is starting",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
         try
         {
             int taskTempRet = 0;
@@ -164,11 +174,28 @@ namespace AikariPLS::Components::MQTTBroker
                 CUSTOM_LOG_ERROR(
                     "Failed while binding to addr, error code: {}", taskTempRet
                 );
+                Telemetry::sendEventStr(
+                    SENTRY_LEVEL_ERROR,
+                    TELEMETRY_MODULE_NAME,
+                    std::format(
+                        "MQTT Broker addr bind failed, ec: {}", taskTempRet
+                    )
+                );
                 cleanUp(true);
                 return;
             }
 
             CUSTOM_LOG_INFO("Bind to ssl://{}:{}", this->hostname, this->port);
+            Telemetry::addBreadcrumb(
+                "default",
+                std::format(
+                    "MQTT Broker bind to ssl://{}:{}",
+                    this->hostname,
+                    this->port
+                ),
+                TELEMETRY_ACTION_CATEGORY,
+                "info"
+            );
 
             CUSTOM_LOG_DEBUG("Setting up default TLS config...");
             taskTempRet = mbedtls_ssl_config_defaults(
@@ -218,6 +245,13 @@ namespace AikariPLS::Components::MQTTBroker
                 this->port
             );
 
+            Telemetry::addBreadcrumb(
+                "default",
+                "MQTT Broker init done",
+                TELEMETRY_ACTION_CATEGORY,
+                "info"
+            );
+
             this->listenLoop();
         }
         catch (const std::exception& err)
@@ -225,6 +259,15 @@ namespace AikariPLS::Components::MQTTBroker
             CUSTOM_LOG_ERROR(
                 "An unexpected error occurred in MQTT Broker loop: {}",
                 err.what()
+            );
+
+            Telemetry::sendEventStr(
+                SENTRY_LEVEL_ERROR,
+                TELEMETRY_MODULE_NAME,
+                std::format(
+                    "Unexpected error occurred running MQTT Broker loop: {}",
+                    err.what()
+                )
             );
             return;
         }
@@ -502,6 +545,12 @@ namespace AikariPLS::Components::MQTTBroker
                     }
                     else
                     {
+                        Telemetry::addBreadcrumb(
+                            "default",
+                            "Incoming client connection detected",
+                            TELEMETRY_ACTION_CATEGORY,
+                            "debug"
+                        );
                         CUSTOM_LOG_DEBUG("Handshaking with new client...");
 
                         std::unique_lock<std::mutex> lock(this->sslCtxLock);
@@ -566,6 +615,13 @@ namespace AikariPLS::Components::MQTTBroker
                         CUSTOM_LOG_DEBUG("SSL handshake completed.");
 
                         lock.unlock();
+
+                        Telemetry::addBreadcrumb(
+                            "default",
+                            "Handshake with real client done",
+                            TELEMETRY_ACTION_CATEGORY,
+                            "debug"
+                        );
 
                         this->netCtx.curClientFd = &this->netCtx.clientFd;
 
@@ -688,6 +744,12 @@ namespace AikariPLS::Components::MQTTBroker
                         }
 
                         CUSTOM_LOG_DEBUG("Client disconnected, cleaning up...");
+                        Telemetry::addBreadcrumb(
+                            "default",
+                            "Real client disconnected from broker",
+                            TELEMETRY_ACTION_CATEGORY,
+                            "debug"
+                        );
                         this->resetCurConnection();
 
                         this->netCtx.curClientFd = nullptr;
@@ -700,6 +762,9 @@ namespace AikariPLS::Components::MQTTBroker
         mbedtls_ssl_close_notify(&this->sslCtx);
         mbedtls_ssl_session_reset(&this->sslCtx);
         this->sslCtxLock.unlock();
+        Telemetry::addBreadcrumb(
+            "default", "Broker stopped", TELEMETRY_ACTION_CATEGORY, "debug"
+        );
         CUSTOM_LOG_INFO("Broker stopped.");
     }
 }  // namespace AikariPLS::Components::MQTTBroker

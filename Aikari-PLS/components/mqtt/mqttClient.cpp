@@ -2,7 +2,11 @@
 
 #define CUSTOM_LOG_HEADER "[MQTT Client]"
 
+#include <Aikari-PLS/types/constants/mqtt.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/telemetry.h>
+#include <Aikari-Shared/infrastructure/telemetryShortFn.h>
 #include <Aikari-Shared/utils/network.h>
 #include <Aikari-Shared/utils/windows.h>
 #include <exception>
@@ -11,8 +15,10 @@
 #include "../../lifecycle.h"
 #include "../../resource.h"
 #include "../../utils/mqttPacketUtils.h"
-#include "Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp"
 #include "mqttLifecycle.h"
+
+#define TELEMETRY_ACTION_CATEGORY "pls.mqtt.client"
+#define TELEMETRY_MODULE_NAME "PLS - MQTT Client"
 
 /*
  * This component handles <connection> between [Fake Client] <-> [Real Broker]
@@ -52,6 +58,15 @@ namespace AikariPLS::Components::MQTTClient
             return;
         }
 
+        Telemetry::addBreadcrumb(
+            "default",
+            std::format(
+                "Cleaning up MQTT Client context, ignoreThreadJoin?: {}",
+                ignoreThreadJoin ? "true" : "false"
+            ),
+            TELEMETRY_ACTION_CATEGORY,
+            "info"
+        );
         CUSTOM_LOG_DEBUG("Cleaning up MQTT Client context...");
         this->cleaned = true;
         this->shouldExit = true;
@@ -62,12 +77,15 @@ namespace AikariPLS::Components::MQTTClient
             mqttSharedQueues.getPtr(&AikariPLS::Types::Lifecycle::MQTT::
                                         PLSMQTTMsgQueues::brokerToClientQueue);
 
-        sendQueuePtr->push(
-            {
-                .type =
-                    Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::CTRL_THREAD_END,
-            }
-        );
+        if (sendQueuePtr != nullptr)
+        {
+            sendQueuePtr->push(
+                {
+                    .type = Types::MQTTMsgQueue::PACKET_OPERATION_TYPE::
+                        CTRL_THREAD_END,
+                }
+            );
+        }
 
         if (this->clientLoop->joinable() && !ignoreThreadJoin)
         {
@@ -89,6 +107,12 @@ namespace AikariPLS::Components::MQTTClient
 
     void Client::startClientLoop()
     {
+        Telemetry::addBreadcrumb(
+            "default",
+            "MQTT Client is starting",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
         try
         {
             int taskTempRet = 0;
@@ -240,23 +264,52 @@ namespace AikariPLS::Components::MQTTClient
                 "An unexpected error occurred in MQTT Client loop: {}",
                 err.what()
             );
+            Telemetry::sendEventStr(
+                SENTRY_LEVEL_ERROR,
+                TELEMETRY_MODULE_NAME,
+                std::format("Error running MQTT client loop: {}", err.what())
+            );
             return;
         }
     };
 
     bool Client::refreshHostRealIP()
     {
-        auto dnsQueryResult =
-            AikariShared::Utils::Network::DNS::getDNSARecordResult(
-                this->launchArg.targetHost
-            );
-        if (dnsQueryResult.empty())
+        try
         {
-            return false;
-        }
+            auto dnsQueryResult =
+                AikariShared::Utils::Network::DNS::getDNSARecordResult(
+                    this->launchArg.targetHost
+                );
+            if (dnsQueryResult.empty())
+            {
+                throw std::runtime_error(
+                    "Failed to get broker real IP through DNS query."
+                );
+            }
 
-        this->hostRealIP = dnsQueryResult.at(0);
-        return true;
+            this->realBrokerDest = dnsQueryResult;
+            return true;
+        }
+        catch (const std::exception& err)
+        {
+            this->realBrokerDest.emplace_back(
+                AikariPLS::Types::Constants::MQTT::Client::
+                    FALLBACK_IOT_BROKER_ADDR
+            );
+            this->realBrokerDest.emplace_back(
+                AikariPLS::Types::Constants::MQTT::Client::
+                    FALLBACK_IOT_BROKER_IP
+            );
+            CUSTOM_LOG_WARN("Error getting broker real IP: {}", err.what());
+            Telemetry::addBreadcrumb(
+                "error",
+                std::format("Failed to get broker real IP: {}", err.what()),
+                TELEMETRY_ACTION_CATEGORY,
+                "warning"
+            );
+            return true;
+        }
     }
 
     void Client::startSendQueueWorker()
@@ -518,8 +571,20 @@ namespace AikariPLS::Components::MQTTClient
             {
                 if (!this->isConnectionActive)
                 {
-                    if (this->isConnectRetryDisabled || retryTimes >= maxRetry)
+                    if (this->isConnectRetryDisabled ||
+                        retryTimes >= maxRetry ||
+                        this->curTryingDest >= this->realBrokerDest.size())
                     {
+                        CUSTOM_LOG_ERROR(
+                            "Max connect tries reached, forcibly exiting MQTT "
+                            "Client..."
+                        );
+                        Telemetry::addBreadcrumb(
+                            "default",
+                            "Max connect retries reached, client is exiting",
+                            TELEMETRY_ACTION_CATEGORY,
+                            "error"
+                        );
                         this->cleanUp(true);
                         return;
                     }
@@ -531,11 +596,24 @@ namespace AikariPLS::Components::MQTTClient
                         this->launchArg.targetPort
                     );
 
+                    auto thisHost =
+                        this->realBrokerDest.at(this->curTryingDest).c_str();
+                    Telemetry::addBreadcrumb(
+                        "default",
+                        std::format(
+                            "MQTT Client trying connect to ssl://{}:{} (Phase "
+                            "mbedtls_net_connect)",
+                            thisHost,
+                            this->launchArg.targetPort
+                        ),
+                        TELEMETRY_ACTION_CATEGORY,
+                        "info"
+                    );
                     std::unique_lock<std::mutex> lock(this->sslCtxLock
                     );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,
-                        this->hostRealIP.c_str(),
+                        thisHost,
                         std::to_string(this->launchArg.targetPort).c_str(),
                         MBEDTLS_NET_PROTO_TCP
                     );
@@ -543,10 +621,23 @@ namespace AikariPLS::Components::MQTTClient
                     if (taskTempRet != 0)
                     {
                         CUSTOM_LOG_ERROR(
-                            "Failed connecting to server, error code: {}",
+                            "Failed connecting to broker host {}, error code: "
+                            "{}. Trying another...",
+                            thisHost,
                             taskTempRet
                         );
-                        break;
+                        Telemetry::sendEventStr(
+                            SENTRY_LEVEL_WARNING,
+                            TELEMETRY_MODULE_NAME,
+                            std::format(
+                                "MQTT Client failed connecting to real broker "
+                                "ssl://{}:{}",
+                                thisHost,
+                                this->launchArg.targetPort
+                            )
+                        );
+                        this->curTryingDest++;
+                        continue;
                     };
 
                     CUSTOM_LOG_DEBUG("Setting bio...");
@@ -570,6 +661,16 @@ namespace AikariPLS::Components::MQTTClient
                                 "Unexpected error occurred handshaking with "
                                 "server, error code: {}",
                                 taskTempRet
+                            );
+                            Telemetry::addBreadcrumb(
+                                "default",
+                                std::format(
+                                    "SSL Handshake with {} failed, ec: {}",
+                                    thisHost,
+                                    taskTempRet
+                                ),
+                                TELEMETRY_ACTION_CATEGORY,
+                                "warning"
                             );
                             mbedtls_ssl_session_reset(&this->sslCtx);
                             mbedtls_net_free(&this->netCtxs.serverFd);
@@ -603,6 +704,13 @@ namespace AikariPLS::Components::MQTTClient
                             "Failed to verify server certificate, error: {}",
                             verifyResultBuffer
                         );
+                        Telemetry::sendEventStr(
+                            SENTRY_LEVEL_ERROR,
+                            TELEMETRY_MODULE_NAME,
+                            "[HEADS UP] Client-side real broker cert chain "
+                            "verification failed, broker's cert might be "
+                            "changed, please take action!"
+                        );
                         lock.unlock();
                         this->resetConnection();
                         break;
@@ -610,6 +718,12 @@ namespace AikariPLS::Components::MQTTClient
                     CUSTOM_LOG_DEBUG("Certificate verified.");
 
                     lock.unlock();
+                    Telemetry::addBreadcrumb(
+                        "default",
+                        "MQTT Client's connection is established",
+                        TELEMETRY_ACTION_CATEGORY,
+                        "debug"
+                    );
                     CUSTOM_LOG_INFO("Connection established.");
                     this->isConnectionActive = true;
                     this->retryTimes = 0;
@@ -648,6 +762,12 @@ namespace AikariPLS::Components::MQTTClient
                         {
                             CUSTOM_LOG_DEBUG(
                                 "Client conn close triggered by handler side."
+                            );
+                            Telemetry::addBreadcrumb(
+                                "default",
+                                "Client connection closed by handler",
+                                TELEMETRY_ACTION_CATEGORY,
+                                "debug"
                             );
                             this->pendingExit.store(true);
                             // this->isConnectionActive = false;
@@ -698,6 +818,14 @@ namespace AikariPLS::Components::MQTTClient
                 CUSTOM_LOG_ERROR(
                     "Unexpected error running select() | WSAErrorCode: {}",
                     lastError
+                );
+                Telemetry::sendEventStr(
+                    SENTRY_LEVEL_ERROR,
+                    TELEMETRY_MODULE_NAME,
+                    std::format(
+                        "Unexpected error occurred running select, WSA ec: {}",
+                        lastError
+                    )
                 );
                 break;
             }
@@ -777,6 +905,12 @@ namespace AikariPLS::Components::MQTTClient
         mbedtls_ssl_close_notify(&this->sslCtx);
         mbedtls_ssl_session_reset(&this->sslCtx);
         this->sslCtxLock.unlock();
+        Telemetry::addBreadcrumb(
+            "default",
+            "MQTT Client stopped.",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
         CUSTOM_LOG_INFO("Client stopped.");
     }
 

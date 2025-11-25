@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(HugoAura-Aikari VERSION 0.0.1 LANGUAGES CXX)
+project(HugoAura-Aikari VERSION 0.0.1.3 LANGUAGES CXX)
 
 add_library(Aikari-Global-Virtual INTERFACE)
 
@@ -22,6 +22,14 @@ target_compile_options(Aikari-Global-Virtual INTERFACE
 
 target_compile_options(Aikari-Global-Virtual INTERFACE
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Debug>>:/sdl>
+)
+
+target_compile_options(Aikari-Global-Virtual INTERFACE
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/Zi>
+)
+
+target_link_options(Aikari-Global-Virtual INTERFACE
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/DEBUG /OPT:REF /OPT:ICF>
 )
 
 target_compile_definitions(Aikari-Global-Virtual INTERFACE
@@ -120,7 +128,7 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/
 )
 
 set(CPACK_PACKAGE_NAME "HugoAura Aikari")
-set(CPACK_PACKAGE_VERSION "0.0.1.0-early-alpha")
+set(CPACK_PACKAGE_VERSION "0.0.1.3")
 set(CPACK_PACKAGE_VENDOR "HugoAura Devs")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Unified UX tweak tool for Seewo Hugo")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/assets/Aikari_Installer_License_File.rtf")

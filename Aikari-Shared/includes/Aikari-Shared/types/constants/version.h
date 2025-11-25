@@ -4,6 +4,6 @@
 
 namespace AikariShared::Constants::Version
 {
-    inline const std::string Version = "v0.0.1-early-alpha-p2";
-    constexpr const unsigned int VersionCode = 1;
+    inline const std::string Version = "v0.0.1.3";
+    constexpr const unsigned int VersionCode = 13;
 };  // namespace AikariLauncher::Public::Version

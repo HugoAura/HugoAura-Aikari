@@ -12,9 +12,8 @@ jobs:
         triplet: [x64-windows, arm64-windows]
 
     env:
-      VCPKG_BINARY_SOURCES: "clear;files,C:/vcpkg_cache,readwrite"
+      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,C:/vcpkg_cache,readwrite"
       VCPKG_KEEP_ENV_VARS: "VSCMD_SKIP_SENDTELEMETRY"
-      X_VCPKG_ASSET_SOURCES: "clear;x-azurl,readwrite,save"
 
     steps:
       - uses: actions/checkout@v6
