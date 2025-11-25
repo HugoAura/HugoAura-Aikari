@@ -1,6 +1,8 @@
 ﻿#pragma once
 
+#include <Aikari-PLS/types/infrastructure/init.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <future>
 #include <memory>
 #include <optional>
 
@@ -19,6 +21,8 @@ namespace AikariPLS::Types::Entrypoint
                 AikariShared::Types::InterThread::SubToMainMessageInstance>>>
             retMessageQueue;
 
-        std::unique_ptr<std::jthread> plsRuntimeThread;
+        std::unique_ptr<std::jthread> plsInitThread;
+        std::future<AikariPLS::Types::Infrastructure::Init::PLSInitResult>
+            plsInitResultFuture;
     };
 }  // namespace AikariPLS::Types::Entrypoint

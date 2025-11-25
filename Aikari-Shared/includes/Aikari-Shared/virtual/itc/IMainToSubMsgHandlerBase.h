@@ -47,15 +47,19 @@ namespace AikariShared::Infrastructure::InterThread
                 callbackLambda
         );
 
-        virtual std::future<
+        std::future<
             AikariShared::Types::InterThread::MainToSubControlReplyMessage>
         createCtrlMsgPromise(
             const AikariShared::Types::InterThread::eventId& eventId
         );
 
-        virtual AikariShared::Types::InterThread::MainToSubControlReplyMessage
+        std::optional<
+            AikariShared::Types::InterThread::MainToSubControlReplyMessage>
         sendCtrlMsgSync(
-            AikariShared::Types::InterThread::SubToMainControlMessage& ctrlMsg
+            AikariShared::Types::InterThread::SubToMainControlMessage& ctrlMsg,
+            std::chrono::milliseconds timeout = std::chrono::milliseconds(1000),
+            bool retry = false,
+            unsigned int maxTries = 3
         );
 
        protected:

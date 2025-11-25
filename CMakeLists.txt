@@ -118,6 +118,29 @@ endif ()
 add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-SENTRY-CRASHPAD-HANDLER)
 # <<< TASK COPY_SENTRY_CRASHPAD_HANDLER
 
+# >>> TASK SIGN_AIKARI_LAUNCHER_EXE
+if (SIGN_LAUNCHER)
+    set(SIGN_TIMESTAMP_URL "http://timestamp.digicert.com")
+    find_program(SIGNTOOL_EXE "signtool.exe" PATHS)
+    if (SIGNTOOL_EXE AND EXISTS $ENV{PFX_FILE})
+        message(STATUS "Found signtool: ${SIGNTOOL_EXE}")
+        add_custom_target(Aikari-Virtual-CMD-SIGN-LAUNCHER ALL
+                COMMAND ${SIGNTOOL_EXE} sign
+                /f "$ENV{PFX_FILE}"
+                /p "$ENV{PFX_PASS}"
+                /fd SHA256
+                /tr "${SIGN_TIMESTAMP_URL}"
+                /td SHA256
+                "$<TARGET_FILE:Aikari-Launcher>"
+                COMMENT "Signing launcher EXE with ${SIGN_PFX_FILE}..."
+        )
+        add_dependencies(Aikari-Virtual-CMD-SIGN-LAUNCHER Aikari-Launcher)
+    else ()
+        message(WARNING "Signtool not found or PFX missing. Skipping signature.")
+    endif ()
+endif ()
+# <<<
+
 # --- Install --- #
 install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/
         DESTINATION .
@@ -148,7 +171,12 @@ set(CPACK_INNOSETUP_SETUP_SetupIconFile "${CMAKE_CURRENT_SOURCE_DIR}/assets/Aika
 set(CPACK_INNOSETUP_SETUP_MinVersion "6.1sp2")
 set(CPACK_INNOSETUP_SETUP_DefaultDirName "{autopf}\\HugoAura\\Aikari")
 set(CPACK_INNOSETUP_SETUP_AllowNoIcons ON)
+set(CPACK_INNOSETUP_USE_MODERN_WIZARD ON)
 set(CPACK_INNOSETUP_USE_CMAKE_BOOL_FORMAT ON)
+set(CPACK_INNOSETUP_EXTRA_SCRIPTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupPreInstCmd.iss"
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupUninstCmd.iss"
+)
 
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_INNOSETUP_SETUP_AppId}-Setup-${CPACK_PACKAGE_VERSION}-Arch-${CPACK_INNOSETUP_ARCHITECTURE}")
 

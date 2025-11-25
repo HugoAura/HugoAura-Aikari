@@ -6,9 +6,11 @@
 #include <Aikari-Launcher-Public/constants/lifecycle.h>
 #include <Aikari-PLS/Aikari-PLS-Exports.h>
 #include <Aikari-PLS/types/entrypoint.h>
+#include <Aikari-PLS/types/infrastructure/init.h>
 #include <Aikari-Shared/infrastructure/logger.h>
 #include <Aikari-Shared/infrastructure/telemetry.h>
 #include <Aikari-Shared/types/constants/version.h>
+#include <Aikari-Shared/utils/cstring.h>
 #include <chrono>
 #include <csignal>
 #include <cxxopts.hpp>
@@ -358,6 +360,9 @@ namespace Aikari::EternalCore
                 plsInputMsgQueue,
                 &AikariShared::LoggerSystem::defaultLoggerSink
             );
+        AikariPLS::Types::Infrastructure::Init::PLSInitResult plsInitResult = {
+            .isSuccess = false, .message = "Init timed out (default)"
+        };
 
         if (plsLaunchResult.success &&
             plsLaunchResult.retMessageQueue.has_value())
@@ -388,6 +393,41 @@ namespace Aikari::EternalCore
                 TELEMETRY_ACTION_CATEGORY,
                 "info"
             );
+
+            auto futureStatus = plsLaunchResult.plsInitResultFuture.wait_for(
+                std::chrono::milliseconds(1250)
+            );
+            if (futureStatus != std::future_status::ready)
+            {
+                plsInitResult.message = "PLS init timed out";
+                telemetryManager.addBreadcrumb(
+                    "default",
+                    "Module PLS initialization timed out",
+                    TELEMETRY_ACTION_CATEGORY,
+                    "error"
+                );
+                CUSTOM_LOG_ERROR("PLS initialization timed out");
+            }
+            else
+            {
+                auto initResult = plsLaunchResult.plsInitResultFuture.get();
+                if (initResult.isSuccess)
+                {
+                    plsInitResult = initResult;
+                }
+                else
+                {
+                    plsInitResult.message = initResult.message;
+                    const std::string errMsg = std::format(
+                        "Module PLS initialization failed due to: {}",
+                        initResult.message.value_or("UNKNOWN ERROR")
+                    );
+                    telemetryManager.sendMsgEvent(
+                        SENTRY_LEVEL_ERROR, TELEMETRY_MODULE_NAME, errMsg
+                    );
+                    CUSTOM_LOG_ERROR("{}", errMsg);
+                }
+            }
         }
         else
         {
@@ -395,7 +435,7 @@ namespace Aikari::EternalCore
                 "default",
                 "Module PLS failed to init",
                 TELEMETRY_ACTION_CATEGORY,
-                "warning"
+                "error"
             );
         }
 
@@ -430,6 +470,7 @@ namespace Aikari::EternalCore
             "default", "Received stop signal", TELEMETRY_ACTION_CATEGORY, "info"
         );
         reportProgress(false, false, false, 1750, 0, 0);
+        spdlog::get("defaultLogger")->flush();
 
         CUSTOM_LOG_INFO("Stopping ws server...");
         wsServerMgrPtr->stopWssServer();
@@ -463,13 +504,9 @@ namespace Aikari::EternalCore
                 "info"
             );
 
-#ifdef _DEBUG
-            spdlog::get("defaultLogger")->flush();
-#endif
-
-            if (plsLaunchResult.plsRuntimeThread->joinable())
+            if (plsLaunchResult.plsInitThread->joinable())
             {
-                plsLaunchResult.plsRuntimeThread->join();
+                plsLaunchResult.plsInitThread->join();
             }
 
             CUSTOM_LOG_INFO("Clean up for module PLS finished.");
@@ -617,8 +654,9 @@ int main(int argc, const char* argv[])
         telemetryManager.addBreadcrumb(
             "default",
             std::format(
-                "App process started, runtime mode: {}",
-                isRunAsSvc ? "Service" : "CLI"
+                "App process started | Start mode: {} | Argv: {}",
+                isRunAsSvc ? "Service" : "CLI",
+                AikariShared::Utils::CString::joinCStringArr(argv, " ", argc)
             ),
             TELEMETRY_ACTION_CATEGORY,
             "info"

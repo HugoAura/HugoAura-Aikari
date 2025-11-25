@@ -87,6 +87,13 @@ target_link_libraries(Aikari-Launcher
         Aikari-PLS
 )
 
+if (MSVC)
+    target_link_options(Aikari-Launcher
+            PRIVATE
+            "/MANIFESTUAC:level='requireAdministrator' uiAccess='false'"
+    )
+endif ()
+
 # --- Include --- #
 target_include_directories(Aikari-Launcher
         PRIVATE

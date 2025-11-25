@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <Aikari-PLS-Private/types/lifecycleTypes.h>
 #include <Aikari-Shared/infrastructure/queue/PoolQueue.hpp>
 #include <atomic>
 #include <filesystem>
@@ -13,7 +14,6 @@
 #include <string>
 #include <thread>
 
-#include "Aikari-PLS-Private/types/lifecycleTypes.h"
 #include "mqttBrokerHandler.h"
 
 /*

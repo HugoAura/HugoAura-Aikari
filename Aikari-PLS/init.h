@@ -1,8 +1,7 @@
 ﻿#pragma once
+#include <Aikari-PLS/types/infrastructure/init.h>
 
 namespace AikariPLS::Init
 {
-    typedef bool PLSInitSuccess;
-
-    PLSInitSuccess runPlsInit();
+    AikariPLS::Types::Infrastructure::Init::PLSInitResult runPlsInit();
 }  // namespace AikariPLS::Init

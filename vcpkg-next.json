@@ -1,0 +1,61 @@
+{
+  "name": "hugoaura-aikari",
+  "version": "0.0.1.3",
+  "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149",
+  "dependencies": [
+    "ada-url",
+    {
+      "name": "async-mqtt",
+      "default-features": false
+    },
+    "boost-algorithm",
+    {
+      "name": "cpr",
+      "features": [
+        "ssl"
+      ]
+    },
+    {
+      "name": "curl",
+      "features": [
+        "mbedtls",
+        "ssl"
+      ]
+    },
+    "cxxopts",
+    "ixwebsocket",
+    "lua",
+    "lua-cjson",
+    "mbedtls",
+    "nlohmann-json",
+    {
+      "name": "sentry-native",
+      "features": [
+        "compression",
+        "wer"
+      ]
+    },
+    "sol2",
+    "spdlog",
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": [
+        "gui",
+        "network",
+        "widgets",
+        "png",
+        "jpeg",
+        "concurrent",
+        "testlib"
+      ]
+    },
+    "qtdeclarative"
+  ],
+  "overrides": [
+    {
+      "name": "fmt",
+      "version": "11.2.0"
+    }
+  ]
+}

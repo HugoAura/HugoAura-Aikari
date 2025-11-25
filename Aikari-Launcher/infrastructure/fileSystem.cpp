@@ -3,12 +3,11 @@
 #define CUSTOM_LOG_HEADER "[FS Manager]"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/utils/filesystem.h>
 #include <Aikari-Shared/utils/string.h>
 #include <Aikari-Shared/utils/windows/winString.h>
 #include <ShlObj.h>
 #include <filesystem>
-
-#include "Aikari-Shared/utils/filesystem.h"
 
 namespace fs = std::filesystem;
 
@@ -18,8 +17,8 @@ namespace AikariFileSystem
 
     FileSystemManager::FileSystemManager()
         : hugoAuraRootDir(
-              AikariShared::Utils::FileSystem::getProgramDataPath()
-                  .parent_path()
+              AikariShared::Utils::FileSystem::getProgramDataPath().parent_path(
+              )
           ),
           aikariRootDir(
               AikariShared::Utils::FileSystem::getAikariRootDir(true)

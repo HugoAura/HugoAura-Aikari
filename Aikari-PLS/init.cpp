@@ -8,6 +8,7 @@
 #include <Aikari-PLS/types/constants/msgQueue.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
+#include <Aikari-Shared/infrastructure/telemetryShortFn.h>
 #include <Aikari-Shared/types/itc/shared.h>
 #include <Aikari-Shared/utils/crypto.h>
 #include <Aikari-Shared/utils/filesystem.h>
@@ -21,6 +22,9 @@
 #include "components/ruleSystem/rulesManager.h"
 #include "lifecycle.h"
 #include "resource.h"
+
+#define TELEMETRY_MODULE_NAME "PLS - Lifecycle - Init"
+#define TELEMETRY_ACTION_CATEGORY "pls.init"
 
 namespace plsConstants = AikariPLS::Types::Constants;
 
@@ -75,20 +79,38 @@ namespace AikariPLS::Init
                     AikariShared::Utils::CryptoUtils::genRandomHexInsecure(32)
             };
 
-            auto getDirResult = msgQueueHandler->sendCtrlMsgSync(getDirMsg);
+            auto getDirResult = msgQueueHandler->sendCtrlMsgSync(
+                getDirMsg, std::chrono::milliseconds(500), true
+            );
 
-            if (!getDirResult.data.value("success", false))
+            if (!getDirResult.has_value())
             {
-                LOG_ERROR(
-                    "Failed to get Aikari DIR: TPC failure"
+                LOG_ERROR("ITC timed out while trying to get Aikari dir.");
+                Telemetry::addBreadcrumb(
+                    "default",
+                    "Failed to get reply for getAikariDirResult, itc stuck?",
+                    TELEMETRY_ACTION_CATEGORY,
+                    "error"
+                );
+                return std::nullopt;
+            }
+
+            if (!getDirResult.value().data.value("success", false))
+            {
+                const std::string errMsg = std::format(
+                    "Failed to get Aikari DIR: ITC returns failure"
                     ". Diagnose code: {}",
-                    getDirResult.data.value("diagnoseCode", "UNKNOWN")
+                    getDirResult.value().data.value("diagnoseCode", "UNKNOWN")
+                );
+                LOG_ERROR(errMsg);
+                Telemetry::sendEventStr(
+                    SENTRY_LEVEL_ERROR, TELEMETRY_MODULE_NAME, errMsg
                 );
                 return std::nullopt;
             }
 
             std::filesystem::path aikariDir(
-                static_cast<std::string>(getDirResult.data.at("path"))
+                static_cast<std::string>(getDirResult.value().data.at("path"))
             );
 
             return aikariDir;
@@ -131,15 +153,36 @@ namespace AikariPLS::Init
                     AikariShared::Utils::CryptoUtils::genRandomHexInsecure(32)
             };
 
-            auto initCertResult = msgQueueHandler->sendCtrlMsgSync(initCertMsg);
+            auto initCertResult = msgQueueHandler->sendCtrlMsgSync(
+                initCertMsg, std::chrono::milliseconds(1500), true
+            );
 
-            if (!initCertResult.data.value("success", false))
+            if (!initCertResult.has_value())
             {
-                LOG_ERROR(
+                LOG_ERROR("ITC timed out while trying to init MQTT cert.");
+                Telemetry::addBreadcrumb(
+                    "default",
+                    "Failed to get reponse for initCertResult (MQTT), itc "
+                    "stuck?",
+                    TELEMETRY_ACTION_CATEGORY,
+                    "error"
+                );
+                return false;
+            }
+
+            if (!initCertResult.value().data.value("success", false))
+            {
+                const std::string errMsg = std::format(
                     "Failed to init MQTT cert: Error generating cert: {} | "
                     "Diagnose code: {}",
-                    initCertResult.data.value("message", "Unknown Error"),
-                    initCertResult.data.value("diagnoseCode", "UNKNOWN")
+                    initCertResult.value().data.value(
+                        "message", "Unknown Error"
+                    ),
+                    initCertResult.value().data.value("diagnoseCode", "UNKNOWN")
+                );
+                LOG_ERROR(errMsg);
+                Telemetry::sendEventStr(
+                    SENTRY_LEVEL_ERROR, TELEMETRY_MODULE_NAME, errMsg
                 );
                 return false;
             }
@@ -164,21 +207,41 @@ namespace AikariPLS::Init
                     AikariShared::Utils::CryptoUtils::genRandomHexInsecure(32)
             };
 
-            auto getRuntimeModeResult =
-                msgQueueHandler->sendCtrlMsgSync(getRuntimeModeMsg);
+            auto getRuntimeModeResult = msgQueueHandler->sendCtrlMsgSync(
+                getRuntimeModeMsg, std::chrono::milliseconds(500), true
+            );
 
-            int runtimeModeRaw = getRuntimeModeResult.data.value("mode", 0);
+            if (getRuntimeModeResult.has_value())
+            {
+                int runtimeModeRaw =
+                    (getRuntimeModeResult.value()).data.value("mode", 0);
 
-            auto runtimeMode =
-                static_cast<AikariLauncher::Public::Constants::Lifecycle::
-                                APPLICATION_RUNTIME_MODES>(runtimeModeRaw);
+                auto runtimeMode =
+                    static_cast<AikariLauncher::Public::Constants::Lifecycle::
+                                    APPLICATION_RUNTIME_MODES>(runtimeModeRaw);
 
-            return runtimeMode;
+                return runtimeMode;
+            }
+            else
+            {
+                LOG_WARN(
+                    "Timed out getting runtime mode from launcher, considering "
+                    "RUNTIME_MODES::NORMAL as default."
+                );
+                Telemetry::addBreadcrumb(
+                    "default",
+                    "Failed to get runtime mode from launcher, itc stuck?",
+                    TELEMETRY_ACTION_CATEGORY,
+                    "warning"
+                );
+                return AikariLauncher::Public::Constants::Lifecycle::
+                    APPLICATION_RUNTIME_MODES::NORMAL;
+            }
         };
 
     }  // namespace HelperFns
 
-    PLSInitSuccess runPlsInit()
+    AikariPLS::Types::Infrastructure::Init::PLSInitResult runPlsInit()
     {
         auto& sharedStates =
             AikariPLS::Lifecycle::PLSSharedStates::getInstance();
@@ -213,7 +276,8 @@ namespace AikariPLS::Init
             if (getDirResult == std::nullopt)
             {
                 LOG_CRITICAL("Failed to get Aikari root DIR, exiting PLS...");
-                return false;
+                return { .isSuccess = false,
+                         .message = "E_AIKARI_ROOT_DIR_GET_FAILED" };
             }
             else
             {
@@ -249,7 +313,8 @@ namespace AikariPLS::Init
                 "Failed to initialize config file for module PLS, exiting "
                 "PLS..."
             );
-            return false;
+            return { .isSuccess = false,
+                     .message = "E_PLS_CONFIG_FILE_INIT_FAILED" };
         }
         // ↑ Init Config Manager
 
@@ -305,7 +370,13 @@ namespace AikariPLS::Init
             }
             catch (const std::exception& err)
             {
-                LOG_ERROR("Failed to kill SeewoCore, error: {}", err.what());
+                const std::string errMsg = std::format(
+                    "Failed to kill SeewoCore process | Error: {}", err.what()
+                );
+                LOG_ERROR(errMsg);
+                Telemetry::addBreadcrumb(
+                    "default", errMsg, TELEMETRY_ACTION_CATEGORY, "error"
+                );
             }
         }
         // ↑ Init Hosts
@@ -317,7 +388,7 @@ namespace AikariPLS::Init
         if (!result)
         {
             LOG_CRITICAL("Failed to init MQTT cert, exiting PLS...");
-            return false;
+            return { .isSuccess = false, .message = "E_MQTT_CERT_INIT_FAILED" };
         }
         // ↑ Init MQTT TLS Env
 
@@ -357,6 +428,6 @@ namespace AikariPLS::Init
 
         curConfigPtr.reset();
 
-        return true;
+        return { .isSuccess = true, .message = std::nullopt };
     }
 }  // namespace AikariPLS::Init

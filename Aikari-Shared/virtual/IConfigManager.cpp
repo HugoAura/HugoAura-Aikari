@@ -1,4 +1,5 @@
 ﻿#include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/infrastructure/telemetryShortFn.h>
 #include <Aikari-Shared/utils/windows.h>
 #include <Aikari-Shared/virtual/IConfigManager.h>
 #include <fstream>
@@ -109,6 +110,9 @@ namespace AikariShared::VirtualIns
     // ↓ public
     bool IConfigManager::initConfig()
     {
+        const std::string telemetryActionName =
+            "shared.configMgr.initConfig<module=" + this->module + ">";
+
         bool isExists = std::filesystem::exists(this->configPath);
 
         LoadDefaultConfigRet defaultConfigRet = this->loadDefaultConfig();
@@ -119,11 +123,36 @@ namespace AikariShared::VirtualIns
                 this->module,
                 defaultConfigRet.errorDetail.value_or("Unknown Error")
             );
+            Telemetry::addBreadcrumb(
+                "default",
+                std::format(
+                    "Failed to load default config | Err: {}",
+                    defaultConfigRet.errorDetail.value_or("UNKNOWN")
+                ),
+                telemetryActionName,
+                "error"
+            );
             return false;
         }
 
-        nlohmann::json defaultConfigJson =
-            nlohmann::json::parse(defaultConfigRet.result);
+        nlohmann::json defaultConfigJson;
+        try
+        {
+            defaultConfigJson = nlohmann::json::parse(defaultConfigRet.result);
+        }
+        catch (const std::exception& e)
+        {
+            LOG_ERROR("Failed to parse config as JSON: {}", e.what());
+            Telemetry::addBreadcrumb(
+                "default",
+                std::format(
+                    "Failed to load parse config as JSON | Err: {}", e.what()
+                ),
+                telemetryActionName,
+                "error"
+            );
+            return false;
+        }
 
         if (isExists)
         {
@@ -134,6 +163,15 @@ namespace AikariShared::VirtualIns
                     LOG_ERROR(
                         "Failed to open user config file. Module: " +
                         this->module
+                    );
+                    Telemetry::addBreadcrumb(
+                        "default",
+                        std::format(
+                            "Failed to open user config file | Config path: {}",
+                            this->configPath.string()
+                        ),
+                        telemetryActionName,
+                        "error"
                     );
                     return false;
                 }
@@ -169,6 +207,12 @@ namespace AikariShared::VirtualIns
                 LOG_ERROR(
                     "Failed to initialize default config for module {}.",
                     this->module
+                );
+                Telemetry::addBreadcrumb(
+                    "default",
+                    "Failed to writeConfigRaw",
+                    telemetryActionName,
+                    "error"
                 );
                 return false;
             }

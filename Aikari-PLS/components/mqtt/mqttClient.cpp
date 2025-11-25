@@ -916,9 +916,18 @@ namespace AikariPLS::Components::MQTTClient
 
     namespace ClientLifecycleController
     {
+        static std::mutex clientResetMutex;
+
         void initAndMountClientIns(const ClientLaunchArg arg)
         {
             CUSTOM_LOG_INFO("<Controller> Creating MQTT Client instance...");
+
+            Telemetry::addBreadcrumb(
+                "default",
+                "MQTT Client Lifecycle Controller is creating client ins",
+                "pls.mqtt.client.lifecycle",
+                "debug"
+            );
 
             auto& sharedIns =
                 AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
@@ -928,6 +937,12 @@ namespace AikariPLS::Components::MQTTClient
             );
             if (clientInsOldPtr != nullptr)
             {
+                Telemetry::addBreadcrumb(
+                    "default",
+                    "Prev client ins ptr detected, triggering reset...",
+                    "pls.mqtt.client.lifecycle",
+                    "debug"
+                );
                 resetClientIns(true);
             }
 
@@ -941,6 +956,25 @@ namespace AikariPLS::Components::MQTTClient
         void resetClientIns(bool noDisconnPkt)
         {
             CUSTOM_LOG_INFO("<Controller> Resetting MQTT Client instance...");
+
+            Telemetry::addBreadcrumb(
+                "default",
+                "MQTT Client Lifecycle Controller is trying to reset client "
+                "ins",
+                "pls.mqtt.client.lifecycle",
+                "debug"
+            );
+
+            auto lockRes = clientResetMutex.try_lock();
+            if (!lockRes)
+                return;
+
+            Telemetry::addBreadcrumb(
+                "default",
+                "Lock gained, resetting instance",
+                "pls.mqtt.client.lifecycle",
+                "debug"
+            );
 
             auto& sharedIns =
                 AikariPLS::Lifecycle::PLSSharedInsManager::getInstance();
@@ -957,6 +991,8 @@ namespace AikariPLS::Components::MQTTClient
             sharedIns.resetPtr(
                 &AikariPLS::Types::Lifecycle::PLSSharedIns::mqttClient
             );
+
+            clientResetMutex.unlock();
         };
     }  // namespace ClientLifecycleController
 

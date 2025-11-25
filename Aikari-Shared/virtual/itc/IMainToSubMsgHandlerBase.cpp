@@ -13,9 +13,9 @@ namespace AikariShared::Infrastructure::InterThread
             itcTypes::SubToMainMessageInstance>* destQueue,
         const std::string subModuleName
     )
-        : srcQueue(srcQueue),
+        : logHeader("[Main->" + subModuleName + "]"),
+          srcQueue(srcQueue),
           destQueue(destQueue),
-          logHeader("[Main->" + subModuleName + "]"),
           threadPool(
               std::make_unique<
                   AikariShared::Infrastructure::MessageQueue::PoolQueue<
@@ -61,6 +61,7 @@ namespace AikariShared::Infrastructure::InterThread
         )> callbackLambda
     )
     {
+        this->listeners[eventId].clear();
         this->listeners[eventId].emplace_back(std::move(callbackLambda));
     };
 
@@ -92,9 +93,12 @@ namespace AikariShared::Infrastructure::InterThread
      *
      * @warning 它会把输入的 msg param 给 move 走
      */
-    itcTypes::MainToSubControlReplyMessage
+    std::optional<itcTypes::MainToSubControlReplyMessage>
     MainToSubMsgHandlerBase::sendCtrlMsgSync(
-        itcTypes::SubToMainControlMessage& ctrlMsg
+        itcTypes::SubToMainControlMessage& ctrlMsg,
+        std::chrono::milliseconds timeout,
+        bool retry,
+        unsigned int maxTries
     )
     {
         itcTypes::SubToMainMessageInstance ctrlMsgIns = {
@@ -107,7 +111,25 @@ namespace AikariShared::Infrastructure::InterThread
 
         this->destQueue->push(std::move(ctrlMsgIns));
 
-        return msgFuture.get();
+        auto futureStatus = msgFuture.wait_for(timeout);
+        if (futureStatus == std::future_status::ready)
+        {
+            return msgFuture.get();
+        }
+        else
+        {
+            if (retry)
+            {
+                return maxTries == 0 ? std::nullopt
+                                     : this->sendCtrlMsgSync(
+                                           ctrlMsg, timeout, true, maxTries - 1
+                                       );
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
     };
 
     // ↓ protected

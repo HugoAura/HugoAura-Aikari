@@ -98,3 +98,6 @@ libs/
 Thumbs.db
 ehthumbs.db
 desktop.ini
+
+# User Files
+local/

@@ -6,14 +6,15 @@
 #include <Aikari-PLS/types/constants/init.h>
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/queue/SinglePointMessageQueue.hpp>
-#include <Aikari-Shared/utils/string.h>
+#include <Aikari-Shared/infrastructure/telemetryShortFn.h>
 #include <functional>
 
-#include "../../../Aikari-Launcher/lifecycle.h"
 #include "../../lifecycle.h"
 #include "../../utils/mqttPacketUtils.h"
-#include "mqttClient.h"
-#include "mqttLifecycle.h"
+#include "./mqttClient.h"
+#include "./mqttLifecycle.h"
+
+#define TELEMETRY_ACTION_CATEGORY "pls.mqtt.broker.handler"
 
 /* This component handles <messages> between [Real Client] <-> [Fake Broker] */
 
@@ -467,6 +468,12 @@ namespace AikariPLS::Components::MQTTBroker::Class
 
     void MQTTBrokerConnection::on_close()
     {
+        Telemetry::addBreadcrumb(
+            "default",
+            "Broker connection is closing",
+            TELEMETRY_ACTION_CATEGORY,
+            "debug"
+        );
         this->isSharedInfoInitialized = false;
         auto& sharedClientInfo = AikariPLS::Lifecycle::MQTT::
             PLSMQTTSharedRealClientInfo::getInstance();

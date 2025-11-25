@@ -3,6 +3,7 @@
 #define CUSTOM_LOG_HEADER "[Shared / FileSystem Utils]"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/utils/windows/winString.h>
 #include <ShlObj.h>
 #include <boost/algorithm/string.hpp>
 #include <format>
@@ -11,8 +12,6 @@
 #include <stdexcept>
 #include <string>
 #include <windows.h>
-
-#include "Aikari-Shared/utils/windows/winString.h"
 
 namespace AikariShared::Utils::FileSystem
 {

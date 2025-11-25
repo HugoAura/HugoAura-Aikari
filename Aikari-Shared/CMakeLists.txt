@@ -3,6 +3,7 @@ project_add_library(Aikari-Shared STATIC
         infrastructure/logger.cpp
         infrastructure/telemetry.cpp
         utils/crypto.cpp
+        utils/cstring.cpp
         utils/filesystem.cpp
         utils/network.cpp
         utils/random.cpp
