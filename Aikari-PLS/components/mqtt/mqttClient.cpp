@@ -366,6 +366,9 @@ namespace AikariPLS::Components::MQTTClient
                         std::function<async_mqtt::packet_id_type()>
                             genNewPacketId = [this]()
                         {
+                            std::lock_guard<std::recursive_mutex>
+                                connectionIOLockGuard(this->connectionIOLock);
+
                             auto packetId =
                                 this->connection->acquire_unique_packet_id();
                             if (packetId == std::nullopt)
@@ -609,7 +612,8 @@ namespace AikariPLS::Components::MQTTClient
                         TELEMETRY_ACTION_CATEGORY,
                         "info"
                     );
-                    std::unique_lock<std::mutex> lock(this->sslCtxLock
+                    std::unique_lock<std::mutex> lock(
+                        this->sslCtxLock
                     );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,
@@ -854,6 +858,9 @@ namespace AikariPLS::Components::MQTTClient
                         // data from broker
 
                         std::stringstream strStream(strIncomingData);
+
+                        std::lock_guard<std::recursive_mutex>
+                            connectionIOLockGuard(this->connectionIOLock);
 
                         this->connection->recv(strStream);
                     }

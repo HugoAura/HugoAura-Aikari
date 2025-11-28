@@ -11,6 +11,7 @@ namespace AikariTypes::Constants::Entrypoint
         constexpr int REG_INIT_FAILED = -4;
         constexpr int CONFIG_INIT_FAILED = -5;
         constexpr int NETWORK_SERVICES_INIT_FAILED = -6;
+        constexpr int SSL_COMPONENTS_UNUSABLE = -7;
         constexpr int HINS_GET_FAILED = -9;  // Windows hInstance
 
         constexpr int MULTI_AIKARI_INSTANCE_DETECTED = -20;

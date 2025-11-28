@@ -325,6 +325,8 @@ namespace AikariPLS::Components::MQTTBroker
                     std::function<async_mqtt::packet_id_type()> genNewPacketId =
                         [this]()
                     {
+                        std::lock_guard<std::recursive_mutex>
+                            connectionIOLockGuard(this->connectionIOLock);
                         return this->connection->acquire_unique_packet_id()
                             .value_or(0);
                     };
@@ -356,21 +358,18 @@ namespace AikariPLS::Components::MQTTBroker
 
                                 try
                                 {
-                                    auto result =
-                                        AikariPLS::Utils::MQTTPacketUtils::
-                                            processPropGetRepPacket(
-                                                packet.newPayload.value_or(
-                                                    packet.packet.value()
-                                                        .get<
-                                                            async_mqtt::v3_1_1::
-                                                                publish_packet>(
-                                                        )
-                                                        .payload()
-                                                ),
-                                                ruleMgr->ruleMapping
-                                                    .broker2client.rewrite
-                                                // ↑ refer to rules.h:86
-                                            );
+                                    auto result = AikariPLS::Utils::
+                                        MQTTPacketUtils::processPropGetRepPacket(
+                                            packet.newPayload.value_or(
+                                                packet.packet.value()
+                                                    .get<async_mqtt::v3_1_1::
+                                                             publish_packet>()
+                                                    .payload()
+                                            ),
+                                            ruleMgr->ruleMapping.broker2client
+                                                .rewrite
+                                            // ↑ refer to rules.h:86
+                                        );
                                     if (result.has_value())
                                     {
                                         packet.newPayload = result;
@@ -713,6 +712,9 @@ namespace AikariPLS::Components::MQTTBroker
 
                         if (this->connection != nullptr)
                         {
+                            std::lock_guard<std::recursive_mutex>
+                                connectionIOLockGuard(this->connectionIOLock);
+
                             this->connection->recv(strStream);
                         }
                     }

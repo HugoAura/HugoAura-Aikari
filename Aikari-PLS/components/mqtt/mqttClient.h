@@ -68,6 +68,7 @@ namespace AikariPLS::Components::MQTTClient
         std::atomic<bool> shouldExit = false;
         std::atomic<bool> pendingExit = false;
         std::mutex sslCtxLock;
+        std::recursive_mutex connectionIOLock;
 
         mbedtls_ssl_context sslCtx;
         NetContexts netCtxs;

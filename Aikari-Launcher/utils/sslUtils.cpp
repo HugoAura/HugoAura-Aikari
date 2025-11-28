@@ -1,6 +1,7 @@
 ﻿#include "sslUtils.h"
 
 #include <Aikari-Shared/infrastructure/loggerMacro.h>
+#include <Aikari-Shared/infrastructure/telemetryShortFn.h>
 #include <chrono>
 #include <fstream>
 #include <mbedtls/ctr_drbg.h>
@@ -264,6 +265,16 @@ namespace AikariUtils::SSLUtils
             LOG_ERROR(
                 "Unexpected error during cert generation, error: {}", err.what()
             );
+            Telemetry::addBreadcrumb(
+                "default",
+                std::format(
+                    "Error trying to generate cert | BaseDir: {} | Message: {}",
+                    baseDir.string(),
+                    err.what()
+                ),
+                "launcher.utils.ssl.genCert",
+                "error"
+            );
             cleanUp();
             return -1;
         }
@@ -298,7 +309,17 @@ namespace AikariUtils::SSLUtils
         }
         else
         {
-            LOG_WARN("Failed to generate WebSocket TLS cert.");
+            Telemetry::addBreadcrumb(
+                "default",
+                std::format(
+                    "Error generating WebSocket TLS cert | EC: {}", result
+                ),
+                "launcher.utils.ssl.initWsCert",
+                "error"
+            );
+            LOG_WARN(
+                "Failed to generate WebSocket TLS cert. Error code: {}", result
+            );
         }
 
         if (force)

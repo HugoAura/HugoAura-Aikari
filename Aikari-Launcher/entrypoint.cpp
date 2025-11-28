@@ -288,7 +288,8 @@ namespace Aikari::EternalCore
             CUSTOM_LOG_CRITICAL(
                 "Failed to initialize WebSocket TLS cert, exiting Aikari..."
             );
-            auto exitCode = entrypointConstants::EXIT_CODES::CONFIG_INIT_FAILED;
+            auto exitCode =
+                entrypointConstants::EXIT_CODES::SSL_COMPONENTS_UNUSABLE;
             reportStartupFailureToTelemetry(exitCode);
             reportProgress(true, false, true, 0, 45, exitCode);
             return exitCode;
@@ -296,7 +297,29 @@ namespace Aikari::EternalCore
         reportProgress(false, false, true, 2000, 50, 0);
 
         CUSTOM_LOG_INFO("Initializing Windows socket environment...");
-        ix::initNetSystem();
+        {
+            bool winNetworkInitResult = ix::initNetSystem();
+            telemetryManager.addBreadcrumb(
+                "default",
+                std::format(
+                    "Net system init result: {}",
+                    winNetworkInitResult ? "Succeed" : "Failed"
+                ),
+                TELEMETRY_ACTION_CATEGORY,
+                "debug"
+            );
+            if (!winNetworkInitResult)
+            {
+                CUSTOM_LOG_CRITICAL(
+                    "Net system initialization failed, exiting Aikari..."
+                );
+                auto exitCode = entrypointConstants::EXIT_CODES::
+                    NETWORK_SERVICES_INIT_FAILED;
+                reportStartupFailureToTelemetry(exitCode);
+                reportProgress(true, false, true, 0, 50, exitCode);
+                return exitCode;
+            }
+        }
 
         telemetryManager.addBreadcrumb(
             "default",

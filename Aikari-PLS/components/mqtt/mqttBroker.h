@@ -65,6 +65,7 @@ namespace AikariPLS::Components::MQTTBroker
 
         std::atomic<bool> shouldExit = false;
         std::mutex sslCtxLock;
+        std::recursive_mutex connectionIOLock;
 
         mbedtls_ssl_context sslCtx;
         NetContexts netCtx;
