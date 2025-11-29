@@ -1,22 +1,17 @@
 <img src="https://s2.loli.net/2025/11/17/jLJhisMQX2poZ7K.png" />
 
 <h1 align="center">Aikari</h1>
-<h4 align="center">Unified UX tweak tool for Seewo family software</h4>
-<h4 align="center">希沃全家桶软件用户体验优化工具</h4>
+<h4 align="center">Unified UX tweak tool for Seewo E+</h4>
+<h4 align="center">希沃易 + 用户体验优化工具</h4>
 
 <div align="center">
-  <a href="https://aikari.aurax.cc/">首页 (WIP)</a> · <a href="https://github.com/HugoAura/Seewo-HugoAura">主项目</a> · <a href="https://hugo.aurax.cc/about">关于 (WIP)</a> · <a href="https://docs.aurax.cc/HugoAura-Aikari/">文档 (WIP)</a> · <a href="https://github.com/HugoAura/HugoAura-Aikari/issues">反馈</a> · <a href="https://forum.aurax.cc/">社区</a>
+  <a href="https://aikari.aurax.cc/">首页 (WIP)</a> · <a href="https://github.com/HugoAura/Seewo-HugoAura">主项目</a> · <a href="https://hugo.aurax.cc/about">关于 (WIP)</a> · <a href="https://aikari.docs.aurax.cc/">文档 (WIP)</a> · <a href="https://github.com/HugoAura/HugoAura-Aikari/issues">反馈</a> · <a href="https://forum.smart-teach.cn/t/hugoaura">社区</a>
 </div>
 
 > [!TIP]
 > **这是 Project HugoAura 的一部分**
 > 
 > 前往 [这里](https://github.com/HugoAura/Seewo-HugoAura) 查看主项目。
-
-> [!NOTE]
-> **写在前面**
->
-> 此项目与 HugoAura 主项目的目的略有区别。主项目几乎是纯破解, 而 Aikari 后续可能会集成一些实用功能 (自定义冰点穿透行为、希沃账号自动登录等)。
 
 ## ✨ 概述
 
@@ -28,4 +23,6 @@ Aikari 是一个针对 [希沃易 + 系列软件](https://e.seewo.com/) 的全�
 - [ ] **AIT (Aura Icy BreakThrough, 环·破冰)**: 通过 Hook Windows API 关机事件 & 与 `SeewoFreezeUpdateAssistant` (希沃集控 - 冰点更新 RPC 服务) 交互, 实现「属于你自己的冰点穿透」, 更新自定义软件等。
 - [ ] **AEL (Aura EasiLogin, 环·零刻登录)**: 通过取代原由 `EasiAgent` 接管的 `local.id.seewo.com` 本地 SSO, 实现希沃易 + 体系应用的一键登入。
 
-> 这里本来应该有一张图, 但是目前没时间了。一会再来更新。
+> [!IMPORTANT]
+>
+> README 仍在施工进程中, 更多内容请等待后续更新

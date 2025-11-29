@@ -36,7 +36,21 @@
       ]
     },
     "sol2",
-    "spdlog"
+    "spdlog",
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": [
+        "gui",
+        "network",
+        "widgets",
+        "png",
+        "jpeg",
+        "concurrent",
+        "testlib"
+      ]
+    },
+    "qtdeclarative"
   ],
   "overrides": [
     {

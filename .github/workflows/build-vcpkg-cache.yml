@@ -1,0 +1,161 @@
+name: Build vcpkg cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      no_cache:
+        description: 'No Cache'
+        type: boolean
+        default: false
+      arch:
+        description: 'Target Architecture'
+        type: choice
+        options:
+          - all
+          - x64-windows
+          - arm64-windows
+        default: all
+      packages:
+        description: 'Custom Packages (Optional)'
+        required: false
+        type: string
+        default: ''
+      vcpkg_commit:
+        description: 'VCPKG Commit ID (Optional, only for custom pkgs)'
+        required: false
+        type: string
+        default: ''
+      pwsh_version:
+        description: 'PowerShell Version (Optional)'
+        required: false
+        type: string
+        default: '7.5.4'
+      cmake_version:
+        description: 'CMake Version (Optional)'
+        required: false
+        type: string
+        default: '3.31.6'
+      ninja_version:
+        description: 'Ninja Version (Optional)'
+        required: false
+        type: string
+        default: '1.12.1' 
+      disable_tracking:
+        description: 'Disable Compiler Tracking'
+        type: boolean
+        default: true
+
+jobs:
+  build-cache:
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        triplet: ${{ inputs.arch == 'all' && fromJson('["x64-windows", "arm64-windows"]') || fromJson(format('["{0}"]', inputs.arch)) }}
+    runs-on: ${{ matrix.triplet == 'arm64-windows' && 'windows-11-arm' || 'windows-latest' }}
+    
+    env:
+      VCPKG_ROOT: "C:\\v"
+      VCPKG_DEFAULT_BINARY_CACHE: "D:\\vcpkg_cache"
+      VCPKG_BINARY_SOURCES: "clear;files,D:/vcpkg_cache,readwrite"
+      VCPKG_KEEP_ENV_VARS: "VSCMD_SKIP_SENDTELEMETRY"
+      VCPKG_DISABLE_COMPILER_TRACKING: ${{ inputs.disable_tracking && '1' || '0' }}
+
+    steps:
+      - name: Mount D Drive
+        if: matrix.triplet == 'arm64-windows'
+        shell: cmd
+        run: |
+          mkdir C:\D_Work
+          subst D: C:\D_Work
+          D:
+          dir
+
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Restore vcpkg Binary Cache
+        if: ${{ inputs.no_cache != true }}
+        uses: actions/cache/restore@v4
+        id: cache-vcpkg
+        with:
+          path: D:/vcpkg_cache
+          key: ${{ matrix.triplet }}-vcpkg-${{ inputs.packages != '' && hashFiles(inputs.packages) || hashFiles('vcpkg.json') }}
+          restore-keys: ${{ matrix.triplet }}-vcpkg-
+
+      - name: Setup PowerShell
+        id: setup-up-pwsh
+        uses: bjompen/UpdatePWSHAction@v1.0.2
+        with:
+          FixedVersion: '${{ inputs.pwsh_version }}'
+
+      - name: Setup CMake and Ninja
+        uses: lukka/get-cmake@v4.2.0
+        with:
+          cmakeVersion: ${{ inputs.cmake_version }}
+          ninjaVersion: ${{ inputs.ninja_version }}
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: 'C:/v'
+          vcpkgJsonGlob: 'vcpkg.json'
+          vcpkgGitCommitId: '${{ inputs.vcpkg_commit }}'
+
+      - name: Create Cache and Build Tree Dir
+        shell: cmd
+        run: |
+          if not exist D:\vcpkg_cache mkdir D:\vcpkg_cache
+          if not exist D:\bld mkdir D:\bld
+
+      - name: Run vcpkg install
+        shell: powershell
+        run: |
+          $triplet = "${{ matrix.triplet }}"
+          $customPackages = "${{ inputs.packages }}"
+          $buildRoot = "D:\bld"
+
+          $cmdArgs = @("install")
+
+          if (-not [string]::IsNullOrWhiteSpace($customPackages)) {
+            Write-Host "Build Mode: Custom Packages | $customPackages"
+            $cmdArgs += $customPackages.Split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)
+            Move-Item -Path .\vcpkg.json -Destination .\vcpkg.json.bak -Force
+          } else {
+            Write-Host "Build Mode: Manifest (vcpkg.json)"
+            Copy-Item -Path .\vcpkg.json -Destination .\vcpkg.json.bak
+          }
+
+          $cmdArgs += "--triplet", $triplet
+          $cmdArgs += "--x-buildtrees-root=$buildRoot"
+
+          if ($triplet -eq "arm64-windows") {
+            $cmdArgs += "--allow-unsupported"
+            $env:VCPKG_MAX_CONCURRENCY = 2
+          }
+
+          $vcpkgExe = Join-Path $env:VCPKG_ROOT "vcpkg.exe"
+          Write-Host "Running: $vcpkgExe $cmdArgs"
+          & $vcpkgExe $cmdArgs
+          if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed" }
+
+      - name: Zip Cache
+        shell: powershell
+        run: |
+          Compress-Archive -Path "D:\vcpkg_cache\*" -DestinationPath "D:\vcpkg_cache_${{ matrix.triplet }}.zip" -CompressionLevel Optimal -Force
+
+      - name: Upload Binary Cache
+        uses: actions/upload-artifact@v4
+        with:
+          name: vcpkg-cache-${{ matrix.triplet }}
+          path: D:/vcpkg_cache_${{ matrix.triplet }}.zip
+          retention-days: 15
+          
+      - name: Save vcpkg Binary Cache
+        uses: actions/cache/save@v4
+        if: always() 
+        with:
+          path: D:/vcpkg_cache
+          key: ${{ matrix.triplet }}-vcpkg-${{ inputs.packages != '' && hashFiles(inputs.packages) || hashFiles('vcpkg.json.bak') }}
