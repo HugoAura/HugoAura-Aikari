@@ -42,6 +42,14 @@ target_compile_definitions(Aikari-Global-Virtual INTERFACE
 )
 
 # --- Functions --- #
+function(util_set_ilk_path target_name)
+    set(TARGET_ILK_DIR ${CMAKE_BINARY_DIR}/artifacts/ilk/$ENV{CMAKE_BUILD_TYPE})
+    if (MSVC)
+        file(MAKE_DIRECTORY ${TARGET_ILK_DIR})
+        target_link_options(${target_name} PRIVATE "/ILK:${TARGET_ILK_DIR}/${target_name}.ilk")
+    endif ()
+endfunction()
+
 function(project_add_library target_name)
     add_library(${target_name} ${ARGN})
     target_link_libraries(${target_name} PRIVATE Aikari-Global-Virtual)
@@ -50,12 +58,13 @@ function(project_add_library target_name)
         set_target_properties(${target_name} PROPERTIES
                 PDB_NAME ${target_name}
         )
+        util_set_ilk_path(${target_name})
     endif ()
 
     set_target_properties(${target_name} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<CONFIG>
-            PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/lib/$<CONFIG>
+            PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/symbols/$<CONFIG>
     )
 
     target_include_directories(${target_name} PRIVATE ${CMAKE_SOURCE_DIR}/External)
@@ -69,30 +78,52 @@ function(project_add_executable target_name)
         set_target_properties(${target_name} PROPERTIES
                 PDB_NAME ${target_name}
         )
+        util_set_ilk_path(${target_name})
     endif ()
 
     set_target_properties(${target_name} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<CONFIG>
-            PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/lib/$<CONFIG>
+            PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/symbols/$<CONFIG>
+    )
+endfunction()
+
+function(project_add_qt_executable target_name)
+    qt_add_executable(${target_name} ${ARGN})
+    target_link_libraries(${target_name} PRIVATE Aikari-Global-Virtual)
+
+    if (MSVC)
+        set_target_properties(${target_name} PROPERTIES
+                PDB_NAME ${target_name}
+        )
+        util_set_ilk_path(${target_name})
+    endif ()
+
+    set_target_properties(${target_name} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/lib/$<CONFIG>
+            PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/symbols/$<CONFIG>
     )
 endfunction()
 
 # --- Add-Sub --- #
 
+add_subdirectory(External)
+
 add_subdirectory(Aikari-Shared)
+add_subdirectory(Aikari-UI-Settings)
 add_subdirectory(Aikari-PLS)
 add_subdirectory(Aikari-Launcher)
 
 # --- Post Build CMDs --- #
-# not using add_custom_command here because it will cause problems
-# idk why
+# not using add_custom_command here because sub targets are not initialized at this time
 
-set(ARTIFACTS_DIR ${CMAKE_BINARY_DIR}/bin/$<CONFIG>)
+set(ARTIFACTS_BIN_DIR ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>)
+set(VCPKG_INSTALLED_BASE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET})
 
 # >>> TASK COPY_PLS_RES
 set(SOURCE_PLS_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-PLS/resources/static)
-set(DESTINATION_PLS_RESOURCES_DIR ${ARTIFACTS_DIR}/resources/pls)
+set(DESTINATION_PLS_RESOURCES_DIR ${ARTIFACTS_BIN_DIR}/resources/pls)
 add_custom_target(Aikari-Virtual-CMD-CP-PLS-RES ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${SOURCE_PLS_RESOURCES_DIR}" "${DESTINATION_PLS_RESOURCES_DIR}"
         COMMENT "Copying PLS resources to output directory..."
@@ -103,20 +134,52 @@ add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-PLS-RES)
 # >>> TASK COPY_SENTRY_CRASHPAD_HANDLER
 find_program(SENTRY_HANDLER_PATH
         crashpad_handler
-        HINTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/tools/sentry-native
+        HINTS ${VCPKG_INSTALLED_BASE}/tools/sentry-native
 )
 if (SENTRY_HANDLER_PATH)
     add_custom_target(Aikari-Virtual-CMD-CP-SENTRY-CRASHPAD-HANDLER ALL
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${SENTRY_HANDLER_PATH}"
-            "${ARTIFACTS_DIR}/crashpad_handler.exe"
+            "${ARTIFACTS_BIN_DIR}/crashpad_handler.exe"
     )
-    message(STATUS "Copied Sentry CrashPad Handler: ${SENTRY_HANDLER}")
+    message(STATUS "Found Sentry CrashPad Handler: ${SENTRY_HANDLER}")
 else ()
     message(WARNING "Could not find Sentry CrashPad Handler executable, artifact may fail to start.")
 endif ()
 add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-SENTRY-CRASHPAD-HANDLER)
 # <<< TASK COPY_SENTRY_CRASHPAD_HANDLER
+
+# >>> TASK WIN_DEPLOY_QT_FOR_SETTINGS_UI
+if (WIN32) # 但实际上一直都是 WIN32
+    find_program(QT_WINDEPLOY_PATH windeployqt
+            HINTS ${VCPKG_INSTALLED_BASE}/tools/Qt6/bin
+    )
+    if (QT_WINDEPLOY_PATH)
+        message(STATUS "Found windepolyqt.exe at ${QT_WINDEPLOY_PATH} ${Qt6_DIR}")
+        add_custom_target(Aikari-Virtual-CMD-QT-RUN-WINDEPLOY ALL
+                COMMAND ${QT_WINDEPLOY_PATH}
+                --dir $<TARGET_FILE_DIR:Aikari-UI-Settings>
+                --qmldir ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-UI-Settings/resources
+
+                $<$<CONFIG:Debug>:--qtpaths>
+
+                $<$<CONFIG:Debug>:${VCPKG_INSTALLED_BASE}/tools/Qt6/bin/qtpaths.debug.bat>
+
+                $<$<CONFIG:Debug>:--debug>
+                $<$<CONFIG:RelWithDebInfo>:--release>
+                $<$<CONFIG:Release>:--release>
+
+                --no-compiler-runtime
+                --no-translations
+
+                $<TARGET_FILE:Aikari-UI-Settings>
+        )
+    else ()
+        message(WARNING "Could not find windeployqt.exe, copy plugin DLLs manually may required.")
+    endif ()
+endif ()
+add_dependencies(Aikari-Virtual-CMD-QT-RUN-WINDEPLOY Aikari-UI-Settings)
+# <<< TASK WIN_DEPLOY_QT_FOR_SETTINGS_UI
 
 # >>> TASK SIGN_AIKARI_LAUNCHER_EXE
 if (SIGN_LAUNCHER)
@@ -139,10 +202,10 @@ if (SIGN_LAUNCHER)
         message(WARNING "Signtool not found or PFX missing. Skipping signature.")
     endif ()
 endif ()
-# <<<
+# <<< TASK SIGN_AIKARI_LAUNCHER_EXE
 
 # --- Install --- #
-install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/
+install(DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>/
         DESTINATION .
         COMPONENT Core
         PATTERN "*.pdb" EXCLUDE

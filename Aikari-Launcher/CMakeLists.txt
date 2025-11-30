@@ -45,7 +45,7 @@ project_add_executable(Aikari-Launcher
 
 # SPDLog
 find_package(spdlog CONFIG REQUIRED)
-target_link_libraries(Aikari-Launcher PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(Aikari-Launcher PRIVATE spdlog::spdlog)
 
 # Nlohmann/JSON
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -74,6 +74,12 @@ target_precompile_headers(Aikari-Launcher
         <memory>
         <spdlog/spdlog.h>
         <nlohmann/json.hpp>
+)
+
+# --- Options --- #
+
+target_compile_definitions(Aikari-Launcher PRIVATE
+        AIKARI_MODULE_NAME="Aikari-Launcher"
 )
 
 # --- Link --- #

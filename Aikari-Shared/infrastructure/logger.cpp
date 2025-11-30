@@ -1,10 +1,14 @@
 ﻿#include <Aikari-Shared/infrastructure/logger.h>
-#include <ShlObj.h>
-#include <filesystem>
-#include <spdlog/sinks/daily_file_sink.h>
-#include <spdlog/spdlog.h>
-#include <string>
+// clang-format off
 #include <windows.h>
+#include <filesystem>
+#include <string>
+#include <ShlObj.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/pattern_formatter.h>
+#include <spdlog/sinks/daily_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+// clang-format on
 
 #ifdef _DEBUG
 #include <iostream>
@@ -221,12 +225,20 @@ namespace AikariShared::LoggerSystem
         };
     }  // namespace Utility
 
+    std::unordered_set<LOGGER_SINK>* getLoggerSinkSettingsPtr()
+    {
+        return &AikariShared::LoggerSystem::loggerSinkSettings;
+    };
+
     int initLogger(
-        const std::string& moduleName, int moduleTextColor, int moduleBgColor
+        const std::string& moduleName,
+        int moduleTextColor,
+        int moduleBgColor,
+        const std::string& loggerName
     )
     {
         std::vector<std::shared_ptr<spdlog::sinks::sink>> loggerSinks;
-        if (AikariShared::LoggerSystem::defaultLoggerSink.contains(
+        if (AikariShared::LoggerSystem::loggerSinkSettings.contains(
                 AikariShared::LoggerSystem::LOGGER_SINK::CONSOLE
             ))
         {
@@ -249,7 +261,7 @@ namespace AikariShared::LoggerSystem
             loggerSinks.emplace_back(consoleSink);
         }
 
-        if (AikariShared::LoggerSystem::defaultLoggerSink.contains(
+        if (AikariShared::LoggerSystem::loggerSinkSettings.contains(
                 AikariShared::LoggerSystem::LOGGER_SINK::FILE
             ))
         {
@@ -271,13 +283,13 @@ namespace AikariShared::LoggerSystem
             loggerSinks.emplace_back(dailyFileLoggerSink);
         }
 
-        auto defaultLogger = std::make_shared<spdlog::logger>(
-            "defaultLogger", loggerSinks.begin(), loggerSinks.end()
+        auto thisLogger = std::make_shared<spdlog::logger>(
+            loggerName, loggerSinks.begin(), loggerSinks.end()
         );
-        defaultLogger->set_level(spdlog::level::trace);
-        spdlog::register_logger(defaultLogger);
+        thisLogger->set_level(spdlog::level::trace);
+        spdlog::register_logger(thisLogger);
 
-        defaultLogger->info("📃 Logger for module {} initialized!", moduleName);
+        thisLogger->info("📃 Logger for module {} initialized!", moduleName);
         return 0;
     }
 

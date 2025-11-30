@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>windows/MainWindow.qml</file>
+    </qresource>
+    <qresource prefix="/AikariConstants">
+        <file alias="qmldir">constants/qmldir</file>
+        <file alias="ThemeStyle.qml">constants/ThemeStyle.qml</file>
+    </qresource>
+</RCC>

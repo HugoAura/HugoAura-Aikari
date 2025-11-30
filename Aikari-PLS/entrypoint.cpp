@@ -36,9 +36,9 @@ namespace AikariPLS::Exports
         auto& sharedQueuesManager =
             AikariPLS::Lifecycle::PLSSharedQueuesManager::getInstance();
 
-        AikariShared::LoggerSystem::defaultLoggerSink = *loggerSinks;
+        AikariShared::LoggerSystem::loggerSinkSettings = *loggerSinks;
         AikariShared::LoggerSystem::initLogger(
-            "PLS", 37, 45
+            "PLS", 37, 45, AIKARI_MODULE_NAME
         );  // 37 = White text; 45 = Purple background
         LOG_INFO("[MODULE_INIT] Aikari Submodule PLS is launching...");
         Telemetry::addBreadcrumb(

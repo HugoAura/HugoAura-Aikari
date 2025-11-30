@@ -8,6 +8,7 @@
 #include <Aikari-PLS/types/entrypoint.h>
 #include <Aikari-PLS/types/infrastructure/init.h>
 #include <Aikari-Shared/infrastructure/logger.h>
+#include <Aikari-Shared/infrastructure/loggerMacro.h>
 #include <Aikari-Shared/infrastructure/telemetry.h>
 #include <Aikari-Shared/types/constants/version.h>
 #include <Aikari-Shared/utils/cstring.h>
@@ -57,7 +58,13 @@ namespace Aikari::EternalCore
                     pExceptionInfo->ExceptionRecord->ExceptionCode
                 )
             );
-            spdlog::get("defaultLogger")->flush();
+            spdlog::apply_all(
+                [](std::shared_ptr<spdlog::logger> l)
+                {
+                    l->info("Emg flushing...");
+                    l->flush();
+                }
+            );
             if (sentryFilter != NULL)
             {
                 return sentryFilter(pExceptionInfo);
@@ -381,7 +388,7 @@ namespace Aikari::EternalCore
                 fileSystemManagerIns->aikariRootDir,
                 certDir,
                 plsInputMsgQueue,
-                &AikariShared::LoggerSystem::defaultLoggerSink
+                &AikariShared::LoggerSystem::loggerSinkSettings
             );
         AikariPLS::Types::Infrastructure::Init::PLSInitResult plsInitResult = {
             .isSuccess = false, .message = "Init timed out (default)"
@@ -493,7 +500,13 @@ namespace Aikari::EternalCore
             "default", "Received stop signal", TELEMETRY_ACTION_CATEGORY, "info"
         );
         reportProgress(false, false, false, 1750, 0, 0);
-        spdlog::get("defaultLogger")->flush();
+        spdlog::apply_all(
+            [](const std::shared_ptr<spdlog::logger> l)
+            {
+                l->info("Flushing logger...");
+                l->flush();
+            }
+        );
 
         CUSTOM_LOG_INFO("Stopping ws server...");
         wsServerMgrPtr->stopWssServer();
@@ -582,29 +595,32 @@ namespace Aikari::EternalCore
 
     namespace Utility
     {
-        static void setupLoggerMode(
+        void setupLoggerMode(
             const AikariTypes::Infrastructure::CLIParse::CLIOptionsRet&
-                cliParseRet
+                cliParseRet,
+            std::unordered_set<AikariShared::LoggerSystem::LOGGER_SINK>*
+                loggerSinkSettingsPtr
         )
         {
+            loggerSinkSettingsPtr->clear();
             if (cliParseRet.logMode == "ttyAndFile")
             {
-                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                loggerSinkSettingsPtr->emplace(
                     AikariShared::LoggerSystem::LOGGER_SINK::FILE
                 );
-                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                loggerSinkSettingsPtr->emplace(
                     AikariShared::LoggerSystem::LOGGER_SINK::CONSOLE
                 );
             }
             else if (cliParseRet.logMode == "file")
             {
-                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                loggerSinkSettingsPtr->emplace(
                     AikariShared::LoggerSystem::LOGGER_SINK::FILE
                 );
             }
             else
             {
-                AikariShared::LoggerSystem::defaultLoggerSink.emplace(
+                loggerSinkSettingsPtr->emplace(
                     AikariShared::LoggerSystem::LOGGER_SINK::CONSOLE
                 );
             }
@@ -690,18 +706,28 @@ int main(int argc, const char* argv[])
             Aikari::EternalCore::CrashHandler::globalCriticalCrashHandler
         );
 
-    if (isRunAsSvc)
     {
-        AikariShared::LoggerSystem::defaultLoggerSink.emplace(
-            AikariShared::LoggerSystem::LOGGER_SINK::FILE
-        );
-    }
-    else
-    {
-        Aikari::EternalCore::Utility::setupLoggerMode(parseRet);
+        auto* loggerSinkSettingsPtr =
+            AikariShared::LoggerSystem::getLoggerSinkSettingsPtr();
+        if (isRunAsSvc)
+        {
+            loggerSinkSettingsPtr->clear();
+            loggerSinkSettingsPtr->emplace(
+                AikariShared::LoggerSystem::LOGGER_SINK::FILE
+            );
+        }
+        else
+        {
+            Aikari::EternalCore::Utility::setupLoggerMode(
+                parseRet, loggerSinkSettingsPtr
+            );
+        }
     }
     AikariShared::LoggerSystem::initLogger(
-        "Main", 30, 47
+        "ANY", 30, 46, "Aikari-Any"
+    );  // 30 = Black text; 46 = Cyan background
+    AikariShared::LoggerSystem::initLogger(
+        "Main", 30, 47, AIKARI_MODULE_NAME
     );  // 30 = Black text; 47 = White background
     if (isRunAsSvc)
     {

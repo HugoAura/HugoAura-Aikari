@@ -48,7 +48,7 @@ set_source_files_properties("Aikari-PLS.rc" PROPERTIES
 
 # SPDLog
 find_package(spdlog CONFIG REQUIRED)
-target_link_libraries(Aikari-PLS PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(Aikari-PLS PRIVATE spdlog::spdlog)
 
 # Nlohmann/JSON
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -92,6 +92,7 @@ target_precompile_headers(Aikari-PLS
 target_compile_definitions(Aikari-PLS
         PRIVATE
         AIKARIPLS_EXPORTS
+        AIKARI_MODULE_NAME="Aikari-PLS"
 )
 
 # --- Link --- #
@@ -109,7 +110,7 @@ target_include_directories(Aikari-PLS
 target_include_directories(Aikari-PLS
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../Aikari-Launcher/includes
-)
+) # for Aikari-Launcher-Public
 
 target_include_directories(Aikari-PLS
         PUBLIC
@@ -122,6 +123,6 @@ add_custom_command(
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:cjson::cjson>
-        ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
+        ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>
         COMMENT "Copying lua-cjson DLL to output directory"
 )

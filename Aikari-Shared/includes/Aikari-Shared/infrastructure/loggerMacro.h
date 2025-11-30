@@ -3,7 +3,15 @@
 #include <format>
 #include <spdlog/spdlog.h>
 
-#define DEFAULT_LOGGER (spdlog::get("defaultLogger"))
+#ifndef AIKARI_MODULE_NAME
+#define AIKARI_MODULE_NAME "Aikari-Any"
+#endif
+
+#ifndef AIKARI_LOGGER_MODULE_NAME
+#define AIKARI_LOGGER_MODULE_NAME AIKARI_MODULE_NAME
+#endif
+
+#define DEFAULT_LOGGER (spdlog::get(AIKARI_LOGGER_MODULE_NAME))
 
 #define LOG_TRACE(...) SPDLOG_LOGGER_TRACE(DEFAULT_LOGGER, __VA_ARGS__)
 #define LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(DEFAULT_LOGGER, __VA_ARGS__)

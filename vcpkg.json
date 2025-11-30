@@ -50,7 +50,8 @@
         "testlib"
       ]
     },
-    "qtdeclarative"
+    "qtdeclarative",
+    "qwindowkit"
   ],
   "overrides": [
     {

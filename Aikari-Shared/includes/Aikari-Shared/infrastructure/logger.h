@@ -11,7 +11,7 @@ namespace AikariShared::LoggerSystem
         FILE,
     };
 
-    inline std::unordered_set<LOGGER_SINK> defaultLoggerSink{
+    inline std::unordered_set<LOGGER_SINK> loggerSinkSettings{
         LOGGER_SINK::CONSOLE
     };
 
@@ -24,7 +24,12 @@ namespace AikariShared::LoggerSystem
         );
     }
 
+    std::unordered_set<LOGGER_SINK>* getLoggerSinkSettingsPtr();
+
     int initLogger(
-        const std::string& moduleName, int moduleTextColor, int moduleBgColor
+        const std::string& moduleName,
+        int moduleTextColor,
+        int moduleBgColor,
+        const std::string& loggerName
     );
 }  // namespace AikariShared::LoggerSystem
