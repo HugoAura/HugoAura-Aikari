@@ -1,0 +1,3 @@
+module AikariComponents.Atom
+
+ProgressCircular 1.0 ProgressCircular.qml

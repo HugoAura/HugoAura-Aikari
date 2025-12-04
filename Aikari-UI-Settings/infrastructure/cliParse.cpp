@@ -40,7 +40,7 @@ namespace AikariUI::Settings::Infrastructure::CliParse
         {
             retOptions.forceColorTheme =
                 parseResult["forceColorTheme"].as<std::string>();
-            if (std::ranges::contains(
+            if (!std::ranges::contains(
                     std::array{ "unset", "light", "dark" },
                     retOptions.forceColorTheme
                 ))

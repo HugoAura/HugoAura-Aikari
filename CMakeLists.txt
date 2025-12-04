@@ -119,7 +119,7 @@ add_subdirectory(Aikari-Launcher)
 # not using add_custom_command here because sub targets are not initialized at this time
 
 set(ARTIFACTS_BIN_DIR ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>)
-set(VCPKG_INSTALLED_BASE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET})
+set(VCPKG_INSTALLED_BASE ${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET})
 
 # >>> TASK COPY_PLS_RES
 set(SOURCE_PLS_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-PLS/resources/static)
@@ -171,6 +171,7 @@ if (WIN32) # 但实际上一直都是 WIN32
 
                 --no-compiler-runtime
                 --no-translations
+                --verbose 0
 
                 $<TARGET_FILE:Aikari-UI-Settings>
         )

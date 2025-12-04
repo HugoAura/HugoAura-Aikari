@@ -21,6 +21,8 @@ int main(int argCount, char* argVec[])
 #ifdef _DEBUG
     qputenv("QT_WIN_DEBUG_CONSOLE", "attach");
 #endif
+    qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
+
     auto cliOpts = AikariUI::Settings::Infrastructure::CliParse::parseCliOpts(
         argCount, argVec
     );
