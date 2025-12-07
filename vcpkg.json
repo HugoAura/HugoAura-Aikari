@@ -29,6 +29,21 @@
     "mbedtls",
     "nlohmann-json",
     {
+      "name": "qtbase",
+      "default-features": false,
+      "features": [
+        "concurrent",
+        "gui",
+        "jpeg",
+        "network",
+        "png",
+        "testlib",
+        "widgets"
+      ]
+    },
+    "qtdeclarative",
+    "qwindowkit",
+    {
       "name": "sentry-native",
       "features": [
         "compression",
@@ -38,20 +53,14 @@
     "sol2",
     "spdlog",
     {
-      "name": "qtbase",
+      "name": "qcoro",
       "default-features": false,
       "features": [
-        "gui",
         "network",
-        "widgets",
-        "png",
-        "jpeg",
-        "concurrent",
-        "testlib"
+        "qml",
+        "quick"
       ]
-    },
-    "qtdeclarative",
-    "qwindowkit"
+    }
   ],
   "overrides": [
     {

@@ -11,7 +11,7 @@ project_add_qt_executable(Aikari-UI-Settings WIN32
         entrypoint.cpp
         infrastructure/cliParse.cpp
         infrastructure/cliParse.h
-        resources/qml.qrc
+        qml/qml.qrc
 )
 
 # --- Packages --- #
@@ -38,6 +38,18 @@ target_link_libraries(Aikari-UI-Settings PRIVATE cxxopts::cxxopts)
 find_package(QWindowKit COMPONENTS Core Quick REQUIRED)
 target_link_libraries(Aikari-UI-Settings PRIVATE QWindowKit::Core QWindowKit::Quick)
 
+# QCoro
+find_package(QCoro6Coro CONFIG REQUIRED)
+find_package(QCoro6Core CONFIG REQUIRED)
+find_package(QCoro6Network CONFIG REQUIRED)
+find_package(QCoro6Qml CONFIG REQUIRED)
+find_package(QCoro6Quick CONFIG REQUIRED)
+target_link_libraries(Aikari-UI-Settings PRIVATE QCoro6::Coro)
+target_link_libraries(Aikari-UI-Settings PRIVATE QCoro6::Core)
+target_link_libraries(Aikari-UI-Settings PRIVATE QCoro6::Network)
+target_link_libraries(Aikari-UI-Settings PRIVATE QCoro6::Qml)
+target_link_libraries(Aikari-UI-Settings PRIVATE QCoro6::Quick)
+
 # PCH
 target_precompile_headers(Aikari-UI-Settings
         PUBLIC
@@ -54,6 +66,13 @@ set_target_properties(Aikari-UI-Settings
         WIN32_EXECUTABLE $<IF:$<CONFIG:Debug>,OFF,ON> # Let debug build hang the shell
 )
 
+# --- Registration --- #
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Reg QML modules
+include(RegQMLModules)
+
 # --- Link --- #
 target_link_libraries(Aikari-UI-Settings
         PUBLIC
@@ -69,4 +88,10 @@ target_include_directories(Aikari-UI-Settings
 target_include_directories(Aikari-UI-Settings
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/includes
+)
+
+target_include_directories(Aikari-UI-Settings
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/bridges/virtual
+        ${CMAKE_CURRENT_SOURCE_DIR}/bridges/impl
 )

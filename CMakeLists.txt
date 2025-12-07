@@ -10,6 +10,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(GLOBAL_USE_MOCK_CLASS "Use mock impl for all Aikari sub modules" OFF)
+option(AIKARI_UI_SETTINGS_USE_MOCK_CLASS "Use mock impl for Aikari-UI-Settings bridges" ON)
+option(AIKARI_LAUNCHER_SIGN "Sign Aikari-Launcher executable" OFF)
+
 target_compile_options(Aikari-Global-Virtual INTERFACE
         $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
         $<$<CXX_COMPILER_ID:Clang>:-finput-charset=UTF-8>
@@ -17,7 +21,7 @@ target_compile_options(Aikari-Global-Virtual INTERFACE
 )
 
 target_compile_options(Aikari-Global-Virtual INTERFACE
-        $<$<CXX_COMPILER_ID:MSVC>:/await /FS /W3 /Zc:wchar_t /bigobj>
+        $<$<CXX_COMPILER_ID:MSVC>:/FS /W3 /Zc:wchar_t /bigobj>
 )
 
 target_compile_options(Aikari-Global-Virtual INTERFACE
@@ -159,7 +163,7 @@ if (WIN32) # 但实际上一直都是 WIN32
         add_custom_target(Aikari-Virtual-CMD-QT-RUN-WINDEPLOY ALL
                 COMMAND ${QT_WINDEPLOY_PATH}
                 --dir $<TARGET_FILE_DIR:Aikari-UI-Settings>
-                --qmldir ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-UI-Settings/resources
+                --qmldir ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-UI-Settings/qml
 
                 $<$<CONFIG:Debug>:--qtpaths>
 
@@ -183,7 +187,7 @@ add_dependencies(Aikari-Virtual-CMD-QT-RUN-WINDEPLOY Aikari-UI-Settings)
 # <<< TASK WIN_DEPLOY_QT_FOR_SETTINGS_UI
 
 # >>> TASK SIGN_AIKARI_LAUNCHER_EXE
-if (SIGN_LAUNCHER)
+if (AIKARI_LAUNCHER_SIGN)
     set(SIGN_TIMESTAMP_URL "http://timestamp.digicert.com")
     find_program(SIGNTOOL_EXE "signtool.exe" PATHS)
     if (SIGNTOOL_EXE AND EXISTS $ENV{PFX_FILE})

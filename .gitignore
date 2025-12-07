@@ -34,14 +34,9 @@ install/
 *.so.*
 compile_commands.json
 
-# Visual Studio
-Debug/
-Release/
-x64/
-Win32/
-ARM/
-ARM64/
+# IDE Files
 ipch/
+.qtcreator/
 .vs/
 *.VC.db
 *.VC.VC.opendb
