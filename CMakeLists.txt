@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(BUILD_AIKARI_UI "Build Aikari-UI related sub projects" ON)
 option(GLOBAL_USE_MOCK_CLASS "Use mock impl for all Aikari sub modules" OFF)
 option(AIKARI_UI_SETTINGS_USE_MOCK_CLASS "Use mock impl for Aikari-UI-Settings bridges" ON)
 option(AIKARI_LAUNCHER_SIGN "Sign Aikari-Launcher executable" OFF)
@@ -115,7 +116,9 @@ endfunction()
 add_subdirectory(External)
 
 add_subdirectory(Aikari-Shared)
-add_subdirectory(Aikari-UI-Settings)
+if (BUILD_AIKARI_UI)
+    add_subdirectory(Aikari-UI-Settings)
+endif ()
 add_subdirectory(Aikari-PLS)
 add_subdirectory(Aikari-Launcher)
 
@@ -154,7 +157,7 @@ add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-SENTRY-CRASHPAD-HANDLER)
 # <<< TASK COPY_SENTRY_CRASHPAD_HANDLER
 
 # >>> TASK WIN_DEPLOY_QT_FOR_SETTINGS_UI
-if (WIN32) # 但实际上一直都是 WIN32
+if (WIN32 AND BUILD_AIKARI_UI)
     find_program(QT_WINDEPLOY_PATH windeployqt
             HINTS ${VCPKG_INSTALLED_BASE}/tools/Qt6/bin
     )
@@ -182,8 +185,8 @@ if (WIN32) # 但实际上一直都是 WIN32
     else ()
         message(WARNING "Could not find windeployqt.exe, copy plugin DLLs manually may required.")
     endif ()
+    add_dependencies(Aikari-Virtual-CMD-QT-RUN-WINDEPLOY Aikari-UI-Settings)
 endif ()
-add_dependencies(Aikari-Virtual-CMD-QT-RUN-WINDEPLOY Aikari-UI-Settings)
 # <<< TASK WIN_DEPLOY_QT_FOR_SETTINGS_UI
 
 # >>> TASK SIGN_AIKARI_LAUNCHER_EXE

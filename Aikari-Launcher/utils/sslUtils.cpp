@@ -125,8 +125,7 @@ namespace AikariUtils::SSLUtils
             auto curTime = std::chrono::floor<std::chrono::seconds>(
                 std::chrono::system_clock::now()
             );
-            auto crtExpireTime = std::chrono::utc_clock::from_sys(curTime) +
-                                 std::chrono::years(15);
+            auto crtExpireTime = curTime + std::chrono::years(15);
 
             std::string curTimeStr = std::format("{:%Y%m%d%H%M%S}", curTime);
             std::string crtExpireTimeStr =
