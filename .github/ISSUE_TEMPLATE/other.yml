@@ -1,0 +1,20 @@
+name: 其他问题 / Any Other
+description: 其他任何类型的问题
+labels: []
+title: "[Question] "
+body:
+  - type: textarea
+    attributes:
+      label: 你的问题 / Your question
+      placeholder: |
+        开发者能不能 v 我 50
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirms
+    attributes:
+      label: 提交前请确认 / Confirm before submit
+      options:
+        - label: 请勿利用此 Issue 类型进行闲聊 / 灌水, 如需闲聊, 可移步至 HugoAura 位于 STCN Forum 的论坛版块 (https://forum.smart-teach.cn/t/hugoaura)
+          required: true
