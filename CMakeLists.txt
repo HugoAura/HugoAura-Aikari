@@ -133,10 +133,20 @@ set(SOURCE_PLS_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-PLS/resources/st
 set(DESTINATION_PLS_RESOURCES_DIR ${ARTIFACTS_BIN_DIR}/resources/pls)
 add_custom_target(Aikari-Virtual-CMD-CP-PLS-RES ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${SOURCE_PLS_RESOURCES_DIR}" "${DESTINATION_PLS_RESOURCES_DIR}"
-        COMMENT "Copying PLS resources to output directory..."
+        COMMENT "Copying Aikari-PLS resources to output directory..."
 )
 add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-PLS-RES)
 # <<< TASK COPY_PLS_RES
+
+# >>> TASK COPY_LAUNCHER_RES
+set(SOURCE_LAUNCHER_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Aikari-Launcher/resources/static)
+set(DESTINATION_LAUNCHER_RESOURCES_DIR ${ARTIFACTS_BIN_DIR}/resources/launcher)
+add_custom_target(Aikari-Virtual-CMD-CP-LAUNCHER-RES ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${SOURCE_LAUNCHER_RESOURCES_DIR}" "${DESTINATION_LAUNCHER_RESOURCES_DIR}"
+        COMMENT "Copying Aikari-Launcher resources to output directory..."
+)
+add_dependencies(Aikari-Launcher Aikari-Virtual-CMD-CP-LAUNCHER-RES)
+# <<< TASK COPY_LAUNCHER_RES
 
 # >>> TASK COPY_SENTRY_CRASHPAD_HANDLER
 find_program(SENTRY_HANDLER_PATH
@@ -221,6 +231,12 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>/
         PATTERN "*.ilk" EXCLUDE
 )
 
+configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupInstVCRedist.iss.in"
+        "${CMAKE_BINARY_DIR}/middleware/setup/InnoSetupInstVCRedist.iss"
+        @ONLY
+)
+
 set(CPACK_PACKAGE_NAME "HugoAura Aikari")
 set(CPACK_PACKAGE_VERSION "0.0.1.3")
 set(CPACK_PACKAGE_VENDOR "HugoAura Devs")
@@ -247,6 +263,7 @@ set(CPACK_INNOSETUP_USE_CMAKE_BOOL_FORMAT ON)
 set(CPACK_INNOSETUP_EXTRA_SCRIPTS
         "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupPreInstCmd.iss"
         "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupUninstCmd.iss"
+        "${CMAKE_BINARY_DIR}/middleware/setup/InnoSetupInstVCRedist.iss"
 )
 
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_INNOSETUP_SETUP_AppId}-Setup-${CPACK_PACKAGE_VERSION}-Arch-${CPACK_INNOSETUP_ARCHITECTURE}")

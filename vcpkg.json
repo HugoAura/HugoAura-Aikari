@@ -29,6 +29,15 @@
     "mbedtls",
     "nlohmann-json",
     {
+      "name": "qcoro",
+      "default-features": false,
+      "features": [
+        "network",
+        "qml",
+        "quick"
+      ]
+    },
+    {
       "name": "qtbase",
       "default-features": false,
       "features": [
@@ -53,13 +62,8 @@
     "sol2",
     "spdlog",
     {
-      "name": "qcoro",
-      "default-features": false,
-      "features": [
-        "network",
-        "qml",
-        "quick"
-      ]
+      "name": "date",
+      "default-features": false
     }
   ],
   "overrides": [

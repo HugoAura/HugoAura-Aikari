@@ -7,6 +7,13 @@
   },
   "configurePresets": [
     {
+      "name": "base-option-backend-only",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_AIKARI_UI": "OFF"
+      }
+    },
+    {
       "name": "base-config-vs",
       "hidden": true,
       "generator": "Visual Studio 17 2022",
@@ -94,11 +101,29 @@
       ]
     },
     {
+      "name": "vs-x64-debug-backend-only",
+      "displayName": "x64 Debug (Backend Only) - Visual Studio",
+      "inherits": [
+        "base-config-vs",
+        "base-x64-debug",
+        "base-option-backend-only"
+      ]
+    },
+    {
       "name": "vs-arm64-debug",
       "displayName": "ARM64 Debug - Visual Studio",
       "inherits": [
         "base-config-vs",
         "base-arm64-debug"
+      ]
+    },
+    {
+      "name": "vs-arm64-debug-backend-only",
+      "displayName": "ARM64 Debug (Backend Only) - Visual Studio",
+      "inherits": [
+        "base-config-vs",
+        "base-arm64-debug",
+        "base-option-backend-only"
       ]
     },
     {
@@ -110,11 +135,29 @@
       ]
     },
     {
+      "name": "vs-x64-release-backend-only",
+      "displayName": "x64 Release (Backend Only) - Visual Studio",
+      "inherits": [
+        "base-config-vs",
+        "base-x64-release",
+        "base-option-backend-only"
+      ]
+    },
+    {
       "name": "vs-arm64-release",
       "displayName": "ARM64 Release - Visual Studio",
       "inherits": [
         "base-config-vs",
         "base-arm64-release"
+      ]
+    },
+    {
+      "name": "vs-arm64-release-backend-only",
+      "displayName": "ARM64 Release (Backend Only) - Visual Studio",
+      "inherits": [
+        "base-config-vs",
+        "base-arm64-release",
+        "base-option-backend-only"
       ]
     },
     {
@@ -128,10 +171,32 @@
       }
     },
     {
+      "name": "ninja-debug-backend-only",
+      "displayName": "Debug (Backend Only) - Ninja",
+      "inherits": [
+        "base-config-ninja",
+        "base-option-backend-only"
+      ],
+      "environment": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
       "name": "ninja-release",
       "displayName": "Release - Ninja",
       "inherits": [
         "base-config-ninja"
+      ],
+      "environment": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "ninja-release-backend-only",
+      "displayName": "Release (Backend Only) - Ninja",
+      "inherits": [
+        "base-config-ninja",
+        "base-option-backend-only"
       ],
       "environment": {
         "CMAKE_BUILD_TYPE": "Release"

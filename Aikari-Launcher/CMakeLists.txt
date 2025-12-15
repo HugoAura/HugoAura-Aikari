@@ -38,6 +38,8 @@ project_add_executable(Aikari-Launcher
         utils/lifecycleUtils.h
         utils/sslUtils.cpp
         utils/sslUtils.h
+        utils/timeUtils.cpp
+        utils/timeUtils.h
         virtual/lifecycle/ILaunchProgressReporter.h
 )
 
@@ -66,6 +68,10 @@ target_link_libraries(Aikari-Launcher PRIVATE MbedTLS::mbedtls)
 # IXWebSocket
 find_package(ixwebsocket CONFIG REQUIRED)
 target_link_libraries(Aikari-Launcher PRIVATE ixwebsocket::ixwebsocket)
+
+# Date
+find_package(date CONFIG REQUIRED)
+target_link_libraries(Aikari-Launcher PRIVATE date::date date::date-tz)
 
 target_precompile_headers(Aikari-Launcher
         PUBLIC

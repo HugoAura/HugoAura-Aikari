@@ -9,6 +9,7 @@
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 // clang-format on
+#include <date/tz.h>
 
 #ifdef _DEBUG
 #include <iostream>
@@ -155,16 +156,15 @@ namespace AikariShared::LoggerSystem
                 dateFmtStartPos + 1, dateFmtEndPos - dateFmtStartPos - 1
             ));
 
-            const std::chrono::zoned_time ztLocal(
-                std::chrono::current_zone(), std::chrono::system_clock::now()
+            const date::zoned_time ztLocal = date::make_zoned(
+                date::current_zone(), std::chrono::system_clock::now()
             );
             const auto curDay =
                 std::chrono::floor<std::chrono::days>(ztLocal.get_local_time());
             const auto cutoffDayLocal =
                 curDay - std::chrono::days(preserveDays);
-            const std::chrono::zoned_time ztCutoff(
-                ztLocal.get_time_zone(), cutoffDayLocal
-            );
+            const date::zoned_time ztCutoff =
+                date::make_zoned(ztLocal.get_time_zone(), cutoffDayLocal);
             const std::chrono::sys_days cutoffDay =
                 std::chrono::floor<std::chrono::days>(ztCutoff.get_sys_time());
 
@@ -212,11 +212,11 @@ namespace AikariShared::LoggerSystem
             const std::string& moduleName, const std::filesystem::path& baseDir
         )
         {
-            std::chrono::zoned_time ztLocal(
-                std::chrono::current_zone(), std::chrono::system_clock::now()
+            date::zoned_time ztLocal = date::make_zoned(
+                date::current_zone(), std::chrono::system_clock::now()
             );
 
-            std::string fileNameTimePart = std::format("{:%Y-%m-%d}", ztLocal);
+            std::string fileNameTimePart = date::format("%Y-%m-%d", ztLocal);
             std::filesystem::path finalLogFileName =
                 baseDir /
                 std::format("Aikari_{}_{}.log", moduleName, fileNameTimePart);

@@ -12,10 +12,12 @@
 #include <Aikari-Shared/infrastructure/telemetry.h>
 #include <Aikari-Shared/types/constants/version.h>
 #include <Aikari-Shared/utils/cstring.h>
+#include <Aikari-Shared/utils/filesystem.h>
 #include <chrono>
 #include <csignal>
 #include <cxxopts.hpp>
 #include <future>
+#include <iostream>
 #include <ixwebsocket/IXNetSystem.h>
 #include <sentry.h>
 #include <shlobj_core.h>
@@ -31,6 +33,7 @@
 #include "lifecycle.h"
 #include "resource.h"
 #include "utils/sslUtils.h"
+#include "utils/timeUtils.h"
 #include "virtual/lifecycle/ILaunchProgressReporter.h"
 #include "winSvcHandler.h"
 
@@ -684,6 +687,35 @@ int main(int argc, const char* argv[])
         Sleep(1000);
     }
     */
+    std::filesystem::path selfPath;
+    try
+    {
+        selfPath = (AikariShared::Utils::FileSystem::
+                        genGetSelfPathLambda(std::nullopt))();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Aikari Critical Error: Failed to get self path"
+                  << std::endl;
+        std::cerr << e.what() << std::endl;
+        return AikariTypes::Constants::Entrypoint::EXIT_CODES::
+            SELF_PATH_GET_FAILED;
+    }
+
+    try
+    {
+        AikariUtils::TimeUtils::initTzDB(selfPath);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr
+            << "Aikari Critical Error: Failed to init time system, please "
+               "check whether resources/launcher/timezone is exists or not."
+            << std::endl;
+        std::cerr << e.what() << std::endl;
+        return AikariTypes::Constants::Entrypoint::EXIT_CODES::TZ_INIT_FAILED;
+    }
+
     bool isRunAsSvc = (parseRet.serviceCtrl == "runAs");
     {
         auto& telemetryManager = AikariShared::Infrastructure::Telemetry::

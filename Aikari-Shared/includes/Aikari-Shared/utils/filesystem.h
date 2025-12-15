@@ -9,6 +9,10 @@ namespace AikariShared::Utils::FileSystem
 {
     std::filesystem::path getSelfPathFromHandler(HMODULE hModule);
 
+    std::function<std::filesystem::path()> genGetSelfPathLambda(
+        std::optional<HMODULE> hModule
+    );
+
     void grepFilesWithExt(
         const std::filesystem::path& dir,
         const std::string& extToMatch,

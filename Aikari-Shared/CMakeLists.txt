@@ -39,6 +39,10 @@ target_link_libraries(Aikari-Shared PUBLIC spdlog::spdlog)
 find_package(sentry CONFIG REQUIRED)
 target_link_libraries(Aikari-Shared PRIVATE sentry::sentry)
 
+# Date
+find_package(date CONFIG REQUIRED)
+target_link_libraries(Aikari-Shared PUBLIC date::date date::date-tz)
+
 target_precompile_headers(Aikari-Shared
         PUBLIC
         <string>

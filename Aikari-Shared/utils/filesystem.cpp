@@ -40,6 +40,34 @@ namespace AikariShared::Utils::FileSystem
         }
     };
 
+    std::function<std::filesystem::path()> genGetSelfPathLambda(
+        std::optional<HMODULE> hModule
+    )
+    {
+        return [hModule]() -> std::filesystem::path
+        {
+            wchar_t path[MAX_PATH];
+
+            DWORD result =
+                GetModuleFileNameW(hModule.value_or(nullptr), path, MAX_PATH);
+            if (result == 0)
+            {
+                DWORD errorCode = GetLastError();
+                throw std::runtime_error(
+                    std::format(
+                        "Error getting selfPath from HMODULE, errorCode: {}",
+                        std::to_string(errorCode)
+                    )
+                );
+            }
+            else
+            {
+                std::filesystem::path pathObj(path);
+                return pathObj;
+            }
+        };
+    }
+
     void grepFilesWithExt(
         const std::filesystem::path& dir,
         const std::string& extToMatch,

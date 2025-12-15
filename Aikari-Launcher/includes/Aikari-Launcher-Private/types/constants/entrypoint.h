@@ -13,6 +13,8 @@ namespace AikariTypes::Constants::Entrypoint
         constexpr int NETWORK_SERVICES_INIT_FAILED = -6;
         constexpr int SSL_COMPONENTS_UNUSABLE = -7;
         constexpr int HINS_GET_FAILED = -9;  // Windows hInstance
+        constexpr int SELF_PATH_GET_FAILED = -10;
+        constexpr int TZ_INIT_FAILED = -11;
 
         constexpr int MULTI_AIKARI_INSTANCE_DETECTED = -20;
     }  // namespace EXIT_CODES

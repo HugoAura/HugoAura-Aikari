@@ -1,0 +1,88 @@
+[Code]
+const
+  MinVCVerMajor = 14;
+  MinVCVerMinor = 44;
+  MinVCVerBld   = 35211;
+
+const
+  VCRedistArch = '@USER_CPACK_TARGET_PROCESSOR@';
+  VCRedistURL = 'https://aka.ms/vs/17/release/vc_redist.' + VCRedistArch + '.exe';
+  VCRedistFileName = 'vc_redist.' + VCRedistArch + '.exe';
+
+var
+  DownloadPage: TDownloadWizardPage;
+  NeedToInstallVCRedist: Boolean;
+
+function CheckVCRedistNeedsInstall: Boolean;
+var
+  Major, Minor, Bld, Rbld: Cardinal;
+  Key: String;
+begin
+  Result := True;
+
+  Key := 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\' + VCRedistArch;
+
+  if RegQueryDWordValue(HKLM, Key, 'Major', Major) and
+     RegQueryDWordValue(HKLM, Key, 'Minor', Minor) and
+     RegQueryDWordValue(HKLM, Key, 'Bld', Bld) then
+  begin
+    Log('Detected VC Redist: ' + IntToStr(Major) + '.' + IntToStr(Minor) + '.' + IntToStr(Bld));
+
+    if (Major > MinVCVerMajor) or
+       ((Major = MinVCVerMajor) and (Minor > MinVCVerMinor)) or
+       ((Major = MinVCVerMajor) and (Minor = MinVCVerMinor) and (Bld >= MinVCVerBld)) then
+    begin
+      Result := False;
+    end;
+  end
+  else
+  begin
+    Log('VC Redist registry key not found.');
+  end;
+end;
+
+procedure InitializeWizard;
+begin
+  NeedToInstallVCRedist := CheckVCRedistNeedsInstall();
+
+  if NeedToInstallVCRedist then
+  begin
+    DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), nil);
+  end;
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+
+  if (CurPageID = wpReady) and NeedToInstallVCRedist then
+  begin
+    DownloadPage.Clear;
+    DownloadPage.Add(VCRedistURL, VCRedistFileName, '');
+    DownloadPage.Show;
+    try
+      try
+        DownloadPage.Download;
+        Result := True;
+      except
+        Result := False;
+      end;
+    finally
+      DownloadPage.Hide;
+    end;
+  end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ErrorCode: Integer;
+begin
+  if (CurStep = ssPostInstall) and NeedToInstallVCRedist then
+  begin
+    Log('Installing VC Redist...');
+    if not Exec(ExpandConstant('{tmp}\') + VCRedistFileName, '/install /quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, ErrorCode) then
+    begin
+      MsgBox('安装 VCRedist 时遇到问题 | 错误代码: ' + IntToStr(ErrorCode), mbError, MB_OK);
+    end;
+  end;
+end;
