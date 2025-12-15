@@ -19,6 +19,8 @@
         components/mqtt/mqttClientHandler.cpp
         components/mqtt/mqttLifecycle.h
         components/mqtt/mqttLifecycle.cpp
+        components/mqtt/mqttShared.h
+        components/mqtt/mqttShared.cpp
         components/ruleSystem/rulesManager.h
         components/ruleSystem/rulesManager.cpp
         components/ws/dispatcher.h

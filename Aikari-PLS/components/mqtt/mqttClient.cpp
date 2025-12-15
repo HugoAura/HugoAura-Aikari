@@ -612,8 +612,7 @@ namespace AikariPLS::Components::MQTTClient
                         TELEMETRY_ACTION_CATEGORY,
                         "info"
                     );
-                    std::unique_lock<std::mutex> lock(
-                        this->sslCtxLock
+                    std::unique_lock<std::mutex> lock(this->sslCtxLock
                     );  // lock until handshake done
                     taskTempRet = mbedtls_net_connect(
                         &this->netCtxs.serverFd,
@@ -756,11 +755,50 @@ namespace AikariPLS::Components::MQTTClient
                             }
 
                             std::lock_guard<std::mutex> lock(this->sslCtxLock);
-                            mbedtls_ssl_write(
-                                &this->sslCtx,
-                                pendingBuf.data(),
-                                pendingBuf.size()
-                            );
+                            const unsigned char* curBufPtr = pendingBuf.data();
+                            auto totalBufRemainLen = pendingBuf.size();
+
+                            while (totalBufRemainLen > 0)
+                            {
+                                auto writeResult = mbedtls_ssl_write(
+                                    &this->sslCtx, curBufPtr, totalBufRemainLen
+                                );
+
+                                if (writeResult > 0)
+                                {
+                                    totalBufRemainLen -= writeResult;
+                                    curBufPtr += writeResult;
+                                }
+                                else if (writeResult ==
+                                             MBEDTLS_ERR_SSL_WANT_READ ||
+                                         writeResult ==
+                                             MBEDTLS_ERR_SSL_WANT_WRITE)
+                                {
+                                    std::this_thread::sleep_for(
+                                        std::chrono::milliseconds(1)
+                                    );
+                                    continue;  // TODO: Same as broker
+                                }
+                                else
+                                {
+                                    CUSTOM_LOG_ERROR(
+                                        "Error calling mbedtls_ssl_write, "
+                                        "ec: {}",
+                                        writeResult
+                                    );
+                                    Telemetry::addBreadcrumb(
+                                        "default",
+                                        std::format(
+                                            "Error calling "
+                                            "mbedtls_ssl_write | EC: {}",
+                                            writeResult
+                                        ),
+                                        TELEMETRY_ACTION_CATEGORY,
+                                        "error"
+                                    );
+                                    break;
+                                }
+                            }
                         },
                         [this]()
                         {
@@ -859,10 +897,22 @@ namespace AikariPLS::Components::MQTTClient
 
                         std::stringstream strStream(strIncomingData);
 
-                        std::lock_guard<std::recursive_mutex>
-                            connectionIOLockGuard(this->connectionIOLock);
+                        try
+                        {
+                            std::lock_guard<std::recursive_mutex>
+                                connectionIOLockGuard(this->connectionIOLock);
 
-                        this->connection->recv(strStream);
+                            this->connection->recv(strStream);
+                        }
+                        catch (std::exception& e)
+                        {
+                            CUSTOM_LOG_WARN(
+                                "Error running connection.recv, closing "
+                                "connection... | Error detail: ",
+                                e.what()
+                            );
+                            this->pendingExit.store(true);
+                        }
                     }
                     else if (taskTempRet == MBEDTLS_ERR_SSL_WANT_READ ||
                              taskTempRet == MBEDTLS_ERR_SSL_WANT_WRITE)

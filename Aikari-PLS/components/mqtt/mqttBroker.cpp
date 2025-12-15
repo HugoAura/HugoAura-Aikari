@@ -358,18 +358,21 @@ namespace AikariPLS::Components::MQTTBroker
 
                                 try
                                 {
-                                    auto result = AikariPLS::Utils::
-                                        MQTTPacketUtils::processPropGetRepPacket(
-                                            packet.newPayload.value_or(
-                                                packet.packet.value()
-                                                    .get<async_mqtt::v3_1_1::
-                                                             publish_packet>()
-                                                    .payload()
-                                            ),
-                                            ruleMgr->ruleMapping.broker2client
-                                                .rewrite
-                                            // ↑ refer to rules.h:86
-                                        );
+                                    auto result =
+                                        AikariPLS::Utils::MQTTPacketUtils::
+                                            processPropGetRepPacket(
+                                                packet.newPayload.value_or(
+                                                    packet.packet.value()
+                                                        .get<
+                                                            async_mqtt::v3_1_1::
+                                                                publish_packet>(
+                                                        )
+                                                        .payload()
+                                                ),
+                                                ruleMgr->ruleMapping
+                                                    .broker2client.rewrite
+                                                // ↑ refer to rules.h:86
+                                            );
                                     if (result.has_value())
                                     {
                                         packet.newPayload = result;
@@ -624,53 +627,95 @@ namespace AikariPLS::Components::MQTTBroker
 
                         this->netCtx.curClientFd = &this->netCtx.clientFd;
 
-                        this->connection =
-                            std::make_unique<AikariPLS::Components::MQTTBroker::
-                                                 Class::MQTTBrokerConnection>(
-                                [this](async_mqtt::packet_variant packet)
+                        this->connection = std::make_unique<
+                            AikariPLS::Components::MQTTBroker::Class::
+                                MQTTBrokerConnection>(
+                            [this](async_mqtt::packet_variant packet)
+                            {
+                                if (this->netCtx.curClientFd == nullptr)
                                 {
-                                    if (this->netCtx.curClientFd == nullptr)
-                                    {
-                                        return;
-                                    }
-
-                                    std::vector<unsigned char> pendingBuf;
-                                    auto pktBufSeq =
-                                        packet.const_buffer_sequence();
-                                    for (auto& pktBuf : pktBufSeq)
-                                    {
-                                        pendingBuf.insert(
-                                            pendingBuf.end(),
-                                            static_cast<const unsigned char*>(
-                                                pktBuf.data()
-                                            ),
-                                            static_cast<const unsigned char*>(
-                                                pktBuf.data()
-                                            ) + pktBuf.size()
-                                        );
-                                    }
-
-                                    std::lock_guard<std::mutex> lock(
-                                        this->sslCtxLock
-                                    );
-                                    mbedtls_ssl_write(
-                                        &this->sslCtx,
-                                        pendingBuf.data(),
-                                        pendingBuf.size()
-                                    );
-                                },
-                                [this]()
-                                {
-                                    std::lock_guard<std::mutex> lock(
-                                        this->sslCtxLock
-                                    );
-                                    this->resetCurConnection();
-                                },
-                                [](async_mqtt::error_code errCode)
-                                {
-                                    // TODO: Error handling maybe?
+                                    return;
                                 }
-                            );
+
+                                std::vector<unsigned char> pendingBuf;
+                                auto pktBufSeq = packet.const_buffer_sequence();
+                                for (auto& pktBuf : pktBufSeq)
+                                {
+                                    pendingBuf.insert(
+                                        pendingBuf.end(),
+                                        static_cast<const unsigned char*>(
+                                            pktBuf.data()
+                                        ),
+                                        static_cast<const unsigned char*>(
+                                            pktBuf.data()
+                                        ) + pktBuf.size()
+                                    );
+                                }
+
+                                std::lock_guard<std::mutex> lock(
+                                    this->sslCtxLock
+                                );
+                                const unsigned char* curBufPtr =
+                                    pendingBuf.data();
+                                auto totalBufRemainLen = pendingBuf.size();
+
+                                while (totalBufRemainLen > 0)
+                                {
+                                    auto writeResult = mbedtls_ssl_write(
+                                        &this->sslCtx,
+                                        curBufPtr,
+                                        totalBufRemainLen
+                                    );
+
+                                    if (writeResult > 0)
+                                    {
+                                        totalBufRemainLen -= writeResult;
+                                        curBufPtr += writeResult;
+                                    }
+                                    else if (writeResult ==
+                                                 MBEDTLS_ERR_SSL_WANT_READ ||
+                                             writeResult ==
+                                                 MBEDTLS_ERR_SSL_WANT_WRITE)
+                                    {
+                                        std::this_thread::sleep_for(
+                                            std::chrono::milliseconds(1)
+                                        );
+                                        continue;  // TODO: Consider moving to
+                                                   // select
+                                    }
+                                    else
+                                    {
+                                        CUSTOM_LOG_ERROR(
+                                            "Error calling mbedtls_ssl_write, "
+                                            "ec: {}",
+                                            writeResult
+                                        );
+                                        Telemetry::addBreadcrumb(
+                                            "default",
+                                            std::format(
+                                                "Error calling "
+                                                "mbedtls_ssl_write | EC: {}",
+                                                writeResult
+                                            ),
+                                            TELEMETRY_ACTION_CATEGORY,
+                                            "error"
+                                        );
+                                        break;
+                                    }
+                                }
+                            },
+                            [this]()
+                            {
+                                std::lock_guard<std::mutex> lock(
+                                    this->sslCtxLock
+                                );
+                                this->resetCurConnection();
+                            },
+                            [](async_mqtt::error_code errCode)
+                            {
+                                // TODO: Error handling maybe?
+                            }
+                        );
                     }
                 }
             } while (false);
