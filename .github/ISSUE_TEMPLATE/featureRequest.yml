@@ -57,7 +57,7 @@ body:
     attributes:
       label: 提交前请确认 / Confirm before submit
       options:
-        - label: 我已经在 [HugoAura Issues](https://github.com/HugoAura/HugoAura-Aikari/issues) 中查询过相关关键词, 并确定此功能请求是唯一的。
+        - label: 我已经在 [HugoAura Aikari Issues](https://github.com/HugoAura/HugoAura-Aikari/issues) 中查询过相关关键词, 并确定此功能请求是唯一的。
           required: true
 
   - type: textarea
