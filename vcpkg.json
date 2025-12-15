@@ -1,6 +1,6 @@
 {
   "name": "hugoaura-aikari",
-  "version": "0.0.1.3",
+  "version": "0.0.1.4",
   "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149",
   "dependencies": [
     "ada-url",

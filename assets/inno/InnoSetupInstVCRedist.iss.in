@@ -1,0 +1,100 @@
+[Code]
+const
+    MinVCVerMajor = 14;
+    MinVCVerMinor = 44;
+    MinVCVerBld   = 35211;
+
+const
+    VCRedistArch = '@USER_CPACK_TARGET_PROCESSOR@';
+    VCRedistURL = 'https://aka.ms/vs/17/release/vc_redist.' + VCRedistArch + '.exe';
+    VCRedistFileName = 'vc_redist.' + VCRedistArch + '.exe';
+
+var
+    DownloadPage: TDownloadWizardPage;
+
+function VCRedist_CheckVCRedistNeedsInstall: Boolean;
+var
+    Major, Minor, Bld, Rbld: Cardinal;
+    Key: String;
+begin
+    Result := True;
+
+    Key := 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\' + VCRedistArch;
+
+    if RegQueryDWordValue(HKLM, Key, 'Major', Major) and
+     RegQueryDWordValue(HKLM, Key, 'Minor', Minor) and
+     RegQueryDWordValue(HKLM, Key, 'Bld', Bld) then
+    begin
+        Log('Detected VC Redist: ' + IntToStr(Major) + '.' + IntToStr(Minor) + '.' + IntToStr(Bld));
+
+        if (Major > MinVCVerMajor) or
+           ((Major = MinVCVerMajor) and (Minor > MinVCVerMinor)) or
+           ((Major = MinVCVerMajor) and (Minor = MinVCVerMinor) and (Bld >= MinVCVerBld)) then
+        begin
+                Result := False;
+        end;
+    end
+    else
+    begin
+        Log('VC Redist registry key not found.');
+    end;
+end;
+
+function VCRedist_OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
+var
+    Percent: Integer;
+begin
+    Result := True;
+    if ProgressMax > 0 then
+        begin
+            Percent := Round((Progress / ProgressMax) * 100);
+        end
+    else
+        begin
+            Percent := 0;
+        end;
+    G_ReportStatus('DL_VC_REDIST;' + IntToStr(Percent));
+end;
+
+procedure VCRedist_InitializeWizard;
+begin
+    G_PostInst_NeedToInstallVCRedist := VCRedist_CheckVCRedistNeedsInstall();
+
+    if G_PostInst_NeedToInstallVCRedist then
+    begin
+        DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), @VCRedist_OnDownloadProgress);
+    end;
+end;
+
+function VCRedist_HandleNextBtnClick(): Boolean;
+begin
+    DownloadPage.Clear;
+    DownloadPage.Add(VCRedistURL, VCRedistFileName, '');
+    DownloadPage.Show;
+    try
+        G_ReportStatus('DL_VC_REDIST;0');
+        try
+            DownloadPage.Download;
+            Result := True;
+        except
+            Result := False;
+        end;
+    finally
+        DownloadPage.Hide;
+    end;
+end;
+
+procedure VCRedist_CurStepChanged(CurStep: TSetupStep);
+var
+    ErrorCode: Integer;
+begin
+    if (CurStep = ssPostInstall) and G_PostInst_NeedToInstallVCRedist then
+    begin
+        Log('Installing VC Redist...');
+        if not Exec(ExpandConstant('{tmp}\') + VCRedistFileName, '/install /quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, ErrorCode) then
+        begin
+            G_ReportStatus('INST_VC_REDIST_FAILED;' + IntToStr(ErrorCode));
+            MsgBox('安装 VCRedist 时遇到问题 | 错误代码: ' + IntToStr(ErrorCode), mbError, MB_OK);
+        end;
+    end;
+end;

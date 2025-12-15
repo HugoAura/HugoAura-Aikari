@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(HugoAura-Aikari VERSION 0.0.1.3 LANGUAGES CXX)
+project(HugoAura-Aikari VERSION 0.0.1.4 LANGUAGES CXX)
 
 add_library(Aikari-Global-Virtual INTERFACE)
 
@@ -232,16 +232,16 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/artifacts/bin/$<CONFIG>/
 )
 
 configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupInstVCRedist.iss.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/inno/InnoSetupInstVCRedist.iss.in"
         "${CMAKE_BINARY_DIR}/middleware/setup/InnoSetupInstVCRedist.iss"
         @ONLY
 )
 
 set(CPACK_PACKAGE_NAME "HugoAura Aikari")
-set(CPACK_PACKAGE_VERSION "0.0.1.3")
+set(CPACK_PACKAGE_VERSION "0.0.1.4")
 set(CPACK_PACKAGE_VENDOR "HugoAura Devs")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Unified UX tweak tool for Seewo Hugo")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/assets/Aikari_Installer_License_File.rtf")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/assets/inno/Aikari_Installer_License_File.rtf")
 # set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/Aikari_2D_Logo_ICO_Control_Panel.ico")
 
 set(CPACK_COMPONENTS_ALL Core)
@@ -261,9 +261,11 @@ set(CPACK_INNOSETUP_SETUP_AllowNoIcons ON)
 set(CPACK_INNOSETUP_USE_MODERN_WIZARD ON)
 set(CPACK_INNOSETUP_USE_CMAKE_BOOL_FORMAT ON)
 set(CPACK_INNOSETUP_EXTRA_SCRIPTS
-        "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupPreInstCmd.iss"
-        "${CMAKE_CURRENT_SOURCE_DIR}/assets/InnoSetupUninstCmd.iss"
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/inno/InnoSetupGenericUtils.iss"
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/inno/InnoSetupPreInstCmd.iss"
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/inno/InnoSetupUninstCmd.iss"
         "${CMAKE_BINARY_DIR}/middleware/setup/InnoSetupInstVCRedist.iss"
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets/inno/InnoSetupLifecycle.iss"
 )
 
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_INNOSETUP_SETUP_AppId}-Setup-${CPACK_PACKAGE_VERSION}-Arch-${CPACK_INNOSETUP_ARCHITECTURE}")
