@@ -1,0 +1,81 @@
+name: 反馈异常 / Bug Report
+description: 反馈应用中的问题, 或预期外的行为
+labels: ["Bug"]
+title: "[Bug] "
+body:
+  - type: checkboxes
+    attributes:
+      label: 在开始之前 / Before starting
+      options:
+        - label: 我了解本 Repo 仅接受 HugoAura-Aikari 的问题反馈
+          required: true
+        - label: 我知晓, 如果这是关于 HugoAura-Main 本体的 Bug, 我应该前往 [HugoAura-Main Issues](https://github.com/HugoAura/Seewo-HugoAura/issues) 提交 Bug Report
+          required: true
+        - label: 我知晓, 如果这是关于 HugoAura 安装器的 Bug, 我应该前往 [HugoAura-Install Issues](https://github.com/HugoAura/HugoAura-Install/issues) 提交 Bug Report
+          required: true
+        - label: 我知晓, 如果我将 Issue 提交到了错误的 Repo, 可能会引发开发者响应速度降低 / Issue 被忽略 / Issue 被 Close as duplicate / Issue 被 Transfer 等情况
+          required: true
+
+  - type: textarea
+    attributes:
+      label: 复现步骤 / Reproduce steps
+      placeholder: |
+        1. 首先, 我...
+        2. 然后, 出现了...
+        3. 最终...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: 预期行为 / Expected behaviour
+      placeholder: |
+        1. 应用本来应该...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: 实际行为 / Actual behaviour
+      placeholder: |
+        1. 事实上, 应用...
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: HugoAura Aikari 版本 / HugoAura Aikari version
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: 希沃管家版本 / Seewo Services version
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirms
+    attributes:
+      label: 提交前请确认 / Confirm before submit
+      options:
+        - label: 我已经在 [HugoAura Aikari Issues](https://github.com/HugoAura/HugoAura-Aikari/issues) 中查询过相关关键词, 并确定此 Issue 是唯一的。
+          required: true
+        - label: 我已经确认, 我正在使用最新版本的希沃管家客户端
+          required: true
+
+  - type: textarea
+    attributes:
+      label: 日志 / Logs
+      description: 请在 %PROGRAMDATA%\HugoAura\Aikari\log 中查看日志
+      placeholder: |
+        |Main| [info] /:/ 📃 Logger for module Main initialized!
+        |Main| [info] /entrypoint.cpp:531/ [Lifecycle Controller] ❇️ Welcome to HugoAura-Aikari
+      render: bash
+    validations:
+      required: false
+
+  - type: textarea
+    id: extraDesc
+    attributes:
+      label: 其他信息 (可选) / Additional info (Optional)
