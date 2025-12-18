@@ -7,7 +7,10 @@ Rectangle {
     width: parent.width
     height: 32
     visible: true
-    color: AikariConstants.ThemeStyle.defaultStyle.background
+    readonly property bool isAppBarDark: AikariConstants.ThemeStyle.themeStates.overlayComponentsColorReversed ?
+        !AikariConstants.ThemeStyle.defaultStyle.isDark :
+        AikariConstants.ThemeStyle.defaultStyle.isDark
+    color: "transparent"
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
@@ -16,7 +19,16 @@ Rectangle {
 
         text: mainWindowRoot.title
         font.pixelSize: AikariConstants.ThemeStyle.defaultStyle.fontSizeSm
-        color: AikariConstants.ThemeStyle.defaultStyle.textColor
+        color: mainAppBar.isAppBarDark ?
+            AikariConstants.ThemeStyle.darkStyle.text :
+            AikariConstants.ThemeStyle.lightStyle.text
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 150
+                easing.type: Easing.InOutQuad
+            }
+        }
     }
 
     Row {
@@ -30,6 +42,7 @@ Rectangle {
             id: minimizeBtn
             imgSrc: "qrc:/assets/img/appbar/minimize.svg"
             btnBgColorMode: "default"
+            isDark: mainAppBar.isAppBarDark
             onClicked: mainWindowRoot.showMinimized()
             Component.onCompleted: qwkWindowAgent.setSystemButton(
                 QWK.WindowAgent.Minimize, minimizeBtn
@@ -42,6 +55,7 @@ Rectangle {
                 "qrc:/assets/img/appbar/restore.svg" :
                 "qrc:/assets/img/appbar/maximize.svg"
             btnBgColorMode: "default"
+            isDark: mainAppBar.isAppBarDark
             onClicked: mainWindowRoot.visibility === Window.Maximized ?
                 mainWindowRoot.showNormal() :
                 mainWindowRoot.showMaximized()
@@ -54,6 +68,7 @@ Rectangle {
             id: closeWindowBtn
             imgSrc: "qrc:/assets/img/appbar/close.svg"
             btnBgColorMode: "red"
+            isDark: mainAppBar.isAppBarDark
             onClicked: mainWindowRoot.close()
             Component.onCompleted: qwkWindowAgent.setSystemButton(
                 QWK.WindowAgent.Close, closeWindowBtn

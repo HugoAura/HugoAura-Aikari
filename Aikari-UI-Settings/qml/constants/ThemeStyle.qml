@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import AikariUI.Settings.Backend
 
 QtObject {
     id: themeStyleSingletonRoot
@@ -26,7 +27,15 @@ QtObject {
     {
         id: _defaultStyleAndSettings
         property string userSetThemeMode: "unset" // unset / dark / light
-        readonly property bool isDark: userSetThemeMode !== "unset" ? (userSetThemeMode === "dark") : (Qt.styleHints.colorScheme === Qt.ColorScheme.Dark)
+        readonly property bool isDark: (() => {
+            if (userSetThemeMode !== "unset") {
+                return userSetThemeMode === "dark";
+            }
+            if (BridgesImpl_Theme.forceThemeMode !== BridgeTypes_Theme_ForceThemeMode.UNSET) {
+                return BridgesImpl_Theme.forceThemeMode === BridgeTypes_Theme_ForceThemeMode.DARK;
+            }
+            return Qt.styleHints.colorScheme === Qt.ColorScheme.Dark;
+        })()
         readonly property color background: isDark ? themeStyleSingletonRoot.darkStyle.background : themeStyleSingletonRoot.lightStyle.background
         readonly property color textColor: isDark ? themeStyleSingletonRoot.darkStyle.text : themeStyleSingletonRoot.lightStyle.text
         readonly property color textColorOpacity: isDark ? themeStyleSingletonRoot.darkStyle.textOpacity : themeStyleSingletonRoot.lightStyle.textOpacity
@@ -37,5 +46,11 @@ QtObject {
         readonly property int fontSizeLg: 16;
         readonly property int fontSizeLgr: 18;
         readonly property int fontSizeXLg: 20;
+    }
+
+    property QtObject themeStates: QtObject
+    {
+        id: _themeStates
+        property bool overlayComponentsColorReversed: false
     }
 }

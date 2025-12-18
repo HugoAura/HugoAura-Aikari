@@ -1,9 +1,12 @@
 #include "cliParse.h"
 
+#include <Aikari-UI-Settings-Private/types/bridges/theme.h>
 #include <cxxopts.hpp>
 #include <iostream>
 #include <string>
-#include <unordered_set>
+
+#include "bridges/impl/ThemeBridge.h"
+#include "lifecycle.h"
 
 namespace CliOptsType =
     AikariUI::Settings::Includes::Private::Types::Infrastructure::CliOpts;
@@ -21,7 +24,7 @@ namespace AikariUI::Settings::Infrastructure::CliParse
             )
             (
                 "fcm,forceColorTheme",
-                "Force UI to use target color scheme (\"unset\", \"light\", \"dark\")",
+                R"(Force UI to use target color scheme ("unset", "light", "dark"))",
                 cxxopts::value<std::string>()->default_value("unset")
             );
         // clang-format on
@@ -50,7 +53,24 @@ namespace AikariUI::Settings::Infrastructure::CliParse
                     retOptions.forceColorTheme + "\""
                 );
             }
-            // ...
+            auto& lifecycleStates = AikariUI::Settings::Lifecycle::
+                AikariUISettingsStates::getInstance();
+            auto forceThemeMode = AikariUI::Settings::Includes::Private::Types::
+                Bridges::Theme::ForceThemeMode::Enum::UNSET;
+            if (retOptions.forceColorTheme == "light")
+            {
+                forceThemeMode = AikariUI::Settings::Includes::Private::Types::
+                    Bridges::Theme::ForceThemeMode::Enum::LIGHT;
+            }
+            else if (retOptions.forceColorTheme == "dark")
+            {
+                forceThemeMode = AikariUI::Settings::Includes::Private::Types::
+                    Bridges::Theme::ForceThemeMode::Enum::DARK;
+            }
+            auto* themeBridge =
+                AikariUI::Settings::Bridges::Instance::ThemeBridge::getInstance(
+                );
+            themeBridge->setForceThemeMode(forceThemeMode);
         }
         catch (const std::exception& e)
         {

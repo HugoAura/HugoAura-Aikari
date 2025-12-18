@@ -10,7 +10,9 @@
       "name": "base-option-backend-only",
       "hidden": true,
       "cacheVariables": {
-        "BUILD_AIKARI_UI": "OFF"
+        "BUILD_AIKARI_UI": "OFF",
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
+        "VCPKG_MANIFEST_FEATURES": ""
       }
     },
     {

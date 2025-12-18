@@ -12,6 +12,8 @@ Button {
     topInset: 0
     bottomInset: 0
 
+    required property bool isDark
+
     contentItem: Item {
         Image {
             id: actionBtnImg
@@ -29,7 +31,7 @@ Button {
             anchors.fill: actionBtnImg
             colorization: 1.0
             colorizationColor: {
-                if (AikariConstants.ThemeStyle.defaultStyle.isDark) {
+                if (actionBtnRoot.isDark) {
                     return "white"
                 } else {
                     if (btnBgColorMode === "red" && actionBtnRoot.hovered) {
@@ -53,21 +55,21 @@ Button {
         color: {
             if (btnBgColorMode === "default") {
                 if (!actionBtnRoot.enabled) {
-                    return AikariConstants.ThemeStyle.defaultStyle.isDark ?
+                    return actionBtnRoot.isDark ?
                         Qt.rgba(255, 255, 255, 0.35) : Qt.rgba(0, 0, 0, 0.35);
                 }
                 if (actionBtnRoot.pressed) {
-                    return AikariConstants.ThemeStyle.defaultStyle.isDark ?
-                        Qt.rgba(255, 255, 255, 0.125) : Qt.rgba(0, 0, 0, 0.125);
+                    return actionBtnRoot.isDark ?
+                        Qt.rgba(255, 255, 255, 0.2) : Qt.rgba(0, 0, 0, 0.2);
                 }
                 if (actionBtnRoot.hovered) {
-                    return AikariConstants.ThemeStyle.defaultStyle.isDark ?
-                        Qt.rgba(255, 255, 255, 0.2) : Qt.rgba(0, 0, 0, 0.2);
+                    return actionBtnRoot.isDark ?
+                        Qt.rgba(255, 255, 255, 0.125) : Qt.rgba(0, 0, 0, 0.125);
                 }
                 return "transparent";
             } else if (btnBgColorMode === "red") {
                 if (!actionBtnRoot.enabled) {
-                    return AikariConstants.ThemeStyle.defaultStyle.isDark ?
+                    return actionBtnRoot.isDark ?
                         Qt.rgba(255, 255, 255, 0.35) : Qt.rgba(0, 0, 0, 0.35);
                 }
                 if (actionBtnRoot.pressed) {

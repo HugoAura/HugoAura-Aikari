@@ -29,30 +29,6 @@
     "mbedtls",
     "nlohmann-json",
     {
-      "name": "qcoro",
-      "default-features": false,
-      "features": [
-        "network",
-        "qml",
-        "quick"
-      ]
-    },
-    {
-      "name": "qtbase",
-      "default-features": false,
-      "features": [
-        "concurrent",
-        "gui",
-        "jpeg",
-        "network",
-        "png",
-        "testlib",
-        "widgets"
-      ]
-    },
-    "qtdeclarative",
-    "qwindowkit",
-    {
       "name": "sentry-native",
       "features": [
         "compression",
@@ -71,5 +47,39 @@
       "name": "fmt",
       "version": "11.2.0"
     }
+  ],
+  "features": {
+    "ui": {
+      "description": "Enable Aikari frontend GUI build",
+      "dependencies": [
+        {
+          "name": "qcoro",
+          "default-features": false,
+          "features": [
+            "network",
+            "qml",
+            "quick"
+          ]
+        },
+        {
+          "name": "qtbase",
+          "default-features": false,
+          "features": [
+            "concurrent",
+            "gui",
+            "jpeg",
+            "network",
+            "png",
+            "testlib",
+            "widgets"
+          ]
+        },
+        "qtdeclarative",
+        "qwindowkit"
+      ]
+    }
+  },
+  "default-features": [
+    "ui"
   ]
 }

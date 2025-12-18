@@ -9,6 +9,7 @@
 #include <QtQuick/QQuickWindow>
 
 #include "./infrastructure/cliParse.h"
+#include "./infrastructure/instances.h"
 
 int main(int argCount, char* argVec[])
 {
@@ -41,6 +42,8 @@ int main(int argCount, char* argVec[])
     globalQmlEngine.addImportPath("qrc:/");
 
     Q_LOG_DEBUG << "Import Paths:" << globalQmlEngine.importPathList();
+
+    AikariUI::Settings::Infrastructure::Instances::initGlobalInstances();
 
     QWK::registerTypes(&globalQmlEngine);
 

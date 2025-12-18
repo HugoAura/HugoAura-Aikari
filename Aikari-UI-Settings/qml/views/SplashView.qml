@@ -14,6 +14,13 @@ Rectangle {
         left: parent.left
     }
 
+    readonly property string aikariAnimationExit: "PageSwipeHorizontal"
+    readonly property QtObject aikariAnimationExitProps: QtObject
+    {
+        readonly property int duration: 300
+        readonly property int freeze: 300
+    }
+
     Timer {
         id: startEstablishBackendConnectionTimer
         interval: 2000
@@ -32,7 +39,7 @@ Rectangle {
             const val = BridgesImpl_Lifecycle.backendConnStatus;
             if (!val) return;
             if (val === BridgeTypes_Lifecycle_BackendConnectionStatus.CONNECTED) {
-                console.log("[QML] done");
+                mainWindowRouter.push("qrc:/AikariViews/HomeView.qml");
             } else if (val === BridgeTypes_Lifecycle_BackendConnectionStatus.FAILED) {
 
             }

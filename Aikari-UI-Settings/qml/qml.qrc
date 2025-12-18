@@ -8,9 +8,15 @@
         <file alias="ThemeStyle.qml">constants/ThemeStyle.qml</file>
     </qresource>
     <qresource prefix="/AikariComponents">
+        <file alias="Animations/qmldir">components/animations/qmldir</file>
         <file alias="Atom/qmldir">components/atom/qmldir</file>
         <file alias="Infra/qmldir">components/infra/qmldir</file>
+        <file alias="Shaders/qmldir">components/shaders/qmldir</file>
         <file alias="Shapes/qmldir">components/shapes/qmldir</file>
+    </qresource>
+    <qresource prefix="/AikariComponents/Animations">
+        <file alias="PageAnimAgent.qml">components/animations/PageAnimAgent.qml</file>
+        <file alias="PageSwipeHorizontal.qml">components/animations/PageSwipeHorizontal.qml</file>
     </qresource>
     <qresource prefix="/AikariComponents/Atom">
         <file alias="ProgressCircular.qml">components/atom/ProgressCircular.qml</file>
@@ -20,6 +26,8 @@
         <file alias="AppBar.qml">components/infra/AppBar.qml</file>
         <file alias="AppBarActionBtn.qml">components/infra/AppBarActionBtn.qml</file>
     </qresource>
+    <qresource prefix="/AikariComponents/Shaders">
+    </qresource>
     <qresource prefix="/AikariComponents/Shapes">
         <file alias="Diamond.qml">components/shapes/Diamond.qml</file>
     </qresource>
@@ -28,7 +36,12 @@
         <file alias="Router.qml">routes/Router.qml</file>
     </qresource>
     <qresource prefix="/AikariViews">
+        <file alias="qmldir">views/qmldir</file>
+        <file alias="HomeView.qml">views/HomeView.qml</file>
         <file alias="SplashView.qml">views/SplashView.qml</file>
+    </qresource>
+    <qresource prefix="/utils">
+        <file alias="connections.mjs">utils/connections.mjs</file>
     </qresource>
     <qresource prefix="/assets/fonts">
         <file alias="Saira-Light.ttf">assets/fonts/Saira-Light.ttf</file>

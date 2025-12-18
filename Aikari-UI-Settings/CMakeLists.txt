@@ -9,8 +9,12 @@ set(CMAKE_AUTOUIC ON)
 # --- Sources --- #
 project_add_qt_executable(Aikari-UI-Settings WIN32
         entrypoint.cpp
+        lifecycle.cpp
+        lifecycle.h
         infrastructure/cliParse.cpp
         infrastructure/cliParse.h
+        infrastructure/instances.cpp
+        infrastructure/instances.h
         qml/qml.qrc
 )
 

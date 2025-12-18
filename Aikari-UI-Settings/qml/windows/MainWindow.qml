@@ -5,6 +5,7 @@ import QWindowKit as QWK
 import AikariConstants as AikariConstants
 import AikariRouter as AikariRouter
 import AikariComponents.Infra
+import AikariComponents.Animations
 
 Window {
     id: mainWindowRoot
@@ -25,20 +26,33 @@ Window {
 
     AppBar {
         id: mainAppBar
+        z: 150
         Component.onCompleted: {
             qwkWindowAgent.setTitleBar(mainAppBar)
             mainWindowLoader.active = true
         }
     }
 
+    PageAnimAgent {
+        id: mainWindowAnimAgent
+        rootObject: mainWindowRoot
+    }
+
+    AikariRouter.Router {
+        id: mainWindowRouter
+        animAgentId: mainWindowAnimAgent
+        currentLoader: mainWindowLoader
+        curActivePage: "qrc:/AikariViews/SplashView.qml"
+    }
+
     Loader {
         id: mainWindowLoader
-        height: parent.height - mainAppBar.height
-        width: parent.width
+        height: mainWindowRoot.height - mainAppBar.height
+        width: mainWindowRoot.width
         anchors.top: mainAppBar.bottom
-        anchors.left: parent.left
+        anchors.left: mainWindowRoot.left
         active: false
-        source: AikariRouter.Router.curActivePage
+        source: mainWindowRouter.curActivePage
         asynchronous: true
     }
 }
