@@ -1,0 +1,33 @@
+import QtQuick.tooling 1.2
+
+Module {
+    dependencies: ["QtQuick 2.0"]
+    Component {
+        name: "QWK::QuickWindowAgent"
+        prototype: "QObject"
+        nameForLsp: "WindowAgent"
+        exports: ["QWindowKit/WindowAgent 1.0"]
+        exportMetaObjectRevisions: [0]
+
+        Method {
+            name: "setup"; Parameter {
+                name: "window"; type: "QQuickWindow"; isPointer: true
+            }
+        }
+        Method {
+            name: "setTitleBar"; Parameter {
+                name: "item"; type: "QQuickItem"; isPointer: true
+            }
+        }
+        Method {
+            name: "setHitTestVisible"; Parameter {
+                name: "item"; type: "QQuickItem"; isPointer: true
+            }
+        }
+        Method {
+            name: "setSystemButtonArea"; Parameter {
+                name: "item"; type: "QQuickItem"; isPointer: true
+            }
+        }
+    }
+}

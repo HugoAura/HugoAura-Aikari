@@ -38,7 +38,7 @@ int main(int argCount, char* argVec[])
 
     globalQmlEngine.addImportPath(
         QCoreApplication::applicationDirPath() + "/qml"
-    );
+    );  // QML Base Resources
     globalQmlEngine.addImportPath("qrc:/");
 
     Q_LOG_DEBUG << "Import Paths:" << globalQmlEngine.importPathList();
@@ -47,7 +47,9 @@ int main(int argCount, char* argVec[])
 
     QWK::registerTypes(&globalQmlEngine);
 
-    const QUrl mainWinUrl(QStringLiteral("qrc:/windows/MainWindow.qml"));
+    const QUrl mainWinUrl(
+        QStringLiteral("qrc:/AikariCore/Windows/MainWindow.qml")
+    );
     QObject::connect(
         &globalQmlEngine,
         &QQmlApplicationEngine::objectCreated,

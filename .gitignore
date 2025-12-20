@@ -41,6 +41,8 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 *.aps
+.vscode/
+!.vscode/c_cpp_properties.json
 
 # Package Manager Files
 packages/

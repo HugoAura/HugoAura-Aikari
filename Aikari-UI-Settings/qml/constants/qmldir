@@ -1,4 +1,0 @@
-module AikariConstants
-
-singleton ThemeStyle 1.0 ThemeStyle.qml
-singleton FontLoaders 1.0 FontLoaders.qml

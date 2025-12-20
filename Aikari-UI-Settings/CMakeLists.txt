@@ -5,6 +5,7 @@ find_package(Qt6Qml CONFIG REQUIRED)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+set(AIKARI_UI_SETTINGS_QRC_RESOURCE_PREFIX "/")
 
 # --- Sources --- #
 project_add_qt_executable(Aikari-UI-Settings WIN32
@@ -17,6 +18,51 @@ project_add_qt_executable(Aikari-UI-Settings WIN32
         infrastructure/instances.h
         qml/qml.qrc
 )
+
+# --- Functions --- #
+function(aikari_ui_settings_add_qml_module)
+    set(oneValueArgs TARGET_NAME URI VERSION)
+    set(multiValueArgs QML_FILES RESOURCES SOURCES)
+
+    cmake_parse_arguments(AIKARIFN "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    message(STATUS "Target Name: ${AIKARIFN_TARGET_NAME}")
+    message(STATUS "Version: ${AIKARIFN_VERSION}")
+    qt_add_library(${AIKARIFN_TARGET_NAME} STATIC)
+    string(REPLACE "." "/" AIKARIFN_TARGET_OUTPUT_DIRECTORY "${AIKARIFN_URI}")
+    set(AIKARIFN_TARGET_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Aikari-UI-Settings/${AIKARIFN_TARGET_OUTPUT_DIRECTORY}")
+    message(STATUS "Output DIR expected: ${AIKARIFN_TARGET_OUTPUT_DIRECTORY}")
+    foreach (instance_path ${AIKARIFN_QML_FILES})
+        cmake_path(GET instance_path FILENAME AIKARIFN_FILE_NAME)
+        set_source_files_properties(${instance_path} PROPERTIES
+                QT_RESOURCE_ALIAS ${AIKARIFN_FILE_NAME}
+        )
+    endforeach ()
+    qt_add_qml_module(${AIKARIFN_TARGET_NAME}
+            URI "${AIKARIFN_URI}"
+            VERSION ${AIKARIFN_VERSION}
+            QML_FILES
+            ${AIKARIFN_QML_FILES}
+            RESOURCES
+            ${AIKARIFN_RESOURCES}
+            SOURCES
+            ${AIKARIFN_SOURCES}
+            RESOURCE_PREFIX
+            ${AIKARI_UI_SETTINGS_QRC_RESOURCE_PREFIX}
+            OUTPUT_DIRECTORY "${AIKARIFN_TARGET_OUTPUT_DIRECTORY}"
+    )
+
+    target_include_directories(${AIKARIFN_TARGET_NAME}
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/includes
+    )
+
+    target_link_libraries(Aikari-UI-Settings PRIVATE ${AIKARIFN_TARGET_NAME})
+    target_link_libraries(Aikari-UI-Settings PRIVATE ${AIKARIFN_TARGET_NAME}plugin)
+endfunction()
+
+set(AIKARI_UI_SETTINGS_QML_IMPORT_PATH "${CMAKE_BINARY_DIR}/Aikari-UI-Settings")
+list(APPEND AIKARI_UI_SETTINGS_QML_IMPORT_PATH "${CMAKE_CURRENT_LIST_DIR}/../External/Mocked-Types")
 
 # --- Packages --- #
 
@@ -70,12 +116,15 @@ set_target_properties(Aikari-UI-Settings
         WIN32_EXECUTABLE $<IF:$<CONFIG:Debug>,OFF,ON> # Let debug build hang the shell
 )
 
-# --- Registration --- #
+# --- QML-specified --- #
+set(QML_IMPORT_PATH "${AIKARI_UI_SETTINGS_QML_IMPORT_PATH}" CACHE PATH "Aikari UI Settings QML Path" FORCE)
 
+# --- Registration --- #
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Reg QML modules
-include(RegQMLModules)
+include(RegQMLModulesBackend)
+include(RegQMLModulesFrontend)
 
 # --- Link --- #
 target_link_libraries(Aikari-UI-Settings
