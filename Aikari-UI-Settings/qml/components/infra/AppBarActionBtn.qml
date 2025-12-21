@@ -13,6 +13,8 @@ Button {
     bottomInset: 0
 
     required property bool isDark
+    property alias iconWidthOverride: actionBtnImg.width
+    property alias iconHeightOverride: actionBtnImg.height
 
     contentItem: Item {
         Image {
@@ -32,12 +34,12 @@ Button {
             colorization: 1.0
             colorizationColor: {
                 if (actionBtnRoot.isDark) {
-                    return "white"
+                    return "white";
                 } else {
                     if (btnBgColorMode === "red" && actionBtnRoot.hovered) {
-                        return "white"
+                        return "white";
                     }
-                    return "black"
+                    return "black";
                 }
             }
             Behavior on colorizationColor {
@@ -55,22 +57,18 @@ Button {
         color: {
             if (btnBgColorMode === "default") {
                 if (!actionBtnRoot.enabled) {
-                    return actionBtnRoot.isDark ?
-                        Qt.rgba(255, 255, 255, 0.35) : Qt.rgba(0, 0, 0, 0.35);
+                    return actionBtnRoot.isDark ? Qt.rgba(255, 255, 255, 0.35) : Qt.rgba(0, 0, 0, 0.35);
                 }
                 if (actionBtnRoot.pressed) {
-                    return actionBtnRoot.isDark ?
-                        Qt.rgba(255, 255, 255, 0.2) : Qt.rgba(0, 0, 0, 0.2);
+                    return actionBtnRoot.isDark ? Qt.rgba(255, 255, 255, 0.2) : Qt.rgba(0, 0, 0, 0.2);
                 }
                 if (actionBtnRoot.hovered) {
-                    return actionBtnRoot.isDark ?
-                        Qt.rgba(255, 255, 255, 0.125) : Qt.rgba(0, 0, 0, 0.125);
+                    return actionBtnRoot.isDark ? Qt.rgba(255, 255, 255, 0.125) : Qt.rgba(0, 0, 0, 0.125);
                 }
                 return "transparent";
             } else if (btnBgColorMode === "red") {
                 if (!actionBtnRoot.enabled) {
-                    return actionBtnRoot.isDark ?
-                        Qt.rgba(255, 255, 255, 0.35) : Qt.rgba(0, 0, 0, 0.35);
+                    return actionBtnRoot.isDark ? Qt.rgba(255, 255, 255, 0.35) : Qt.rgba(0, 0, 0, 0.35);
                 }
                 if (actionBtnRoot.pressed) {
                     return "#D55243";

@@ -1,15 +1,20 @@
 <RCC>
+    <qresource prefix="/constants">
+        <file alias="IconFont.js">constants/IconFont.js</file>
+    </qresource>
     <qresource prefix="/utils">
         <file alias="connections.mjs">utils/connections.mjs</file>
     </qresource>
     <qresource prefix="/assets/fonts">
         <file alias="Saira-Light.ttf">assets/fonts/Saira-Light.ttf</file>
         <file alias="Saira-Regular.ttf">assets/fonts/Saira-Regular.ttf</file>
+        <file alias="IconFont-MaterialSymbolsOutlined-Light.ttf">assets/fonts/IconFont-MaterialSymbolsOutlined-Light.ttf</file>
         <file alias="Consolas.ttf">assets/fonts/Consolas.ttf</file>
     </qresource>
     <qresource prefix="/assets/img">
         <file alias="appbar/close.svg">assets/img/appbar/close.svg</file>
         <file alias="appbar/maximize.svg">assets/img/appbar/maximize.svg</file>
+        <file alias="appbar/menu.svg">assets/img/appbar/menu.svg</file>
         <file alias="appbar/restore.svg">assets/img/appbar/restore.svg</file>
         <file alias="appbar/minimize.svg">assets/img/appbar/minimize.svg</file>
         <file alias="views/splashScreen/A_1.png">assets/img/views/splashScreen/A_1.png</file>

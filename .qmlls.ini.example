@@ -1,0 +1,5 @@
+[General]
+no-cmake-calls = false
+
+buildDir = <path-to-your-aikari-root-src-dir>/build/<your-preset-name>
+importPaths = "<path-to-your-aikari-root-src-dir>/build/<your-preset-name>/Aikari-UI-Settings;<path-to-your-aikari-root-src-dir>/External/Mocked-Types"

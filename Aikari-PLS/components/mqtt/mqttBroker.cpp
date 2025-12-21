@@ -706,9 +706,6 @@ namespace AikariPLS::Components::MQTTBroker
                             },
                             [this]()
                             {
-                                std::lock_guard<std::mutex> lock(
-                                    this->sslCtxLock
-                                );
                                 this->resetCurConnection();
                             },
                             [](async_mqtt::error_code errCode)

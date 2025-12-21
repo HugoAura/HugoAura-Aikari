@@ -15,6 +15,8 @@ option(GLOBAL_USE_MOCK_CLASS "Use mock impl for all Aikari sub modules" OFF)
 option(AIKARI_UI_SETTINGS_USE_MOCK_CLASS "Use mock impl for Aikari-UI-Settings bridges" ON)
 option(AIKARI_LAUNCHER_SIGN "Sign Aikari-Launcher executable" OFF)
 
+option(EXTERNAL_BUILD_GAMMARAY "Build GammaRay Inspection DevTools" OFF) # This option currently has some bugs, DONT enable this
+
 target_compile_options(Aikari-Global-Virtual INTERFACE
         $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
         $<$<CXX_COMPILER_ID:Clang>:-finput-charset=UTF-8>

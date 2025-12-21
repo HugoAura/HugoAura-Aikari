@@ -7,6 +7,7 @@ aikari_ui_settings_add_qml_module(TARGET_NAME Aikari-UI-Settings-Components-Anim
         URI "AikariComponents.Animations"
         VERSION 1.0
         QML_FILES
+        "${CMAKE_CURRENT_LIST_DIR}/ComponentSnapMask.qml"
         "${CMAKE_CURRENT_LIST_DIR}/PageAnimAgent.qml"
         "${CMAKE_CURRENT_LIST_DIR}/PageSwipeHorizontal.qml"
 )

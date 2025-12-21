@@ -8,14 +8,18 @@ Rectangle {
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     color: AikariConstants.ThemeStyle.defaultStyle.textColor
+    z: 100
 
     property int animDurationMs: 300
     property int animFreezeMs: 500
 
-    function start({duration = 300, freeze = 500}) {
+    function start({
+                   duration = 300,
+                   freeze = 500
+}) { // Powered by qmlformat, i have no idea 😓
         visible = true;
         animDurationMs = duration;
-        animFreezeMs = freeze
+        animFreezeMs = freeze;
         startAnim.running = true;
     }
 
@@ -47,7 +51,7 @@ Rectangle {
 
                 ScriptAction {
                     script: {
-                        AikariConstants.ThemeStyle.themeStates.overlayComponentsColorReversed = true
+                        AikariConstants.ThemeStyle.themeStates.overlayComponentsColorReversed = true;
                     }
                 }
             }
@@ -59,10 +63,10 @@ Rectangle {
 
         ScriptAction {
             script: {
-                anchors.bottom = undefined
-                anchors.top = mountedPageSwipeHorizontal.parent.top
-                mountedPageSwipeHorizontal.parent.onAnimCompleted()
-                AikariConstants.ThemeStyle.themeStates.overlayComponentsColorReversed = false
+                anchors.bottom = undefined;
+                anchors.top = mountedPageSwipeHorizontal.parent.top;
+                mountedPageSwipeHorizontal.parent.onAnimCompleted();
+                AikariConstants.ThemeStyle.themeStates.overlayComponentsColorReversed = false;
             }
         }
 

@@ -13,4 +13,5 @@ aikari_ui_settings_add_qml_module(TARGET_NAME Aikari-UI-Settings-Components-Infr
         QML_FILES
         "${CMAKE_CURRENT_LIST_DIR}/AppBar.qml"
         "${CMAKE_CURRENT_LIST_DIR}/AppBarActionBtn.qml"
+        "${CMAKE_CURRENT_LIST_DIR}/SideBarHome.qml"
 )

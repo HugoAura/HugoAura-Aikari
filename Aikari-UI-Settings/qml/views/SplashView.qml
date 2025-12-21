@@ -15,8 +15,7 @@ Rectangle {
     }
 
     readonly property string aikariAnimationExit: "PageSwipeHorizontal"
-    readonly property QtObject aikariAnimationExitProps: QtObject
-    {
+    readonly property QtObject aikariAnimationExitProps: QtObject {
         readonly property int duration: 300
         readonly property int freeze: 300
     }
@@ -37,12 +36,11 @@ Rectangle {
 
         function onBackendConnStatusChanged() {
             const val = BridgesImpl_Lifecycle.backendConnStatus;
-            if (!val) return;
+            if (!val)
+                return;
             if (val === BridgeTypes_Lifecycle_BackendConnectionStatus.CONNECTED) {
                 mainWindowRouter.push("qrc:/AikariViews/HomeView.qml");
-            } else if (val === BridgeTypes_Lifecycle_BackendConnectionStatus.FAILED) {
-
-            }
+            } else if (val === BridgeTypes_Lifecycle_BackendConnectionStatus.FAILED) {}
         }
     }
 
@@ -67,16 +65,15 @@ Rectangle {
             readonly property var fromLeft: [0, 119, 224, 424, 561, 729]
             property bool isAnimSeqRunning: false
             Component.onCompleted: {
-                logoRowRepeater.isAnimSeqRunning = true
+                logoRowRepeater.isAnimSeqRunning = true;
             }
 
             delegate: Item {
+                id: perLogoItem
                 required property string modelData
                 required property int index
 
                 readonly property real targetTranslateX: logoRowRepeater.fromLeft[index] * logoRowContainer.logoScale
-
-                id: perLogoItem
                 width: 180 * logoRowContainer.logoScale
                 height: 153 * logoRowContainer.logoScale
                 anchors.left: logoRowContainer.left
@@ -112,8 +109,8 @@ Rectangle {
 
                     ScriptAction {
                         script: {
-                            perLogoItemTranslate.x = perLogoItem.targetTranslateX + 500
-                            perLogoItem.visible = true
+                            perLogoItemTranslate.x = perLogoItem.targetTranslateX + 500;
+                            perLogoItem.visible = true;
                         }
                     }
 
@@ -136,13 +133,13 @@ Rectangle {
                             to: perLogoItem.targetTranslateX
                             duration: 750
                             easing.type: Easing.Bezier
-                            easing.bezierCurve: [0, 0.83, 0.53, 0.99, 1, 1]
+                            easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
                         }
                     }
 
                     onFinished: {
                         if (index === logoRowRepeater.count - 1) {
-                            loadingSeqAnim.start()
+                            loadingSeqAnim.start();
                         }
                     }
                 }
@@ -170,8 +167,8 @@ Rectangle {
         anchors.top: loadingText.bottom
         anchors.topMargin: 30
         fillColor: AikariConstants.ThemeStyle.defaultStyle.textColor
-        backgroundColor: AikariConstants.ThemeStyle.defaultStyle.isDark ?
-            Qt.rgba(255, 255, 255, 0.3) : Qt.rgba(0, 0, 0, 0.3)
+        backgroundColor: AikariConstants.ThemeStyle.defaultStyle.isDark ? Qt.rgba(255, 255, 255, 0.3) : Qt.rgba(0, 0, 0,
+                                                                                                                0.3)
         opacity: 0
 
         percent: BridgesImpl_Lifecycle.backendConnStatistics.connectionProgressPercent
@@ -199,7 +196,7 @@ Rectangle {
         ParallelAnimation {
             ScriptAction {
                 script: {
-                    loadingText.visible = true
+                    loadingText.visible = true;
                 }
             }
 
