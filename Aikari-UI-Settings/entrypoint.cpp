@@ -10,6 +10,7 @@
 
 #include "./infrastructure/cliParse.h"
 #include "./infrastructure/instances.h"
+#include "./infrastructure/qmlFontInit.h"
 
 int main(int argCount, char* argVec[])
 {
@@ -40,6 +41,9 @@ int main(int argCount, char* argVec[])
         QCoreApplication::applicationDirPath() + "/qml"
     );  // QML Base Resources
     globalQmlEngine.addImportPath("qrc:/");
+
+    AikariUI::Settings::Infrastructure::QMLFontInit::
+        initFont(/* &globalQmlEngine */);
 
     Q_LOG_DEBUG << "Import Paths:" << globalQmlEngine.importPathList();
 

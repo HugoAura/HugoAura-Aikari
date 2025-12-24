@@ -14,7 +14,14 @@ QtObject {
         source: "qrc:/assets/fonts/Consolas.ttf"
     }
 
-    property FontLoader materialSymbolsLoader: FontLoader {
-        source: "qrc:/assets/fonts/IconFont-MaterialSymbolsOutlined-Light.ttf"
+    /* property FontLoader fluentIconsLoader: FontLoader {
+        source: "qrc:/assets/fonts/IconFont-SegoeFluentIcons.ttf"
+    } */
+    property QtObject fluentIconsLoader: QtObject {
+        property string name: "Microsoft Segoe Fluent Icons"
+    }
+
+    property QtObject materialSymbolsLoader: QtObject {
+        property string name: "Material Symbols Sharp ExtraLight"
     }
 }

@@ -16,6 +16,8 @@ project_add_qt_executable(Aikari-UI-Settings WIN32
         infrastructure/cliParse.h
         infrastructure/instances.cpp
         infrastructure/instances.h
+        infrastructure/qmlFontInit.cpp
+        infrastructure/qmlFontInit.h
         qml/qml.qrc
 )
 

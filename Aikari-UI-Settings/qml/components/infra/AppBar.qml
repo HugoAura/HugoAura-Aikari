@@ -69,6 +69,9 @@ Rectangle {
         anchors.top: parent.top
         height: parent.height
         visible: true
+        Component.onCompleted: qwkWindowAgent.setHitTestVisible(mainAppBarRightActionBtns, true)
+        /* [!] Not using qwkAgent.setSystemButton, because
+         * it will likely cause problems on touch screens */
 
         AppBarActionBtn {
             id: minimizeBtn
@@ -77,7 +80,7 @@ Rectangle {
             imgSrc: "qrc:/assets/img/appbar/minimize.svg"
             isDark: mainAppBar.isAppBarDark
 
-            Component.onCompleted: qwkWindowAgent.setSystemButton(QWK.WindowAgent.Minimize, minimizeBtn)
+            // Component.onCompleted: qwkWindowAgent.setSystemButton(QWK.WindowAgent.Minimize, minimizeBtn)
             onClicked: mainAppBar.parentWindow.showMinimized()
         }
         AppBarActionBtn {
@@ -88,7 +91,7 @@ Rectangle {
                                                                               "qrc:/assets/img/appbar/maximize.svg"
             isDark: mainAppBar.isAppBarDark
 
-            Component.onCompleted: qwkWindowAgent.setSystemButton(QWK.WindowAgent.Maximize, showModeSwitchBtn)
+            // Component.onCompleted: qwkWindowAgent.setSystemButton(QWK.WindowAgent.Maximize, showModeSwitchBtn)
             onClicked: mainAppBar.parentWindow.visibility === Window.Maximized ? mainAppBar.parentWindow.showNormal() :
                                                                                  mainAppBar.parentWindow.showMaximized()
         }
@@ -99,7 +102,7 @@ Rectangle {
             imgSrc: "qrc:/assets/img/appbar/close.svg"
             isDark: mainAppBar.isAppBarDark
 
-            Component.onCompleted: qwkWindowAgent.setSystemButton(QWK.WindowAgent.Close, closeWindowBtn)
+            // Component.onCompleted: qwkWindowAgent.setSystemButton(QWK.WindowAgent.Close, closeWindowBtn)
             onClicked: mainAppBar.parentWindow.close()
         }
     }

@@ -16,6 +16,9 @@ Window {
     visible: true
     width: 1600
 
+    minimumWidth: 400
+    minimumHeight: 500
+
     Component.onCompleted: {
         qwkWindowAgent.setup(mainWindowRoot);
         qwkWindowAgent.setWindowAttribute("dark-mode", AikariConstants.ThemeStyle.defaultStyle.isDark);

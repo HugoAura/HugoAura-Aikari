@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/constants">
-        <file alias="IconFont.js">constants/IconFont.js</file>
+        <file alias="MaterialSymbolsFont.js">constants/MaterialSymbolsFont.js</file>
     </qresource>
     <qresource prefix="/utils">
         <file alias="connections.mjs">utils/connections.mjs</file>
@@ -8,7 +8,8 @@
     <qresource prefix="/assets/fonts">
         <file alias="Saira-Light.ttf">assets/fonts/Saira-Light.ttf</file>
         <file alias="Saira-Regular.ttf">assets/fonts/Saira-Regular.ttf</file>
-        <file alias="IconFont-MaterialSymbolsOutlined-Light.ttf">assets/fonts/IconFont-MaterialSymbolsOutlined-Light.ttf</file>
+        <file alias="IconFont-SegoeFluentIcons-Fixed.ttf">assets/fonts/IconFont-SegoeFluentIcons-Fixed.ttf</file>
+        <file alias="IconFont-MaterialSymbolsSharp-ExtraLight-Fixed.ttf">assets/fonts/IconFont-MaterialSymbolsSharp-ExtraLight-Fixed.ttf</file>
         <file alias="Consolas.ttf">assets/fonts/Consolas.ttf</file>
     </qresource>
     <qresource prefix="/assets/img">

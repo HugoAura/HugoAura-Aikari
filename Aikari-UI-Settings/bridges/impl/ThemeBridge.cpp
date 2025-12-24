@@ -1,6 +1,6 @@
 #include "./ThemeBridge.h"
 
-#define AIKARI_UI_MODULE_NAME "Backend / Theme Bridge (Mock)"
+#define AIKARI_UI_MODULE_NAME "Backend / Theme Bridge"
 
 #include <Aikari-UI-Settings-Private/macros/qLogger.h>
 
