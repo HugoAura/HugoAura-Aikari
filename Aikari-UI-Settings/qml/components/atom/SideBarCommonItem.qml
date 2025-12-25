@@ -10,20 +10,24 @@ Item {
     property alias title: sideBarCommonItemRoot.title // <<< SET
     property var sideBarItemOnClicked: null // <<< SET
     required property var reusableStyleDefinition // <<< SET
+
+    property bool noMarginHorizontal: false // <<< SET
+    property bool noMarginVertical: false // <<< SET
     /*
     Accepts:
     {
         width: int
         height: int
-        anchorLeft: AnchorLine
+        anchorLeft: AnchorLine | undefined
+        anchorRight: AnchorLine | undefined
     }
     */
 
-    readonly property real marginHorizontal: 10
-    readonly property real marginVertical: 2.5
+    readonly property real marginHorizontal: noMarginHorizontal ? 0 : 10
+    readonly property real marginVertical: noMarginVertical ? 0 : 2.5
 
     readonly property real iconPixelSize: height * 0.5
-    readonly property real titlePixelSize: height * 0.35
+    readonly property real titlePixelSize: height * 0.325
 
     readonly property int colorAnimDuration: 150
 
@@ -31,6 +35,7 @@ Item {
     width: reusableStyleDefinition.width
     height: reusableStyleDefinition.height
     anchors.left: reusableStyleDefinition.anchorLeft
+    anchors.right: reusableStyleDefinition.anchorRight
     visible: true
 
     AikariComponentsShapes.MaskClippedRectangle {

@@ -27,7 +27,9 @@ Rectangle {
         running: true
 
         onTriggered: {
-            BridgesImpl_Lifecycle.establishBackendConnection();
+            // BridgesImpl_Lifecycle.establishBackendConnection();
+
+            mainWindowRouter.push("qrc:/AikariViews/HomeView.qml");
         }
     }
 

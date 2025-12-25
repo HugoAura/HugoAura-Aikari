@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import "qrc:/constants/MaterialSymbolsFont.js" as MaterialSymbols
 import AikariConstants as AikariConstants
 
@@ -15,12 +16,14 @@ Item {
         expanderHeight: int
         expanderAnchorLeft: AnchorLine
         childWidth: int
-        childHeight: int
-        childAnchorLeft: AnchorLine
+        expandAnimDuration: int
+        collapseAnimDuration: int
     }
     */
     readonly property real childMarginHorizontal: 10
     readonly property real childMarginVertical: 2.5
+
+    default property alias innerContent: sideBarGroupContainerInnerItems.data
 
     property bool isExpanded: false // <<< State
 
@@ -38,8 +41,8 @@ Item {
     SideBarCommonItem {
         id: sideBarGroupExpanderItem
         reusableStyleDefinition: QtObject {
-            property int width: reusableStyleDefinition.expanderWidth
-            property int height: reusableStyleDefinition.expanderHeight
+            property int width: sideBarGroupContainerRoot.reusableStyleDefinition.expanderWidth
+            property int height: sideBarGroupContainerRoot.reusableStyleDefinition.expanderHeight
             property var anchorLeft: sideBarGroupContainerRoot.left
         }
         // >>> icon: from alias sideBarGroupContainerRoot.groupIcon
@@ -73,6 +76,82 @@ Item {
                     direction: RotationAnimation.Clockwise
                     easing.type: Easing.Bezier
                     easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
+                }
+            }
+        }
+    }
+
+    Item {
+        id: sideBarGroupContainerInnerItemsAnimFrame
+        width: sideBarGroupContainerRoot.reusableStyleDefinition.childWidth
+        anchors.right: parent.right
+        anchors.top: sideBarGroupExpanderItem.bottom
+
+        clip: true
+        readonly property bool isExpanded: sideBarGroupContainerRoot.isExpanded
+
+        states: [
+            State {
+                name: "collapsed"
+                PropertyChanges {
+                    target: sideBarGroupContainerInnerItemsAnimFrame
+                    height: 0
+                }
+            },
+            State {
+                name: "expanded"
+                PropertyChanges {
+                    target: sideBarGroupContainerInnerItemsAnimFrame
+                    height: sideBarGroupContainerInnerItems.height
+                }
+            }
+        ]
+
+        transitions: [
+            Transition {
+                to: "expanded"
+                NumberAnimation {
+                    properties: "height"
+                    duration: sideBarGroupContainerRoot.reusableStyleDefinition.expandAnimDuration
+                    easing.type: Easing.Bezier
+                    easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
+                }
+            },
+            Transition {
+                to: "collapsed"
+                NumberAnimation {
+                    properties: "height"
+                    duration: sideBarGroupContainerRoot.reusableStyleDefinition.collapseAnimDuration
+                    easing.type: Easing.Bezier
+                    easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
+                }
+            }
+        ]
+
+        onIsExpandedChanged: {
+            sideBarGroupContainerInnerItemsAnimFrame.state = isExpanded ? "expanded" : "collapsed";
+        }
+
+        Column {
+            id: sideBarGroupContainerInnerItems
+            width: parent.width
+            // height: childrenRect.height
+            readonly property bool isExpanded: sideBarGroupContainerRoot.isExpanded
+
+            Component.onCompleted: {
+                const diff = 100;
+                const childrenLength = sideBarGroupContainerInnerItems.children.length;
+                for (let i = 0; i < childrenLength; i++) {
+                    const child = sideBarGroupContainerInnerItems.children[i];
+                    child.animTimerShowDelay = diff * i;
+                    // child.animTimerHideDelay = (childrenLength - 1 - i) * diff;
+                    child.animTimerHideDelay = 0;
+                }
+            }
+
+            onIsExpandedChanged: {
+                for (const child of sideBarGroupContainerInnerItems.children) {
+                    child.triggerTimer(isExpanded);
                 }
             }
         }

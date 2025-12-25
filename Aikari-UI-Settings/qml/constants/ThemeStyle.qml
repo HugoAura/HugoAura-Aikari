@@ -27,6 +27,8 @@ QtObject {
         id: _cubicBezierConstants
 
         readonly property var snapTo: [0, 0.83, 0.53, 0.99, 1, 1]
+        readonly property var ease: [0.25, 0.1, 0.25, 1, 1, 1]
+        readonly property var easeIn: [0.42, 0, 1, 1, 1, 1]
     }
 
     property var defaultStyle: QtObject {
