@@ -28,6 +28,7 @@ function(aikari_ui_settings_add_qml_module)
 
     cmake_parse_arguments(AIKARIFN "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    message(STATUS "--- Aikari-UI-Settings Adding QML Module: ${AIKARIFN_URI} ---")
     message(STATUS "Target Name: ${AIKARIFN_TARGET_NAME}")
     message(STATUS "Version: ${AIKARIFN_VERSION}")
     qt_add_library(${AIKARIFN_TARGET_NAME} STATIC)

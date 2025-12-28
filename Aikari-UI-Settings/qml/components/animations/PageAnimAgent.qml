@@ -1,16 +1,15 @@
 import QtQuick
 
 Item {
-    required property var rootObject
     id: agentSelf
+    required property var rootObject
     width: rootObject.width
     height: rootObject.height
     anchors {
         top: rootObject.top
         left: rootObject.left
     }
-    property QtObject animState: QtObject
-    {
+    property QtObject animState: QtObject {
         property bool isAnimRunning: false
         property var curActiveAnim
         property var curAnimCallback
@@ -23,8 +22,8 @@ Item {
 
     function getAnimIdByString(animationNameStr) {
         switch (animationNameStr) {
-            case "PageSwipeHorizontal":
-                return mountedPageSwipeHorizontal;
+        case "PageSwipeHorizontal":
+            return mountedPageSwipeHorizontal;
         }
     }
 

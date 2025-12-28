@@ -10,15 +10,16 @@ Item {
     property alias sideBarItemOnClicked: sideBarGroupItemInner.sideBarItemOnClicked // <<< SET
     property alias animTimerShowDelay: componentSnapMaskAnimIsShowDelayToggler.toShowDelay // <<< SET
     property alias animTimerHideDelay: componentSnapMaskAnimIsShowDelayToggler.toHideDelay // <<< SET
+    property alias belongsToGroup: sideBarGroupItemInner.belongsToGroup
     width: reusableStyleDefinition.width
     height: reusableStyleDefinition.height
+    readonly property real marginHorizontal: 10
 
     anchors.left: parent.left
 
     function triggerTimer(toShow) {
-        componentSnapMaskAnimIsShowDelayToggler.interval = toShow ?
-            componentSnapMaskAnimIsShowDelayToggler.toShowDelay :
-            componentSnapMaskAnimIsShowDelayToggler.toHideDelay;
+        componentSnapMaskAnimIsShowDelayToggler.interval = toShow ? componentSnapMaskAnimIsShowDelayToggler.toShowDelay :
+                                                                    componentSnapMaskAnimIsShowDelayToggler.toHideDelay;
         componentSnapMaskAnimIsShowDelayToggler.targetIsShowVal = toShow;
         componentSnapMaskAnimIsShowDelayToggler.restart();
     }
@@ -42,8 +43,8 @@ Item {
         id: sideBarGroupItemContainer
         anchors.fill: parent
         anchors {
-            leftMargin: 10
-            rightMargin: 10
+            leftMargin: sideBarGroupItemRoot.marginHorizontal
+            rightMargin: sideBarGroupItemRoot.marginHorizontal
         }
 
         AikariComponentsAnimations.ComponentSnapMask {
@@ -60,8 +61,6 @@ Item {
 
             SideBarCommonItem {
                 id: sideBarGroupItemInner
-                // >>> icon
-                // >>> title
                 // >>> reusableStyleDefinition
                 height: sideBarGroupItemContainer.height
                 width: sideBarGroupItemContainer.width

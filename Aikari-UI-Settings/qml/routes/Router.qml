@@ -8,20 +8,14 @@ QtObject {
     property url pendingActivePage
 
     function push(target) {
-        if (
-            currentLoader.item &&
-            typeof currentLoader.item.aikariAnimationExit === "string" &&
-            currentLoader.item.aikariAnimationExitProps
-        ) {
+        if (currentLoader.item && typeof currentLoader.item.aikariAnimationExit === "string"
+                && currentLoader.item.aikariAnimationExitProps) {
             pendingActivePage = target;
             if (animAgentId) {
-                animAgentId.startTargetAnimation(
-                    currentLoader.item.aikariAnimationExit,
-                    currentLoader.item.aikariAnimationExitProps,
-                        () => {
-                        curActivePage = pendingActivePage;
-                    }
-                );
+                animAgentId.startTargetAnimation(currentLoader.item.aikariAnimationExit,
+                                                 currentLoader.item.aikariAnimationExitProps, () => {
+                                                     curActivePage = pendingActivePage;
+                                                 });
             }
         } else {
             curActivePage = target;

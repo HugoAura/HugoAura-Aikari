@@ -18,24 +18,22 @@ Rectangle {
     Repeater {
         model: 4
 
-        delegate: AikariComponentsShapes.Diamond
-        {
+        delegate: AikariComponentsShapes.Diamond {
+            id: perDiamond
             function getTranslatePair(withOffset = false, offset = 50) {
                 const baselineVal = 15;
                 const offsetVal = withOffset ? offset : 0;
                 switch (index) {
-                    case 0:
-                        return [0, -1 * (baselineVal + offsetVal) * progressCircularRoot.customScale];
-                    case 1:
-                        return [(baselineVal + offsetVal) * progressCircularRoot.customScale, 0];
-                    case 2:
-                        return [0, (baselineVal + offsetVal) * progressCircularRoot.customScale];
-                    case 3:
-                        return [(-baselineVal - offsetVal) * progressCircularRoot.customScale, 0];
+                case 0:
+                    return [0, -1 * (baselineVal + offsetVal) * progressCircularRoot.customScale];
+                case 1:
+                    return [(baselineVal + offsetVal) * progressCircularRoot.customScale, 0];
+                case 2:
+                    return [0, (baselineVal + offsetVal) * progressCircularRoot.customScale];
+                case 3:
+                    return [(-baselineVal - offsetVal) * progressCircularRoot.customScale, 0];
                 }
             }
-
-            id: perDiamond
             anchors.centerIn: parent
             strokeColor: progressCircularRoot.fillColor
             fillColor: progressCircularRoot.fillColor
@@ -56,13 +54,13 @@ Rectangle {
 
                 ScriptAction {
                     script: {
-                        const translatePairOffset = perDiamond.getTranslatePair(true)
-                        const translatePairNonOffset = perDiamond.getTranslatePair(false)
-                        perDiamondTranslate.x = translatePairOffset[0]
-                        perDiamondTranslate.y = translatePairOffset[1]
-                        perDiamond.visible = true
-                        translateXAnim.to = translatePairNonOffset[0]
-                        translateYAnim.to = translatePairNonOffset[1]
+                        const translatePairOffset = perDiamond.getTranslatePair(true);
+                        const translatePairNonOffset = perDiamond.getTranslatePair(false);
+                        perDiamondTranslate.x = translatePairOffset[0];
+                        perDiamondTranslate.y = translatePairOffset[1];
+                        perDiamond.visible = true;
+                        translateXAnim.to = translatePairNonOffset[0];
+                        translateYAnim.to = translatePairNonOffset[1];
                     }
                 }
 
@@ -105,7 +103,8 @@ Rectangle {
 
                 ScriptAction {
                     script: {
-                        if (index === 0) progressCircularRoot.isLoopAnimRunning = true;
+                        if (index === 0)
+                            progressCircularRoot.isLoopAnimRunning = true;
                     }
                 }
             }
@@ -198,7 +197,7 @@ Rectangle {
 
         ScriptAction {
             script: {
-                progressCircularRoot.rotation = 0
+                progressCircularRoot.rotation = 0;
             }
         }
 

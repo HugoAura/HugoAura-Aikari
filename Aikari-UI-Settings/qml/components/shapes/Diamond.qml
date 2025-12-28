@@ -26,16 +26,20 @@ Shape {
         startY: 2 * customScale
 
         PathLine {
-            x: 12 * customScale; y: 15 * customScale
+            x: 12 * customScale
+            y: 15 * customScale
         }
         PathLine {
-            x: 7 * customScale; y: 28 * customScale
+            x: 7 * customScale
+            y: 28 * customScale
         }
         PathLine {
-            x: 2 * customScale; y: 15 * customScale
+            x: 2 * customScale
+            y: 15 * customScale
         }
         PathLine {
-            x: 7 * customScale; y: 2 * customScale
+            x: 7 * customScale
+            y: 2 * customScale
         }
     }
 }

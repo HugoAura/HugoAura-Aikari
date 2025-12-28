@@ -35,6 +35,46 @@ AikariComponentsAtom.SideBar {
         readonly property var anchorRight: undefined
     }
 
+    property var curActiveSideBarItem: null
+    property bool curActiveSideBarItemCollapsed: false
+    property var curActiveGroup: null
+    property bool expandAnimIsActive: false
+
+    function onCommonSideBarItemClicked() {
+        selectedElementHighlighter.marginHorizontal = this.noMarginHorizontal ? -2.5 : -12.5;
+        sideBarHomeRoot.curActiveSideBarItem = this; // `this` will be bound to sideBarCommonItemContainer
+        sideBarHomeRoot.curActiveGroup = this.belongsToGroup ? this.belongsToGroup : null;
+        sideBarHomeRoot.curActiveSideBarItemCollapsed = false;
+        /* console.log(this.title); */
+        // push...
+    }
+
+    function onSideBarGroupRootItemClicked() {
+        if (sideBarHomeRoot.curActiveGroup === this) {
+            /* console.log("oops"); */
+            selectedElementHighlighter.marginHorizontal = this.isExpanded ? -2.5 : -12.5;
+            sideBarHomeRoot.curActiveSideBarItemCollapsed = !this.isExpanded;
+        } else {}
+    }
+
+    function onSideBarGroupContainerExpandAnimBegin(isAboutToExpand) {
+        expandAnimIsActive = true;
+    }
+
+    function onSideBarGroupContainerExpandAnimEnd(isAboutToExpand) {
+        expandAnimIsActive = false;
+    }
+
+    AikariComponentsAtom.ElementFrameHorizontal {
+        id: selectedElementHighlighter
+        targetElement: sideBarHomeRoot.curActiveSideBarItemCollapsed && sideBarHomeRoot.curActiveGroup
+                       ? sideBarHomeRoot.curActiveGroup.expanderItem : sideBarHomeRoot.curActiveSideBarItem
+        showRectangleColorOverlay: !sideBarHomeRoot.curActiveSideBarItemCollapsed
+        /* marginHorizontal: sideBarHomeRoot.curActiveSideBarItem.noMarginHorizontal ? 2.5 : -12.5 */
+        marginHorizontal: 2.5
+        posBindEnabled: sideBarHomeRoot.expandAnimIsActive
+    }
+
     Item {
         id: sideBarTopMarginPlaceholder
         height: 5
@@ -46,6 +86,7 @@ AikariComponentsAtom.SideBar {
         icon: MaterialSymbols.home
         title: "仪表盘"
         anchors.top: sideBarTopMarginPlaceholder.bottom
+        sideBarItemOnClicked: sideBarHomeRoot.onCommonSideBarItemClicked
     }
 
     AikariComponentsAtom.SideBarCommonItem {
@@ -54,6 +95,7 @@ AikariComponentsAtom.SideBar {
         icon: MaterialSymbols.settings
         title: "通用设置"
         anchors.top: sideBarEntryDashboard.bottom
+        sideBarItemOnClicked: sideBarHomeRoot.onCommonSideBarItemClicked
     }
 
     Rectangle {
@@ -75,12 +117,16 @@ AikariComponentsAtom.SideBar {
         groupTitle: "设备安全"
         anchors.top: sideBarHrCommonAndFeatures.bottom
         anchors.topMargin: 5
+        onExpanderClicked: sideBarHomeRoot.onSideBarGroupRootItemClicked
+        onExpandAnimBegin: sideBarHomeRoot.onSideBarGroupContainerExpandAnimBegin
+        onExpandAnimEnd: sideBarHomeRoot.onSideBarGroupContainerExpandAnimEnd
 
         AikariComponentsAtom.SideBarGroupItem {
             id: sideBarGroupPLSDeviceSecurityEntryFreeze
             reusableStyleDefinition: sideBarHomeRoot.sideBarGroupItemStyle
             icon: MaterialSymbols.acUnit
             title: "冰点还原"
+            sideBarItemOnClicked: sideBarHomeRoot.onCommonSideBarItemClicked
         }
 
         AikariComponentsAtom.SideBarGroupItem {
@@ -88,6 +134,7 @@ AikariComponentsAtom.SideBar {
             reusableStyleDefinition: sideBarHomeRoot.sideBarGroupItemStyle
             icon: MaterialSymbols.apps
             title: "软件管控"
+            sideBarItemOnClicked: sideBarHomeRoot.onCommonSideBarItemClicked
         }
 
         AikariComponentsAtom.SideBarGroupItem {
@@ -95,6 +142,7 @@ AikariComponentsAtom.SideBar {
             reusableStyleDefinition: sideBarHomeRoot.sideBarGroupItemStyle
             icon: MaterialSymbols.bigtopUpdates
             title: "网络管控"
+            sideBarItemOnClicked: sideBarHomeRoot.onCommonSideBarItemClicked
         }
     }
 
@@ -104,12 +152,16 @@ AikariComponentsAtom.SideBar {
         groupIcon: MaterialSymbols.devices
         groupTitle: "设备管理"
         anchors.top: sideBarGroupPLSDeviceSecurity.bottom
+        onExpanderClicked: sideBarHomeRoot.onSideBarGroupRootItemClicked
+        onExpandAnimBegin: sideBarHomeRoot.onSideBarGroupContainerExpandAnimBegin
+        onExpandAnimEnd: sideBarHomeRoot.onSideBarGroupContainerExpandAnimEnd
 
         AikariComponentsAtom.SideBarGroupItem {
             id: sideBarGroupPLSDeviceManagementEntryDeviceLock
             reusableStyleDefinition: sideBarHomeRoot.sideBarGroupItemStyle
             icon: MaterialSymbols.lock
             title: "锁屏与屏保"
+            sideBarItemOnClicked: sideBarHomeRoot.onCommonSideBarItemClicked
         }
     }
 }

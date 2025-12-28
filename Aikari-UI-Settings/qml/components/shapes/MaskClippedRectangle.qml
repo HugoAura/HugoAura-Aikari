@@ -32,13 +32,11 @@ Shape {
 
         PathLine {
             x: clippedRectangleMaskRoot.width
-            y: clippedRectangleMaskRoot.height -
-                clippedRectangleMaskRoot.clipTriangleSize
+            y: clippedRectangleMaskRoot.height - clippedRectangleMaskRoot.clipTriangleSize
         }
 
         PathLine {
-            x: clippedRectangleMaskRoot.width -
-                clippedRectangleMaskRoot.clipTriangleSize
+            x: clippedRectangleMaskRoot.width - clippedRectangleMaskRoot.clipTriangleSize
             y: clippedRectangleMaskRoot.height
         }
 

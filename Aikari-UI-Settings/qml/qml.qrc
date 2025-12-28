@@ -18,6 +18,7 @@
         <file alias="appbar/menu.svg">assets/img/appbar/menu.svg</file>
         <file alias="appbar/restore.svg">assets/img/appbar/restore.svg</file>
         <file alias="appbar/minimize.svg">assets/img/appbar/minimize.svg</file>
+        <file alias="components/atom/frame.svg">assets/img/components/atom/frame.svg</file>
         <file alias="views/splashScreen/A_1.png">assets/img/views/splashScreen/A_1.png</file>
         <file alias="views/splashScreen/A_2.png">assets/img/views/splashScreen/A_2.png</file>
         <file alias="views/splashScreen/I_1.png">assets/img/views/splashScreen/I_1.png</file>

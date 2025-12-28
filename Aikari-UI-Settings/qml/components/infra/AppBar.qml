@@ -71,7 +71,7 @@ Rectangle {
         visible: true
         Component.onCompleted: qwkWindowAgent.setHitTestVisible(mainAppBarRightActionBtns, true)
         /* [!] Not using qwkAgent.setSystemButton, because
-         * it will likely cause problems on touch screens */
+        * it will likely cause problems on touch screens */
 
         AppBarActionBtn {
             id: minimizeBtn

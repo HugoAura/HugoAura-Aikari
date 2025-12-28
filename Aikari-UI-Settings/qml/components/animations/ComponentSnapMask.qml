@@ -15,10 +15,8 @@ Item {
     readonly property string initialState: swipeHorizontally ? "leftAlignedHorizontal" :
                                                                "topAlignedVertical" // <<< PRIV STATE
 
-
     readonly property string endUpState: swipeHorizontally ? "rightAlignedHorizontal" :
                                                              "bottomAlignedVertical" // <<< PRIV STATE
-
 
     // >>> CONTROLS <<< //
     property bool isShow: false

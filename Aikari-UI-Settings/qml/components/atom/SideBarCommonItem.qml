@@ -16,12 +16,14 @@ Item {
     /*
     Accepts:
     {
-        width: int
-        height: int
-        anchorLeft: AnchorLine | undefined
-        anchorRight: AnchorLine | undefined
+    width: int
+    height: int
+    anchorLeft: AnchorLine | undefined
+    anchorRight: AnchorLine | undefined
     }
     */
+
+    property var belongsToGroup: null // <<< DELEGATE
 
     readonly property real marginHorizontal: noMarginHorizontal ? 0 : 10
     readonly property real marginVertical: noMarginVertical ? 0 : 2.5
@@ -66,9 +68,8 @@ Item {
         readonly property color primaryColorReversable: colorReversed ? reversedColor : primaryColor
         readonly property color reversedColorReversable: colorReversed ? primaryColor : reversedColor
         readonly property color bgColorReversable: colorReversed ? primaryColor : "transparent"
-        color: sideBarCommonItemHoverHandler.hovered && !sideBarCommonItemTapHandler.pressed && !isPressForceActive ?
-            AikariConstants.ThemeStyle.defaultStyle.textColorMoreOpacity :
-            bgColorReversable
+        color: sideBarCommonItemHoverHandler.hovered && !sideBarCommonItemTapHandler.pressed && !isPressForceActive
+               ? AikariConstants.ThemeStyle.defaultStyle.textColorMoreOpacity : bgColorReversable
 
         width: parent.width
         height: parent.height
@@ -135,7 +136,7 @@ Item {
                 parent.isPressForceActive = true;
                 sideBarCommonItemPressActionTimer.start();
                 if (sideBarCommonItemContainer.sideBarItemOnClicked) {
-                    sideBarCommonItemContainer.sideBarItemOnClicked();
+                    sideBarCommonItemContainer.sideBarItemOnClicked.call(sideBarCommonItemContainer);
                 }
             }
         }

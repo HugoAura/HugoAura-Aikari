@@ -10,20 +10,23 @@ Item {
     property alias groupTitle: sideBarGroupExpanderItem.title // <<< SET
     required property var reusableStyleDefinition // <<< SET
     /*
-    Accepts:
-    {
-        expanderWidth: int
-        expanderHeight: int
-        expanderAnchorLeft: AnchorLine
-        childWidth: int
-        expandAnimDuration: int
-        collapseAnimDuration: int
-    }
+    * Accepts:
+    * {
+    *   expanderWidth: int
+    *   expanderHeight: int
+    *   expanderAnchorLeft: AnchorLine
+    *   childWidth: int
+    *   expandAnimDuration: int
+    *   collapseAnimDuration: int
+    * }
     */
-    readonly property real childMarginHorizontal: 10
-    readonly property real childMarginVertical: 2.5
+    property var onExpanderClicked: null // <<< SET (Optional)
+    property var onExpandAnimBegin: null // <<< SET (Optional)
+    property var onExpandAnimEnd: null // <<< SET (Optional)
 
     default property alias innerContent: sideBarGroupContainerInnerItems.data
+
+    property alias expanderItem: sideBarGroupExpanderItem // <<< EXPOSE
 
     property bool isExpanded: false // <<< State
 
@@ -35,7 +38,7 @@ Item {
     visible: true
 
     function onGroupToggleExpand() {
-        sideBarGroupContainerRoot.isExpanded = !sideBarGroupContainerRoot.isExpanded
+        sideBarGroupContainerRoot.isExpanded = !sideBarGroupContainerRoot.isExpanded;
     }
 
     SideBarCommonItem {
@@ -47,7 +50,12 @@ Item {
         }
         // >>> icon: from alias sideBarGroupContainerRoot.groupIcon
         // >>> title: from alias sideBarGroupContainerRoot.groupTitle
-        sideBarItemOnClicked: () => sideBarGroupContainerRoot.onGroupToggleExpand()
+        sideBarItemOnClicked: () => {
+                                  sideBarGroupContainerRoot.onGroupToggleExpand();
+                                  if (sideBarGroupContainerRoot.onExpanderClicked) {
+                                      sideBarGroupContainerRoot.onExpanderClicked.call(sideBarGroupContainerRoot);
+                                  }
+                              } // powered by qmlformat, idk how
 
         Text {
             id: sideBarGroupExpanderChevronHint
@@ -110,20 +118,44 @@ Item {
         transitions: [
             Transition {
                 to: "expanded"
-                NumberAnimation {
-                    properties: "height"
-                    duration: sideBarGroupContainerRoot.reusableStyleDefinition.expandAnimDuration
-                    easing.type: Easing.Bezier
-                    easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
+                SequentialAnimation {
+                    ScriptAction {
+                        script: {
+                            sideBarGroupContainerRoot.onExpandAnimBegin(true);
+                        }
+                    }
+                    NumberAnimation {
+                        properties: "height"
+                        duration: sideBarGroupContainerRoot.reusableStyleDefinition.expandAnimDuration
+                        easing.type: Easing.Bezier
+                        easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
+                    }
+                    ScriptAction {
+                        script: {
+                            sideBarGroupContainerRoot.onExpandAnimEnd(true);
+                        }
+                    }
                 }
             },
             Transition {
                 to: "collapsed"
-                NumberAnimation {
-                    properties: "height"
-                    duration: sideBarGroupContainerRoot.reusableStyleDefinition.collapseAnimDuration
-                    easing.type: Easing.Bezier
-                    easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
+                SequentialAnimation {
+                    ScriptAction {
+                        script: {
+                            sideBarGroupContainerRoot.onExpandAnimBegin(false);
+                        }
+                    }
+                    NumberAnimation {
+                        properties: "height"
+                        duration: sideBarGroupContainerRoot.reusableStyleDefinition.collapseAnimDuration
+                        easing.type: Easing.Bezier
+                        easing.bezierCurve: AikariConstants.ThemeStyle.cubicBeziers.snapTo
+                    }
+                    ScriptAction {
+                        script: {
+                            sideBarGroupContainerRoot.onExpandAnimEnd(false);
+                        }
+                    }
                 }
             }
         ]
@@ -146,6 +178,8 @@ Item {
                     child.animTimerShowDelay = diff * i;
                     // child.animTimerHideDelay = (childrenLength - 1 - i) * diff;
                     child.animTimerHideDelay = 0;
+
+                    child.belongsToGroup = sideBarGroupContainerRoot;
                 }
             }
 

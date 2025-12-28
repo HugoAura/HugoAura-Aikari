@@ -15,7 +15,7 @@ QtObject {
     }
 
     /* property FontLoader fluentIconsLoader: FontLoader {
-        source: "qrc:/assets/fonts/IconFont-SegoeFluentIcons.ttf"
+    source: "qrc:/assets/fonts/IconFont-SegoeFluentIcons.ttf"
     } */
     property QtObject fluentIconsLoader: QtObject {
         property string name: "Microsoft Segoe Fluent Icons"
