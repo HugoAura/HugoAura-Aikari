@@ -1,0 +1,202 @@
+name: Build HugoAura Aikari
+
+on:
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: 'CMake Preset'
+        type: string
+        default: '["ninja-debug", "ninja-release"]'
+      backend_only:
+        description: 'Backend only build'
+        type: boolean
+        default: true
+      extra_flags:
+        description: 'Extra CMake Flags (Optional)'
+        required: false
+        type: string
+        default: ''
+      pwsh_version:
+        description: 'PowerShell Version (Optional)'
+        required: false
+        type: string
+        default: ''
+      cmake_version:
+        description: 'CMake Version (Optional)'
+        required: false
+        type: string
+        default: '3.31.6'
+      ninja_version:
+        description: 'Ninja Version (Optional)'
+        required: false
+        type: string
+        default: '1.12.1' 
+      disable_tracking:
+        description: 'Disable compiler tracking'
+        type: boolean
+        default: true
+      no_cache:
+        description: 'No Cache'
+        type: boolean
+        default: false
+
+jobs:
+  build-flow:
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: ${{ fromJson(inputs.preset) }}
+        # preset: ${{ inputs.preset == 'all' && fromJson('["ninja-debug", "ninja-release", "vs-x64-debug", "vs-x64-release", "vs-arm64-debug", "vs-arm64-release"]') || fromJson(format('["{0}"]', inputs.preset)) }}
+    
+    runs-on: ${{ contains(matrix.preset, 'arm64') && 'windows-11-arm' || 'windows-latest' }}
+    
+    env:
+      VCPKG_ROOT: "C:\\v"
+      VCPKG_DEFAULT_BINARY_CACHE: "D:\\vcpkg_cache"
+      VCPKG_BINARY_SOURCES: "clear;files,D:/vcpkg_cache,readwrite"
+      VCPKG_KEEP_ENV_VARS: "VSCMD_SKIP_SENDTELEMETRY"
+      VCPKG_DISABLE_COMPILER_TRACKING: ${{ inputs.disable_tracking && '1' || '0' }}
+
+    steps:
+      - name: Mount D Drive
+        if: contains(matrix.preset, 'arm64')
+        shell: cmd
+        run: |
+          mkdir C:\D_Work
+          subst D: C:\D_Work
+          D:
+          dir
+
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Restore vcpkg Binary Cache
+        if: ${{ inputs.no_cache != true }}
+        uses: actions/cache/restore@v4
+        with:
+          path: D:/vcpkg_cache
+          key: ${{ matrix.preset }}-vcpkg-${{ hashFiles('vcpkg.json') }}
+          restore-keys: ${{ matrix.preset }}-vcpkg-
+
+      - name: Setup PowerShell
+        if: inputs.pwsh_version != ''
+        id: setup-up-pwsh
+        uses: bjompen/UpdatePWSHAction@v1.0.2
+        with:
+          FixedVersion: '${{ inputs.pwsh_version }}'
+
+      - name: Setup CMake and Ninja
+        uses: lukka/get-cmake@v4.2.0
+        with:
+          cmakeVersion: ${{ inputs.cmake_version }}
+          ninjaVersion: ${{ inputs.ninja_version }}
+
+      - name: Init Cache Dir
+        shell: cmd
+        run: if not exist D:\vcpkg_cache mkdir D:\vcpkg_cache
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: 'C:/v'
+          binaryCachePath: 'D:/vcpkg_cache'
+          vcpkgJsonGlob: 'vcpkg.json'
+          doNotCache: true
+
+      - name: Ensure vcpkg cache env
+        shell: powershell
+        run: |
+          echo "VCPKG_DEFAULT_BINARY_CACHE=D:\vcpkg_cache" >> $env:GITHUB_ENV
+
+      - name: Set up VS env using ilammy/msvc-dev-cmd
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ contains(matrix.preset, 'arm64') && 'arm64' || 'x64' }}
+
+      - name: Configure CMake
+        shell: powershell
+        run: |
+          $basePreset = "${{ matrix.preset }}"
+          $isBackendOnly = "${{ inputs.backend_only }}"
+
+          if ($isBackendOnly -eq "true") {
+            $finalPreset = "$basePreset-backend-only"
+          } else {
+            $finalPreset = $basePreset
+          }
+          Write-Host "[Aikari CI / D] Target Preset: $finalPreset"
+
+          if ($basePreset -match "arm64") {
+            $targetArch = "arm64"
+          } else {
+            $targetArch = "x64"
+          }
+          Write-Host "[Aikari CI / D] Target Architecture: $targetArch"
+
+          $extraFlags = "${{ inputs.extra_flags }}"
+          $cmdArgs = @("--preset", $finalPreset)
+          $cmdArgs += "-DUSER_CPACK_TARGET_PROCESSOR=$targetArch"
+          
+          if (-not [string]::IsNullOrWhiteSpace($extraFlags)) {
+             $cmdArgs += $extraFlags.Split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)
+          }
+
+          Write-Host "[Aikari CI / V] Running CMake Configure: cmake $cmdArgs"
+          & cmake $cmdArgs
+          if ($LASTEXITCODE -ne 0) { throw "[Aikari CI / E] <!> CMake Configure failed" }
+
+          echo "FINAL_PRESET=$finalPreset" >> $env:GITHUB_ENV
+
+          if ($finalPreset -match "debug") {
+            echo "BUILD_CONFIG=Debug" >> $env:GITHUB_ENV
+          } else {
+            echo "BUILD_CONFIG=Release" >> $env:GITHUB_ENV
+          }
+
+      - name: Build Project
+        shell: powershell
+        run: |
+          $preset = "$env:FINAL_PRESET"
+          Write-Host "[Aikari CI / V] Building for preset: $preset"
+
+          cmake --build build/$preset
+          if ($LASTEXITCODE -ne 0) { throw "[Aikari CI / E] <!> CMake Build failed" }
+
+      - name: Pack with CPack
+        shell: powershell
+        run: |
+          $preset = "$env:FINAL_PRESET"
+          $buildDir = Join-Path (Get-Location) "build\$preset"
+
+          Write-Host "[Aikari CI / D / V] Entering directory: $buildDir"
+          Set-Location $buildDir
+
+          Write-Host "[Aikari CI / V] Running CPack..."
+          cpack -G INNOSETUP
+          if ($LASTEXITCODE -ne 0) { throw "[Aikari CI / E] <!> CPack failed" }
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aikari-Installer-${{ matrix.preset }}
+          path: build/${{ env.FINAL_PRESET }}/HugoAura.Aikari-Setup*.exe
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aikari-散装-${{ matrix.preset }}
+          path: build/${{ env.FINAL_PRESET }}/artifacts/bin/${{ env.BUILD_CONFIG }}/*
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Save vcpkg Binary Cache
+        uses: actions/cache/save@v4
+        if: always() && inputs.no_cache != true
+        with:
+          path: D:/vcpkg_cache
+          key: ${{ matrix.preset }}-vcpkg-${{ hashFiles('vcpkg.json') }}
